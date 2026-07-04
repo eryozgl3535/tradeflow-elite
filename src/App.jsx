@@ -24,6 +24,10 @@ const DARK = {
 let C = LIGHT;
 const P = "#5B5CF6";
 
+
+// ── RESPONSIVE GENİŞLİK ──
+// Telefonda 480px (dokunmatik için ideal), bilgisayarda 800px (geniş ekran)
+const APP_W = (typeof window!=="undefined" && window.innerWidth>=768) ? 800 : 480;
 let KURLAR = {TL:1,USD:46.80,EUR:53.61};
 let KUR_KAYNAK = "sabit"; // "tcmb" | "canli" | "sabit"
 const kurKaynakAd = () => KUR_KAYNAK==="tcmb" ? "🏛️ TCMB Resmî Kur" : KUR_KAYNAK==="canli" ? "📈 Piyasa Kuru" : "Sabit Kur";
@@ -264,7 +268,7 @@ const Badge=({durum})=>{const d=DURUM[durum]||{label:durum,color:C.t3,bg:C.bg};r
 const Toggle=({on,set})=><div onClick={()=>set(!on)} style={{width:46,height:26,borderRadius:13,background:on?P:"#9CA3AF",position:"relative",cursor:"pointer",transition:"background 0.2s",flexShrink:0}}><div style={{width:22,height:22,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:on?22:2,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/></div>;
 function TFLogo(){return <div style={{display:"flex",alignItems:"center",gap:8}}><svg width="28" height="28" viewBox="0 0 30 30"><polygon points="15,2 28,26 2,26" fill={P} opacity="0.85"/><polygon points="15,9 23,26 7,26" fill="white" opacity="0.55"/></svg><span style={{fontSize:16,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>tradeflow<span style={{color:P}}>·elite</span></span></div>;}
 function GeriBaslik({baslik,onKapat}){return <div style={{display:"flex",alignItems:"center",gap:12,padding:"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:60}}><button onClick={onKapat} style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",color:C.t1}}>←</button><div style={{fontSize:18,fontWeight:800,color:C.t1}}>{baslik}</div></div>;}
-function BottomSheet({children,onKapat,maxH}){return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.42)",display:"flex",alignItems:"flex-end",zIndex:1000}} onClick={onKapat}><div onClick={e=>e.stopPropagation()} style={{background:C.card,borderRadius:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:480,margin:"0 auto",maxHeight:maxH||"88vh",overflowY:"auto"}}><div style={{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 20px"}}/>{children}</div></div>;}
+function BottomSheet({children,onKapat,maxH}){return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.42)",display:"flex",alignItems:"flex-end",zIndex:1000}} onClick={onKapat}><div onClick={e=>e.stopPropagation()} style={{background:C.card,borderRadius:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:APP_W,margin:"0 auto",maxHeight:maxH||"88vh",overflowY:"auto"}}><div style={{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 20px"}}/>{children}</div></div>;}
 function Inp({label,value,onChange,placeholder,type}){return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>{label}</div>}<input type={type||"text"} value={value} onChange={onChange} placeholder={placeholder} style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none"}}/></div>;}
 const BtnP=({children,onClick})=><button onClick={onClick} style={{flex:2,background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{children}</button>;
 const BtnS=({children,onClick})=><button onClick={onClick} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:13,cursor:"pointer"}}>{children}</button>;
@@ -352,7 +356,7 @@ function OzellestirModal({moduller,setModuller,onKapat,T}){
   };
 
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",height:"100vh"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik={"⚙️ "+T.duzenleBaslik1+" "+T.duzenleBaslik2} onKapat={onKapat}/>
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
 
@@ -862,7 +866,7 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   </div>;
 
   if(preview) return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1001,padding:12}}>
-    <div style={{background:"#fff",borderRadius:14,width:"100%",maxWidth:480,maxHeight:"92vh",overflowY:"auto",padding:"22px 20px",color:"#111",fontSize:12}}>
+    <div style={{background:"#fff",borderRadius:14,width:"100%",maxWidth:APP_W,maxHeight:"92vh",overflowY:"auto",padding:"22px 20px",color:"#111",fontSize:12}}>
       <div style={{textAlign:"center",marginBottom:14}}>
         <div style={{fontSize:15,fontWeight:900,letterSpacing:"0.05em"}}>e-ARŞİV FATURA</div>
         {gibAktif
@@ -1106,7 +1110,7 @@ function GizlilikEkrani({onKapat}){
     {b:"6. İletişim",m:"Gizlilikle ilgili sorularınız için: destek@tradeflow.app"},
   ];
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",height:"100vh"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik="Gizlilik Politikası" onKapat={onKapat}/>
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
         <div style={{fontSize:11,color:C.t3,marginBottom:14}}>Son güncelleme: Temmuz 2026 · TradeFlow Elite v1.0</div>
@@ -1135,7 +1139,7 @@ function YardimMerkezi({onKapat}){
   ];
   const filtreli=sss.map(k=>({...k,sorular:k.sorular.filter(x=>x.s.toLowerCase().includes(arama.toLowerCase())||x.c.toLowerCase().includes(arama.toLowerCase()))})).filter(k=>k.sorular.length>0);
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",height:"100vh"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik="Yardım Merkezi" onKapat={onKapat}/>
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
         <input value={arama} onChange={e=>setArama(e.target.value)} placeholder="🔍..." style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none",marginBottom:16,boxShadow:C.sh}}/>
@@ -1221,7 +1225,7 @@ function GibEkrani({onKapat,isletme,gibAyar,setGibAyar,goster}){
   ];
 
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",height:"100vh"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik="🧾 GİB e-Fatura Entegrasyonu" onKapat={onKapat}/>
 
       {/* Sekme */}
@@ -2362,7 +2366,7 @@ export default function TradeFlow(){
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif",display:"flex",justifyContent:"center"}}>
-      <div style={{width:"100%",maxWidth:480,display:"flex",flexDirection:"column",minHeight:"100vh"}}>
+      <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",minHeight:"100vh"}}>
 
         {banner&&<div onClick={()=>{setBanner(null);setSekme("bildiri");}} style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 28px)",maxWidth:452,background:C.card,borderRadius:16,boxShadow:C.sh2,padding:"14px 16px",zIndex:3000,display:"flex",gap:12,alignItems:"center",cursor:"pointer",border:`1px solid ${C.border}`}}>
           <div style={{width:40,height:40,borderRadius:11,background:C.amberBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⏰</div>
@@ -2390,7 +2394,7 @@ export default function TradeFlow(){
           {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)}/>}
         </div>
 
-        <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"center",padding:"8px 0 24px",boxShadow:"0 -4px 20px rgba(0,0,0,0.06)",zIndex:100}}>
+        <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:APP_W,background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"center",padding:"8px 0 24px",boxShadow:"0 -4px 20px rgba(0,0,0,0.06)",zIndex:100}}>
           {NAV.map(n=>{
             if(n.id==="fab") return <div key="fab" style={{flex:1,display:"flex",justifyContent:"center"}}><button onClick={()=>setYeniAc(true)} style={{width:56,height:56,borderRadius:"50%",background:P,border:"none",color:"#fff",fontSize:30,cursor:"pointer",boxShadow:`0 4px 16px ${P}55`,marginBottom:6}}>+</button></div>;
             const active=sekme===n.id;
