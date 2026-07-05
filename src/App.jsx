@@ -93,6 +93,8 @@ const TR = {
   modulFooter:"Aktif modüller Ana Sayfa'da görünür · Kapalı modüller alt menüden erişilebilir",
   kategori:"Kategori",aramaPh:"🔍 Müşteri veya iş ara...",dilAramaPh:"🔍 Dil veya ülke ara...",yardimAramaPh:"🔍 Yardım arayın...",
   isOrnekPh:"Petek Temizliği...",musteriOrnekPh:"Ahmet Yılmaz",malzemePh:"Malzeme alımı...",musteriAdiPh:"Müşteri adı",klimaPh:"Klima montajı...",aliciAdiPh:"Alıcı adı",
+  maliyetL:"Tahmini Maliyet",maliyetPh:"Malzeme + işçilik + yol...",marjL:"Kâr Marjı",zararUyari:"BU İŞ ZARARDA!",dusukMarj:"Düşük kâr marjı",benzerIs:"Benzer işlerde ort. maliyetin",
+  asistan:"Yardımcı Asistan",asistanSub:"Sorularını anında yanıtlar",
 };
 const EN = {
   gunaydin:"Good morning,",isletmem:"My Business",yeniIs:"New Job",isKoluSec:"Select Trade",ozellestir:"Customize",
@@ -147,6 +149,8 @@ const EN = {
   modulFooter:"Active modules appear on Home · Disabled ones stay in the menu",
   kategori:"Category",aramaPh:"🔍 Search customer or job...",dilAramaPh:"🔍 Search language or country...",yardimAramaPh:"🔍 Search help...",
   isOrnekPh:"Radiator Cleaning...",musteriOrnekPh:"John Smith",malzemePh:"Material purchase...",musteriAdiPh:"Customer name",klimaPh:"AC installation...",aliciAdiPh:"Recipient name",
+  maliyetL:"Estimated Cost",maliyetPh:"Materials + labor + travel...",marjL:"Profit Margin",zararUyari:"THIS JOB IS AT A LOSS!",dusukMarj:"Low profit margin",benzerIs:"Avg. cost on similar jobs",
+  asistan:"Assistant",asistanSub:"Instant answers to your questions",
 };
 const PARTIALS = {
   es:{gunaydin:"Buenos días,",yeniIs:"Nuevo Trabajo",anaSayfa:"Inicio",isAkislari:"Trabajos",bildirimlerT:"Alertas",profil:"Perfil",tamamlandi:"Completado",dil:"Idioma",kaydet:"Guardar",iptal:"Cancelar",sil:"Eliminar",isletmem:"Mi Negocio",faturalar:"Facturas",tahsilatlar:"Cobros",musteriler:"Clientes",teklifler:"Presupuestos",raporlar:"Informes",giderler:"Gastos",dahaFazla:"Más",toplamGelir:"Ingresos Totales",toplamGider:"Gastos Totales",netKar:"Beneficio Neto",bekleyen:"Pendiente",tahsilEdilen:"Cobrado",musteri:"Cliente",tarihL:"Fecha",tutarL:"Importe",durumL:"Estado",kapat:"Cerrar",tamamla:"Completar",faturaKes:"Crear Factura",yeniTeklif:"Nuevo Presupuesto",yeniGider:"Nuevo Gasto",tahsilEt:"Cobrar",guncelle:"Actualizar",vazgec:"Cancelar",tumu:"Todos",gelirL:"Ingresos",giderL:"Gastos",aktifL:"Activo",beklemede:"Pendiente",devamEdiyor:"En curso",sesEfektSub:"Sonidos de confirmación",kompaktSub:"Vista compacta",bildirimSub:"Recordatorios y alertas",karanlikSub:"Descansa la vista",kdvSub:"Se aplica a las facturas",logoSub:"Visible en facturas y perfil",canliKur:"Tasas en vivo",sabitKur:"Tasas fijas",aylikGorunum:"Vista mensual",ibanSub:"Seguimiento de pagos por IBAN",proSub:"Trabajos ilimitados · Facturas PDF · WhatsApp · Copia en la nube",epostaDestek:"Soporte por Email",sssSub:"FAQ y guías",degerlendirSub:"Valorar en App Store",kvkkSub:"Cumple privacidad",yakinda:"¡Próximamente!",mIslerA:"Todos los trabajos y estados",mFaturaA:"Facturas emitidas y pendientes",mTahsilatA:"Cobros recibidos y pendientes",mMusteriA:"Lista de clientes y análisis",mTeklifA:"Presupuestos y conversiones",mRaporA:"Gráficos y estadísticas",mGiderA:"Control de gastos",mDahaA:"Exportar, ajustes, ayuda",modulFooter:"Los módulos activos aparecen en Inicio",vergiDairesiYok:"Oficina fiscal no definida",gibSubYok:"Aún no configurado",gibSubAktif:"e-Factura activa",gibSubTest:"API configurada, prueba requerida"},
@@ -340,6 +344,29 @@ const Toggle=({on,set})=><div onClick={()=>set(!on)} style={{width:46,height:26,
 function TFLogo(){return <div style={{display:"flex",alignItems:"center",gap:8}}><svg width="28" height="28" viewBox="0 0 30 30"><polygon points="15,2 28,26 2,26" fill={P} opacity="0.85"/><polygon points="15,9 23,26 7,26" fill="white" opacity="0.55"/></svg><span style={{fontSize:16,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>tradeflow<span style={{color:P}}>·elite</span></span></div>;}
 function GeriBaslik({baslik,onKapat}){return <div style={{display:"flex",alignItems:"center",gap:12,padding:"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:60}}><button onClick={onKapat} style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",color:C.t1}}>←</button><div style={{fontSize:18,fontWeight:800,color:C.t1}}>{baslik}</div></div>;}
 function BottomSheet({children,onKapat,maxH}){return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.42)",display:"flex",alignItems:MASAUSTU?"center":"flex-end",zIndex:1000}} onClick={onKapat}><div onClick={e=>e.stopPropagation()} style={{background:C.card,borderRadius:MASAUSTU?24:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:MASAUSTU?560:APP_W,margin:"0 auto",maxHeight:maxH||"88vh",overflowY:"auto",boxShadow:MASAUSTU?C.sh2:"none"}}><div style={{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 20px"}}/>{children}</div></div>;}
+// Maliyet Bekçisi: tutar + maliyet girilince anlık kâr/zarar analizi
+function MaliyetOnizleme({tutar,maliyet,T}){
+  const t=Number(tutar||0),m=Number(maliyet||0);
+  if(t<=0||m<=0)return null;
+  const kar=t-m,marj=Math.round(kar/t*100);
+  const zarar=kar<0,dusuk=!zarar&&marj<15;
+  const renk=zarar?C.red:dusuk?C.amber:C.green;
+  const bg=zarar?C.redBg:dusuk?C.amberBg:C.greenBg;
+  return <div style={{background:bg,border:`1.5px solid ${renk}44`,borderRadius:12,padding:"11px 14px",marginBottom:14}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <span style={{fontSize:12,fontWeight:800,color:renk}}>{zarar?"⚠️ "+T.zararUyari:dusuk?"⚡ "+T.dusukMarj:"✅ "+T.netKar}</span>
+      <span style={{fontSize:15,fontWeight:900,color:renk}}>{kar>=0?"+":""}{fmt(kar*(KURLAR[AKTIF_PARA]||1))}</span>
+    </div>
+    <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
+      <span style={{fontSize:10,color:C.t2}}>{T.marjL}</span>
+      <span style={{fontSize:11,fontWeight:700,color:renk}}>%{marj}</span>
+    </div>
+    <div style={{background:C.border,borderRadius:3,height:5,marginTop:5,overflow:"hidden"}}>
+      <div style={{width:`${Math.max(0,Math.min(marj,100))}%`,background:renk,height:"100%"}}/>
+    </div>
+  </div>;
+}
+
 function Inp({label,value,onChange,placeholder,type,onFocus}){return <div style={{marginBottom:14}}>{label&&<div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>{label}</div>}<input type={type||"text"} value={value} onChange={onChange} onFocus={onFocus} placeholder={placeholder} style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none"}}/></div>;}
 const BtnP=({children,onClick})=><button onClick={onClick} style={{flex:2,background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{children}</button>;
 const BtnS=({children,onClick})=><button onClick={onClick} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:13,cursor:"pointer"}}>{children}</button>;
@@ -846,7 +873,7 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T}){
     </div>}
 
     <div style={{background:C.bg,borderRadius:14,padding:"4px 16px",marginBottom:14}}>
-      {[[T.tarihL,job.tarih],[T.durumL,DURUM[job.durum]?.label],[T.tutarL,fmt(job.tutar)],job.isAdresi?["📍 "+T.adresL,job.isAdresi]:null,job.hatirlatma?["⏰ "+T.hatirlatma,new Date(job.hatirlatma).toLocaleString("tr-TR")]:null].filter(Boolean).map(([l,v])=>(
+      {[[T.tarihL,job.tarih],[T.durumL,DURUM[job.durum]?.label],[T.tutarL,fmt(job.tutar)],job.maliyet>0?["💰 "+T.maliyetL,fmt(job.maliyet)]:null,job.maliyet>0?[(job.tutar-job.maliyet>=0?"✅ ":"⚠️ ")+T.netKar,fmt(job.tutar-job.maliyet)+" (%"+Math.round((job.tutar-job.maliyet)/job.tutar*100)+")"]:null,job.isAdresi?["📍 "+T.adresL,job.isAdresi]:null,job.hatirlatma?["⏰ "+T.hatirlatma,new Date(job.hatirlatma).toLocaleString("tr-TR")]:null].filter(Boolean).map(([l,v])=>(
         <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:`1px solid ${C.border}`,gap:10}}>
           <span style={{fontSize:13,color:C.t2,flexShrink:0}}>{l}</span><span style={{fontSize:13,fontWeight:600,color:C.t1,textAlign:"right"}}>{v}</span>
         </div>
@@ -1049,17 +1076,17 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu}){
   const [icon,setIcon]=useState(edit?{e:duzenlenecek.icon,bg:duzenlenecek.iconBg}:icons[0]);
   const [oneriGoster,setOneriGoster]=useState(false);
   const [form,setForm]=useState(edit
-    ?{baslik:duzenlenecek.baslik,musteri:duzenlenecek.musteri,tarih:duzenlenecek.tarih,tutar:String(Math.round(duzenlenecek.tutar/(KURLAR[AKTIF_PARA]||1))),durum:duzenlenecek.durum,hatirlatma:duzenlenecek.hatirlatma||"",isAdresi:duzenlenecek.isAdresi||"",musteriTelefon:duzenlenecek.musteriTelefon||"",musteriEmail:duzenlenecek.musteriEmail||"",tekrar:duzenlenecek.tekrar||"yok"}
-    :{baslik:"",musteri:"",tarih:new Date().toISOString().slice(0,10),tutar:"",durum:"bekliyor",hatirlatma:"",isAdresi:"",musteriTelefon:"",musteriEmail:"",tekrar:"yok"});
+    ?{baslik:duzenlenecek.baslik,musteri:duzenlenecek.musteri,tarih:duzenlenecek.tarih,tutar:String(Math.round(duzenlenecek.tutar/(KURLAR[AKTIF_PARA]||1))),durum:duzenlenecek.durum,hatirlatma:duzenlenecek.hatirlatma||"",isAdresi:duzenlenecek.isAdresi||"",musteriTelefon:duzenlenecek.musteriTelefon||"",musteriEmail:duzenlenecek.musteriEmail||"",tekrar:duzenlenecek.tekrar||"yok",maliyet:duzenlenecek.maliyet?String(Math.round(duzenlenecek.maliyet/(KURLAR[AKTIF_PARA]||1))):""}
+    :{baslik:"",musteri:"",tarih:new Date().toISOString().slice(0,10),tutar:"",durum:"bekliyor",hatirlatma:"",isAdresi:"",musteriTelefon:"",musteriEmail:"",tekrar:"yok",maliyet:""});
   const [fotolar,setFotolar]=useState(edit?(duzenlenecek.fotolar||[]):[]);
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
   const fotoEkle=(e)=>{const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=(ev)=>setFotolar(p=>[...p,ev.target.result]);r.readAsDataURL(file);};
   const kaydet=()=>{
     if(edit){
-      onEkle({...duzenlenecek,...form,tutar:Number(form.tutar)*(KURLAR[AKTIF_PARA]||1),icon:icon.e,iconBg:icon.bg,hatirlatma:form.hatirlatma||null,fotolar});
+      onEkle({...duzenlenecek,...form,tutar:Number(form.tutar)*(KURLAR[AKTIF_PARA]||1),maliyet:Number(form.maliyet||0)*(KURLAR[AKTIF_PARA]||1),icon:icon.e,iconBg:icon.bg,hatirlatma:form.hatirlatma||null,fotolar});
     }else{
       const cid=nId;nId++;
-      onEkle({id:cid,ref:"IS-"+String(cid).padStart(4,"0"),...form,tutar:Number(form.tutar)*(KURLAR[AKTIF_PARA]||1),icon:icon.e,iconBg:icon.bg,hatirlatma:form.hatirlatma||null,hatirlatildi:false,fotolar,odemeler:[]});
+      onEkle({id:cid,ref:"IS-"+String(cid).padStart(4,"0"),...form,tutar:Number(form.tutar)*(KURLAR[AKTIF_PARA]||1),maliyet:Number(form.maliyet||0)*(KURLAR[AKTIF_PARA]||1),icon:icon.e,iconBg:icon.bg,hatirlatma:form.hatirlatma||null,hatirlatildi:false,fotolar,odemeler:[]});
     }
     onKapat();
   };
@@ -1086,6 +1113,18 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu}){
       <div style={{flex:1}}><Inp label={T.tarihL} type="date" value={form.tarih} onChange={e=>set("tarih",e.target.value)}/></div>
       <div style={{flex:1}}><Inp label={T.tutarL+" ("+AKTIF_PARA+")"} type="number" value={form.tutar} onChange={e=>set("tutar",e.target.value)} placeholder="0"/></div>
     </div>
+    {/* 💰 MALİYET BEKÇİSİ */}
+    <Inp label={"💰 "+T.maliyetL+" ("+AKTIF_PARA+") — opsiyonel"} type="number" value={form.maliyet} onChange={e=>set("maliyet",e.target.value)} placeholder={T.maliyetPh}/>
+    {(()=>{
+      // Benzer iş ipucu — geçmiş işlerden ortalama maliyet
+      if(!form.baslik||form.baslik.length<4||!jobs)return null;
+      const kelimeler=form.baslik.toLowerCase().split(/\s+/).filter(w=>w.length>3);
+      const benzer=jobs.filter(j=>j.maliyet>0&&(!edit||j.id!==duzenlenecek.id)&&kelimeler.some(w=>j.baslik.toLowerCase().includes(w)));
+      if(!benzer.length)return null;
+      const ort=Math.round(benzer.reduce((s,j)=>s+j.maliyet,0)/benzer.length/(KURLAR[AKTIF_PARA]||1));
+      return <div style={{fontSize:11,color:P,fontWeight:600,marginTop:-8,marginBottom:12}}>💡 {T.benzerIs}: {fmt(ort*(KURLAR[AKTIF_PARA]||1))} ({benzer.length} iş)</div>;
+    })()}
+    <MaliyetOnizleme tutar={form.tutar} maliyet={form.maliyet} T={T}/>
     {/* Periyodik iş */}
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>🔁 {T.tekrarlama}</div>
@@ -1132,7 +1171,7 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu}){
 }
 
 function TeklifModal({onKapat,onEkle,T}){
-  const [f,setF]=useState({musteri:"",baslik:"",tutar:"",gecerlilik:new Date(Date.now()+14*864e5).toISOString().slice(0,10)});
+  const [f,setF]=useState({musteri:"",baslik:"",tutar:"",maliyet:"",gecerlilik:new Date(Date.now()+14*864e5).toISOString().slice(0,10)});
   return <BottomSheet onKapat={onKapat}>
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:16}}>{T.yeniTeklif}</div>
     <Inp label={T.musteri} value={f.musteri} onChange={e=>setF(x=>({...x,musteri:e.target.value}))} placeholder={T.musteriAdiPh}/>
@@ -1141,7 +1180,7 @@ function TeklifModal({onKapat,onEkle,T}){
       <div style={{flex:1}}><Inp label={T.tutarL+" ("+AKTIF_PARA+")"} type="number" value={f.tutar} onChange={e=>setF(x=>({...x,tutar:e.target.value}))}/></div>
       <div style={{flex:1}}><Inp label={T.gecerlilik} type="date" value={f.gecerlilik} onChange={e=>setF(x=>({...x,gecerlilik:e.target.value}))}/></div>
     </div>
-    <div style={{display:"flex",gap:10}}><BtnS onClick={onKapat}>{T.iptal}</BtnS><BtnP onClick={()=>{onEkle({id:Date.now(),...f,tutar:Number(f.tutar)*(KURLAR[AKTIF_PARA]||1)});onKapat();}}>+ {T.yeniTeklif}</BtnP></div>
+    <div style={{display:"flex",gap:10}}><BtnS onClick={onKapat}>{T.iptal}</BtnS><BtnP onClick={()=>{onEkle({id:Date.now(),...f,tutar:Number(f.tutar)*(KURLAR[AKTIF_PARA]||1),maliyet:Number(f.maliyet||0)*(KURLAR[AKTIF_PARA]||1)});onKapat();}}>+ {T.yeniTeklif}</BtnP></div>
   </BottomSheet>;
 }
 
@@ -1202,6 +1241,60 @@ function GizlilikEkrani({onKapat}){
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
         <div style={{fontSize:11,color:C.t3,marginBottom:14}}>Son güncelleme: Temmuz 2026 · TradeFlow Elite v1.0</div>
         {bolumler.map(x=><Sh key={x.b} s={{padding:"16px 18px",marginBottom:12}}><div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:6}}>{x.b}</div><div style={{fontSize:13,color:C.t2,lineHeight:1.6}}>{x.m}</div></Sh>)}
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── YARDIMCI ASİSTAN — hazır cevaplı, API maliyeti sıfır ──────
+const ASISTAN_BILGI=[
+  {k:["fatura","kes"],c:"🧾 Fatura kesmek için: bir işe dokun → 'Fatura Kes' butonuna bas → kalemleri düzenle → 'Resmî Önizleme' → 'Faturayı Kes'. KDV oranını Profil'den, tevkifatı fatura formundan ayarlarsın. GİB kuruluysa fatura otomatik gönderilir."},
+  {k:["kaparo","kısmi","taksit","bakiye","kalan"],c:"💰 Kaparo almak için: işe dokun → '+ Kaparo / Kısmi Tahsilat' → tutarı gir. Alınan/kalan çubuğu otomatik güncellenir. Tamamı ödenince iş kendiliğinden 'Tamamlandı' olur."},
+  {k:["gib","e-fatura","e-arşiv","earşiv","entegrat","mali mühür"],c:"🏛️ GİB için: Profil → 'e-Fatura / e-Arşiv Entegrasyonu'. 'Başvuru' sekmesinde 5 adımlı yol haritası var: Mali Mühür → entegratör sözleşmesi → GİB başvurusu → test → canlı. Entegratör hesabın hazır olunca API Ayarı sekmesinden bağlarsın."},
+  {k:["dil","language","ingilizce","almanca","arapça"],c:"🌐 Dil değiştirmek için: Profil → Dil satırı → gruplu listeden seç. 40+ dil var; Almanca, Fransızca, Arapça, Rusça gibi büyük dillerde arayüz tam çevrilir."},
+  {k:["teklif","onay"],c:"🏷️ Teklif akışı: Teklifler → '+ Yeni Teklif' → müşteri onaylayınca '✅ Onayla' → 'İşe Dönüştür'. Karttaki 💬 butonuyla teklifi WhatsApp'tan müşteriye gönderebilirsin. Maliyet girersen kâr marjını da kartta görürsün."},
+  {k:["periyodik","tekrar","abonelik"],c:"🔁 Periyodik iş: Yeni iş oluştururken 'Tekrarlama' bölümünden Haftalık/Aylık/Yıllık seç. İş tamamlanınca bir sonraki dönem için otomatik yeni iş oluşur — havuz bakımı aboneliği için birebir."},
+  {k:["harita","navigasyon","adres","yol","git"],c:"🗺️ Navigasyon: İşe adres girdiysen, iş detayında 'Navigasyonu Başlat' veya Müşteriler'deki 'Git' butonu Google Maps'te yol tarifini açar."},
+  {k:["yedek","dışa","içe","json","veri","kayıp","silindi","kaydet"],c:"📥 Yedekleme: Daha Fazla → 'Verileri Dışa Aktar' (JSON indirir) / 'Yedeği Geri Yükle' (geri yükler). ⚠️ Dürüst not: şu an veriler oturumla sınırlı — sayfa yenilenince gider. Kalıcı bulut kaydı (Supabase) çok yakında ekleniyor; o zamana dek düzenli JSON yedeği al."},
+  {k:["kur","dolar","euro","tcmb","döviz"],c:"🏛️ Kurlar öncelikle TCMB resmî satış kurundan gelir (her iş günü 15:30'da güncellenir), ulaşılamazsa piyasa kuruna düşer. Kaynağı Profil → Para Birimi satırında görürsün."},
+  {k:["maliyet","kâr","kar","zarar","marj"],c:"💰 Maliyet Bekçisi: İş veya teklif oluştururken 'Tahmini Maliyet' gir — uygulama net kârı ve marjı anında hesaplar. Marj %15 altındaysa sarı, zarardaysan kırmızı '⚠️ ZARAR' uyarısı verir. Benzer geçmiş işlerdeki ortalama maliyetini de ipucu olarak gösterir."},
+  {k:["karanlık","dark","tema","gece"],c:"🌙 Karanlık mod: Profil → 'Karanlık Mod' anahtarı."},
+  {k:["modül","özelleştir","sırala","düzenle"],c:"⚙️ Modül özelleştirme: Ana sayfadaki 'Özelleştir' veya 'Düzenle →' → modülleri aç/kapat, ⠿ tutacağından sürükleyerek sırala."},
+  {k:["whatsapp","paylaş","gönder"],c:"💬 WhatsApp: Fatura önizlemede 'WhatsApp'ta Gönder', teklif kartında 💬, müşteri detayında 'WhatsApp' butonu — hazır metinle açılır."},
+  {k:["tahsil","alacak","ödeme","borç"],c:"⏰ Tahsilat: Tahsilatlar sekmesinde bekleyen ve alınan ödemeler ayrı listelenir. Ana sayfadaki Tahsilat Durumu kartına dokunarak filtreli detaya girersin. Kısmi ödeme aldıysan kalan bakiye otomatik izlenir."},
+  {k:["takvim","ay","gün"],c:"📅 Takvim: İş Akışları → sağ üstteki 📅 simgesi. İşli günlerde renkli noktalar var; güne dokununca o günün işleri listelenir."},
+  {k:["sektör","iş kolu","havuz","elektrik","tesisat"],c:"🔧 Sektör akışı: Üstteki iş kolu seçicisinden sektörünü seç — iş şablonları, ikonlar ve gider kategorileri otomatik o sektöre uyarlanır. 9 sektör destekleniyor."},
+  {k:["fiyat","pro","abonelik","ücret"],c:"⚡ Pro (₺199/ay): sınırsız iş, PDF fatura, bulut yedek, GİB entegrasyonu gibi gelişmiş özellikler Pro pakette planlanıyor. Şu an uygulama ücretsiz kullanımda."},
+];
+function AsistanEkrani({onKapat,T}){
+  const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:"Merhaba! 👋 Ben TradeFlow asistanıyım. Fatura, tahsilat, GİB, maliyet... ne sormak istersen yaz ya da aşağıdaki hızlı sorulardan seç."}]);
+  const [giris,setGiris]=useState("");
+  const HIZLI=["Fatura nasıl kesilir?","Kaparo nasıl alınır?","GİB nasıl kurulur?","Verilerim kayboldu","Zarar uyarısı nedir?","Dil nasıl değişir?"];
+  const cevapla=(soru)=>{
+    const s=soru.toLowerCase();
+    const bulunan=ASISTAN_BILGI.find(b=>b.k.some(k=>s.includes(k)));
+    const cevap=bulunan?bulunan.c:"🤔 Bunu henüz bilmiyorum ama öğreneceğim! Şimdilik canlı destek için 💬 WhatsApp'tan yazabilirsin: 0532 111 22 33 — ya da sorunu farklı kelimelerle tekrar dene.";
+    setMesajlar(p=>[...p,{rol:"user",metin:soru},{rol:"bot",metin:cevap}]);
+    setGiris("");
+  };
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:MASAUSTU?640:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
+      <GeriBaslik baslik={"🤖 "+T.asistan} onKapat={onKapat}/>
+      {/* Mesajlar */}
+      <div style={{flex:1,overflowY:"auto",padding:"16px 14px",display:"flex",flexDirection:"column",gap:10}}>
+        {mesajlar.map((m,i)=><div key={i} style={{alignSelf:m.rol==="bot"?"flex-start":"flex-end",maxWidth:"85%"}}>
+          <div style={{background:m.rol==="bot"?C.card:P,color:m.rol==="bot"?C.t1:"#fff",borderRadius:m.rol==="bot"?"4px 16px 16px 16px":"16px 4px 16px 16px",padding:"12px 15px",fontSize:13.5,lineHeight:1.6,boxShadow:C.sh,whiteSpace:"pre-wrap"}}>{m.metin}</div>
+        </div>)}
+        {/* Hızlı sorular */}
+        {mesajlar.length<=1&&<div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:6}}>
+          {HIZLI.map(h=><button key={h} onClick={()=>cevapla(h)} style={{background:C.card,border:`1.5px solid ${P}44`,borderRadius:20,padding:"8px 14px",color:P,fontSize:12,fontWeight:600,cursor:"pointer"}}>{h}</button>)}
+        </div>}
+      </div>
+      {/* Giriş */}
+      <div style={{padding:"12px 14px 28px",background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim())cevapla(giris.trim());}} placeholder="Sorunu yaz..."
+          style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none"}}/>
+        <button onClick={()=>giris.trim()&&cevapla(giris.trim())} style={{background:P,border:"none",borderRadius:14,padding:"0 20px",color:"#fff",fontSize:17,cursor:"pointer"}}>➤</button>
       </div>
     </div>
   </div>;
@@ -1949,6 +2042,8 @@ function TekliflerTab({teklifler,onYeni,onDonustur,onSil,onDurumDegis,T}){
             </div>
             <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.musteri}</div>
             <div style={{fontSize:12,color:C.t2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.baslik}</div>
+            {t.maliyet>0&&(()=>{const kar=t.tutar-t.maliyet;const marj=Math.round(kar/t.tutar*100);const rk=kar<0?C.red:marj<15?C.amber:C.green;const rb=kar<0?C.redBg:marj<15?C.amberBg:C.greenBg;
+              return <span style={{display:"inline-block",marginTop:4,fontSize:10,fontWeight:800,color:rk,background:rb,padding:"2px 8px",borderRadius:20}}>{kar<0?"⚠️ ZARAR ":"💰 "}%{marj} · {fmt(kar)}</span>;})()}
           </div>
         </div>
 
@@ -2113,6 +2208,7 @@ function BildirimlerTab({bildirimler,onOkundu,T}){
 
 function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T}){
   const items=[
+    {icon:"🤖",label:T.asistan,alt:T.asistanSub,act:()=>onAc("asistan")},
     {icon:"📤",label:T.disaAktar,alt:"JSON",act:onExport},
     {icon:"📥",label:T.yedekGeriYukle,alt:T.jsonIceAktar,file:true},
     {icon:"❓",label:T.yardimMerkezi,alt:"SSS",act:()=>onAc("yardim")},
@@ -2263,6 +2359,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,se
     {/* Destek */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.destek}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
+      <Row icon="🤖" label={T.asistan} sub={T.asistanSub} onClick={()=>onAc("asistan")}/>
       <Row icon="💬" label={T.whatsappDestek} sub="0532 111 22 33 — 7/24" onClick={()=>window.open("https://wa.me/905321112233","_blank")}/>
       <Row icon="✉️" label={T.epostaDestek} sub="destek@tradeflow.app" onClick={()=>window.open("mailto:destek@tradeflow.app","_blank")}/>
       <Row icon="❓" label={T.yardimMerkezi} sub={T.sssSub} onClick={()=>onAc("yardim")}/>
@@ -2336,7 +2433,7 @@ function Sidebar({sekme,setSekme,T,isletme}){
   </aside>;
 }
 
-function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,isKolu,setIsKolu}){
+function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu}){
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
   return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"28px 28px 20px",gap:16,flexWrap:"wrap"}}>
     <div>
@@ -2347,6 +2444,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,isKolu,set
       <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.t1,fontSize:13,fontWeight:600,cursor:"pointer",outline:"none",boxShadow:C.sh}}>
         {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
       </select>
+      <button onClick={onAsistan} title="Asistan" style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,color:C.t2}}>🤖</button>
       <button onClick={onAra} style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,color:C.t2}}>🔍</button>
       <button onClick={onBildirim} style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,position:"relative",color:C.t2}}>
         🔔
@@ -2568,7 +2666,7 @@ export default function TradeFlow(){
           <TFLogo/>
           <div style={{position:"relative"}}><div style={{width:42,height:42,background:"#1F2937",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"#fff"}}>EO</div><div style={{position:"absolute",bottom:1,right:1,width:11,height:11,borderRadius:"50%",background:C.green,border:"2px solid "+C.card}}/></div>
         </div>}
-        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>setYeniAc(true)} onAra={()=>setSekme("isler")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
+        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>setYeniAc(true)} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
           {sekme==="anasayfa"&&<>{MASAUSTU?<DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/>:<><div style={{height:14}}/><HeroCard jobs={jobs} onYeniIs={()=>setYeniAc(true)} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} isKoluAc={isKoluAc} setIsKoluAc={setIsKoluAc} T={T} onStatClick={statClick} isletmeAd={isletme.ad} onOzellestir={()=>setOzellestirAc(true)}/></>}<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/><Charts jobs={jobs} giderler={giderler} T={T} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}}/><Sh s={{margin:"0 14px 14px",padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}><div style={{width:46,height:46,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚙️</div><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:2}}><span style={{color:P}}>{T.duzenleBaslik1}</span> {T.duzenleBaslik2}</div><div style={{fontSize:11,color:C.t2}}>{T.duzenleAlt}</div></div><button onClick={()=>setOzellestirAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>{T.duzenle} →</button></Sh><JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
@@ -2610,6 +2708,7 @@ export default function TradeFlow(){
         {teklifAc&&<TeklifModal T={T} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
         {giderAc&&<GiderModal T={T} isKolu={isKolu} onKapat={()=>setGiderAc(false)} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("Gider eklendi ✓");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
+        {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
         {ekran==="degerlendir"&&<DegerlendirModal onKapat={()=>setEkran(null)} onGonder={(y,o)=>{goster("⭐".repeat(y)+" "+T.tesekkurler);bildirimEkle("⭐ Değerlendirme gönderildi",y+" yıldız"+(o?" + öneri":""),"is");}} T={T}/>}
         {ozellestirAc&&<OzellestirModal moduller={moduller} setModuller={setModuller} onKapat={()=>setOzellestirAc(false)} T={T}/>}
