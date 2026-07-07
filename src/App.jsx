@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260706-supabase","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-modulfix","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -511,8 +511,8 @@ function OzellestirModal({moduller,setModuller,onKapat,T}){
             <div style={{width:44,height:44,borderRadius:13,background:m.aktif?m.bg:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,transition:"background 0.2s"}}>{m.icon}</div>
             {/* Bilgi */}
             <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:700,color:m.aktif?C.t1:C.t3}}>{m.label(T)}</div>
-              <div style={{fontSize:10,color:C.t3,marginTop:2}}>{m.aciklama(T)}</div>
+              <div style={{fontSize:14,fontWeight:700,color:m.aktif?C.t1:C.t3}}>{typeof m.label==="function"?m.label(T):(m.label||m.id)}</div>
+              <div style={{fontSize:10,color:C.t3,marginTop:2}}>{typeof m.aciklama==="function"?m.aciklama(T):(m.aciklama||"")}</div>
             </div>
             {/* Sıra no */}
             <div style={{fontSize:11,color:C.t3,minWidth:20,textAlign:"center"}}>{i+1}</div>
@@ -553,7 +553,7 @@ function QuickActions({setSekme,T,moduller,onDuzenle}){
     <div style={{display:"grid",gridTemplateColumns:MASAUSTU?"repeat(8,1fr)":"repeat(4,1fr)",gap:10}}>
       {gorununler.map(a=><div key={a.id} onClick={()=>setSekme(a.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
         <div style={{width:50,height:50,borderRadius:14,background:a.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{a.icon}</div>
-        <span style={{fontSize:10,fontWeight:500,color:C.t1,textAlign:"center",lineHeight:1.2}}>{a.label(T)}</span>
+        <span style={{fontSize:10,fontWeight:500,color:C.t1,textAlign:"center",lineHeight:1.2}}>{typeof a.label==="function"?a.label(T):(a.label||a.id)}</span>
       </div>)}
     </div>
     {gorununler.length<8&&<div style={{textAlign:"center",marginTop:10}}>
@@ -2656,7 +2656,13 @@ export default function TradeFlow(){
           if(typeof v.kdv==="number")setKdv(v.kdv);
           if(v.para)setPara(v.para);
           if(typeof v.karanlik==="boolean")setKaranlik(v.karanlik);
-          if(Array.isArray(v.moduller))setModuller(v.moduller);
+          if(Array.isArray(v.modulAktif)){
+            // Sadece açık/kapalı durumunu uygula, fonksiyonlu yapıyı koru
+            setModuller(MODUL_VARSAYILAN.map(md=>{
+              const kayit=v.modulAktif.find(x=>x.id===md.id);
+              return kayit?{...md,aktif:kayit.aktif}:md;
+            }));
+          }
           // ID sayacını en yüksek iş id'sine göre ilerlet
           const maxId=Math.max(0,...((v.jobs||[]).map(j=>j.id||0)));
           if(maxId>=nId)nId=maxId+1;
@@ -2671,7 +2677,7 @@ export default function TradeFlow(){
   useEffect(()=>{
     if(!kullanici||!veriYuklendi)return;
     const zaman=setTimeout(async()=>{
-      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,isletme,gibAyar,dil,kdv,para,karanlik,moduller};
+      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,isletme,gibAyar,dil,kdv,para,karanlik,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
       try{
         await supabase.from("tradeflow_veri").upsert({kullanici_id:kullanici.id,veri:paket,guncelleme:new Date().toISOString()},{onConflict:"kullanici_id"});
       }catch(e){console.error("Kaydetme:",e);}
