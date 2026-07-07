@@ -1,6 +1,12 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260706-jobs-fix","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260706-supabase","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
+
+// ─── SUPABASE BAĞLANTISI (bulut veri) ──────────────────────────
+const SUPABASE_URL = "https://xnxxormjtzjhjamzqfjh.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhueHhvcm1qdHpqaGphbXpxZmpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNTQzNTcsImV4cCI6MjA5ODkzMDM1N30.5onyGAnfYJ8YHgXqlfsOMAdIml2OAGFFtpt_57H9kjo";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const LIGHT = {
   bg:"#F2F2F7",card:"#FFFFFF",border:"#E5E7EB",
@@ -2250,7 +2256,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T}){
 }
 
 // ─── PROFİL ─────────────────────────────────────────────────────
-function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle}){
+function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail}){
   const [bildirimIzin,setBildirimIzin]=useState(false);
   const [sesEfekt,setSesEfekt]=useState(true);
   const [kompaktMod,setKompaktMod]=useState(false);
@@ -2380,7 +2386,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,se
       <Row icon="📜" label={T.gizlilik} sub={T.kvkkSub} onClick={()=>onAc("gizlilik")}/>
     </Sh>
 
-    <Sh s={{marginBottom:18,overflow:"hidden"}}><Row icon="🚪" label={T.cikisYap} danger onClick={()=>goster("Çıkış yapıldı (demo)")}/></Sh>
+    <Sh s={{marginBottom:18,overflow:"hidden"}}><Row icon="🚪" label={T.cikisYap} sub={kullaniciEmail} danger onClick={onCikis}/></Sh>
     <div style={{textAlign:"center",padding:"8px 0 4px"}}>
       <div style={{fontSize:12,color:C.t3,fontWeight:600}}>TradeFlow Elite v1.0.0</div>
       <div style={{fontSize:10,color:C.t3,marginTop:2}}>© 2026 TradeFlow · Tüm hakları saklıdır</div>
@@ -2497,6 +2503,88 @@ function DesktopStats({jobs,faturalar,T,onStatClick}){
   </div>;
 }
 
+// ─── GİRİŞ / KAYIT EKRANI ──────────────────────────────────────
+function GirisEkrani({onGiris}){
+  const [mod,setMod]=useState("giris"); // giris | kayit
+  const [email,setEmail]=useState("");
+  const [sifre,setSifre]=useState("");
+  const [yukleniyor,setYukleniyor]=useState(false);
+  const [hata,setHata]=useState("");
+  const [bilgi,setBilgi]=useState("");
+
+  const gonder=async()=>{
+    setHata("");setBilgi("");
+    if(!email||!sifre){setHata("E-posta ve şifre gerekli");return;}
+    if(sifre.length<6){setHata("Şifre en az 6 karakter olmalı");return;}
+    setYukleniyor(true);
+    try{
+      if(mod==="kayit"){
+        const {data,error}=await supabase.auth.signUp({email,password:sifre});
+        if(error)throw error;
+        // E-posta onayı kapalı olduğunda signUp direkt oturum döner → hemen içeri al
+        if(data.session&&data.user){
+          onGiris(data.user);
+        }else{
+          // Onay hâlâ açıksa (Supabase ayarı) yedek: giriş dene
+          const {data:d2,error:e2}=await supabase.auth.signInWithPassword({email,password:sifre});
+          if(e2)throw e2;
+          onGiris(d2.user);
+        }
+      }else{
+        const {data,error}=await supabase.auth.signInWithPassword({email,password:sifre});
+        if(error)throw error;
+        onGiris(data.user);
+      }
+    }catch(e){
+      const m=e.message||"";
+      if(m.includes("Invalid login"))setHata("E-posta veya şifre hatalı");
+      else if(m.includes("already registered"))setHata("Bu e-posta zaten kayıtlı, giriş yapın");
+      else if(m.includes("Email not confirmed"))setHata("E-posta onayı gerekli. Gelen kutunuzu kontrol edin.");
+      else setHata(m||"Bir hata oluştu");
+    }
+    setYukleniyor(false);
+  };
+
+  return <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#EAF1FF,#F2F2F7)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
+    <div style={{width:"100%",maxWidth:400,background:"#fff",borderRadius:24,padding:"36px 28px",boxShadow:"0 12px 40px rgba(37,99,235,0.15)"}}>
+      {/* Logo */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
+        <div style={{width:60,height:60,borderRadius:16,background:"linear-gradient(135deg,#2563EB,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14,boxShadow:"0 6px 16px rgba(37,99,235,0.35)"}}>
+          <div style={{width:0,height:0,borderLeft:"14px solid transparent",borderRight:"14px solid transparent",borderBottom:"22px solid #fff"}}/>
+        </div>
+        <div style={{fontSize:20,fontWeight:900,color:"#111827",letterSpacing:"-0.02em"}}>TRADEFLOW <span style={{color:"#2563EB"}}>ELITE</span></div>
+        <div style={{fontSize:13,color:"#6B7280",marginTop:4}}>{mod==="giris"?"Hesabınıza giriş yapın":"Yeni hesap oluşturun"}</div>
+      </div>
+
+      {/* Form */}
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>E-posta</div>
+        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ornek@mail.com"
+          style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
+      </div>
+      <div style={{marginBottom:18}}>
+        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>Şifre</div>
+        <input type="password" value={sifre} onChange={e=>setSifre(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")gonder();}} placeholder="En az 6 karakter"
+          style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
+      </div>
+
+      {hata&&<div style={{background:"#FEE2E2",color:"#DC2626",fontSize:12,fontWeight:600,padding:"10px 14px",borderRadius:10,marginBottom:14}}>⚠️ {hata}</div>}
+      {bilgi&&<div style={{background:"#DCFCE7",color:"#059669",fontSize:12,fontWeight:600,padding:"10px 14px",borderRadius:10,marginBottom:14}}>✅ {bilgi}</div>}
+
+      <button onClick={gonder} disabled={yukleniyor} style={{width:"100%",background:yukleniyor?"#93C5FD":"#2563EB",border:"none",borderRadius:14,padding:15,color:"#fff",fontSize:15,fontWeight:700,cursor:yukleniyor?"default":"pointer",boxShadow:"0 4px 14px rgba(37,99,235,0.4)"}}>
+        {yukleniyor?"Lütfen bekleyin...":mod==="giris"?"Giriş Yap":"Kayıt Ol"}
+      </button>
+
+      <div style={{textAlign:"center",marginTop:18,fontSize:13,color:"#6B7280"}}>
+        {mod==="giris"?"Hesabın yok mu? ":"Zaten hesabın var mı? "}
+        <span onClick={()=>{setMod(mod==="giris"?"kayit":"giris");setHata("");setBilgi("");}} style={{color:"#2563EB",fontWeight:700,cursor:"pointer"}}>
+          {mod==="giris"?"Kayıt Ol":"Giriş Yap"}
+        </span>
+      </div>
+    </div>
+  </div>;
+}
+
 export default function TradeFlow(){
   const [sekme,setSekme]=useState("anasayfa");
   const [jobs,setJobs]=useState(initJobs);
@@ -2529,6 +2617,74 @@ export default function TradeFlow(){
   const [duzenlenecekJob,setDuzenlenecekJob]=useState(null); // iş düzenleme
   const [musteriKayitlari,setMusteriKayitlari]=useState([]); // bağımsız müşteri kayıtları
   const [,force]=useState(0);
+  // ── SUPABASE OTURUM + BULUT VERİ ──
+  const [kullanici,setKullanici]=useState(null);
+  const [oturumKontrol,setOturumKontrol]=useState(true); // ilk açılışta oturum kontrol ediliyor
+  const [veriYuklendi,setVeriYuklendi]=useState(false); // bulut verisi yüklendi mi (autosave için)
+
+  // Uygulama açılınca mevcut oturumu kontrol et
+  useEffect(()=>{
+    supabase.auth.getSession().then(({data})=>{
+      setKullanici(data.session?.user||null);
+      setOturumKontrol(false);
+    });
+    const {data:sub}=supabase.auth.onAuthStateChange((_e,session)=>{
+      setKullanici(session?.user||null);
+    });
+    return ()=>sub.subscription.unsubscribe();
+  },[]);
+
+  // Kullanıcı giriş yapınca bulut verisini yükle
+  useEffect(()=>{
+    if(!kullanici){setVeriYuklendi(false);return;}
+    let iptal=false;
+    (async()=>{
+      try{
+        const {data,error}=await supabase.from("tradeflow_veri").select("veri").eq("kullanici_id",kullanici.id).maybeSingle();
+        if(iptal)return;
+        if(error){console.error("Veri yükleme:",error);}
+        const v=data?.veri;
+        if(v&&typeof v==="object"){
+          if(Array.isArray(v.jobs))setJobs(v.jobs);
+          if(Array.isArray(v.teklifler))setTeklifler(v.teklifler);
+          if(Array.isArray(v.giderler))setGiderler(v.giderler);
+          if(Array.isArray(v.faturalar))setFaturalar(v.faturalar);
+          if(Array.isArray(v.musteriKayitlari))setMusteriKayitlari(v.musteriKayitlari);
+          if(v.isletme)setIsletme(v.isletme);
+          if(v.gibAyar)setGibAyar(v.gibAyar);
+          if(v.dil)setDil(v.dil);
+          if(typeof v.kdv==="number")setKdv(v.kdv);
+          if(v.para)setPara(v.para);
+          if(typeof v.karanlik==="boolean")setKaranlik(v.karanlik);
+          if(Array.isArray(v.moduller))setModuller(v.moduller);
+          // ID sayacını en yüksek iş id'sine göre ilerlet
+          const maxId=Math.max(0,...((v.jobs||[]).map(j=>j.id||0)));
+          if(maxId>=nId)nId=maxId+1;
+        }
+      }catch(e){console.error(e);}
+      if(!iptal)setVeriYuklendi(true);
+    })();
+    return ()=>{iptal=true;};
+  },[kullanici]);
+
+  // Veri değişince buluta otomatik kaydet (yüklenme bittikten sonra, 800ms gecikmeli)
+  useEffect(()=>{
+    if(!kullanici||!veriYuklendi)return;
+    const zaman=setTimeout(async()=>{
+      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,isletme,gibAyar,dil,kdv,para,karanlik,moduller};
+      try{
+        await supabase.from("tradeflow_veri").upsert({kullanici_id:kullanici.id,veri:paket,guncelleme:new Date().toISOString()},{onConflict:"kullanici_id"});
+      }catch(e){console.error("Kaydetme:",e);}
+    },800);
+    return ()=>clearTimeout(zaman);
+  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,isletme,gibAyar,dil,kdv,para,karanlik,moduller,kullanici,veriYuklendi]);
+
+  const cikisYap=async()=>{
+    await supabase.auth.signOut();
+    setKullanici(null);
+    // Ekranı ilk haline döndür
+    setJobs(initJobs);setTeklifler([]);setGiderler([]);setFaturalar([]);setMusteriKayitlari([]);
+  };
 
   C=karanlik?DARK:LIGHT;
   const T=getT(dil);
@@ -2663,6 +2819,21 @@ export default function TradeFlow(){
 
   const NAV=[{id:"anasayfa",icon:"🏠",label:T.anaSayfa},{id:"isler",icon:"📋",label:T.isAkislari},{id:"fab",icon:"+",label:""},{id:"bildiri",icon:"🔔",label:T.bildirimlerT},{id:"profil",icon:"👤",label:T.profil}];
 
+  // ── OTURUM KAPISI ──
+  if(oturumKontrol){
+    return <div style={{minHeight:"100vh",background:"#F2F2F7",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{width:50,height:50,borderRadius:14,background:"linear-gradient(135deg,#2563EB,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+          <div style={{width:0,height:0,borderLeft:"11px solid transparent",borderRight:"11px solid transparent",borderBottom:"18px solid #fff"}}/>
+        </div>
+        <div style={{fontSize:13,color:"#6B7280"}}>Yükleniyor...</div>
+      </div>
+    </div>;
+  }
+  if(!kullanici){
+    return <GirisEkrani onGiris={(u)=>setKullanici(u)}/>;
+  }
+
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif",display:"flex",justifyContent:MASAUSTU?"flex-start":"center"}}>
       {MASAUSTU&&<Sidebar sekme={sekme} setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} isletme={isletme}/>}
@@ -2692,7 +2863,7 @@ export default function TradeFlow(){
           {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
           {sekme==="daha"&&<DahaFazlaTab onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
-          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)}/>}
+          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email}/>}
         </div>
 
         {!MASAUSTU&&<div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:APP_W,background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"center",padding:"8px 0 24px",boxShadow:"0 -4px 20px rgba(0,0,0,0.06)",zIndex:100}}>
