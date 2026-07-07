@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-modulfix","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-musterisil2","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -6,7 +6,13 @@ import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveC
 // ─── SUPABASE BAĞLANTISI (bulut veri) ──────────────────────────
 const SUPABASE_URL = "https://xnxxormjtzjhjamzqfjh.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhueHhvcm1qdHpqaGphbXpxZmpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNTQzNTcsImV4cCI6MjA5ODkzMDM1N30.5onyGAnfYJ8YHgXqlfsOMAdIml2OAGFFtpt_57H9kjo";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,      // oturumu tarayıcıda sakla
+    autoRefreshToken: true,    // süresi dolunca otomatik yenile
+    storageKey: "tradeflow-oturum",
+  },
+});
 
 const LIGHT = {
   bg:"#F2F2F7",card:"#FFFFFF",border:"#E5E7EB",
@@ -1740,7 +1746,8 @@ function TahsilatlarTab({jobs,onTahsil,filtre,T}){
   </div>;
 }
 
-function MusteriDetayModal({musteri,onKapat,T}){
+function MusteriDetayModal({musteri,onKapat,T,onSil}){
+  const [silOnay,setSilOnay]=useState(false);
   const navGit=(adres)=>{
     const q=encodeURIComponent(adres);
     // Önce Google Maps uygulamasını dene, yoksa web'e git
@@ -1758,7 +1765,7 @@ function MusteriDetayModal({musteri,onKapat,T}){
     <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18}}>
       <div style={{width:54,height:54,borderRadius:16,background:`linear-gradient(135deg,${P},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:"#fff",flexShrink:0}}>{musteri.ad[0]}</div>
       <div style={{flex:1}}>
-        <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{musteri.ad}</div>
+        <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{musteri.ad||"İsimsiz Müşteri"}</div>
         {musteri.telefon&&<div style={{fontSize:12,color:C.t2,marginTop:2}}>📞 {musteri.telefon}</div>}
         {musteri.email&&<div style={{fontSize:12,color:C.t2}}>✉️ {musteri.email}</div>}
       </div>
@@ -1821,10 +1828,30 @@ function MusteriDetayModal({musteri,onKapat,T}){
       {musteri.email&&<button onClick={()=>window.open("mailto:"+musteri.email)} style={{flex:1,background:C.blueBg,border:"none",borderRadius:12,padding:"12px 0",color:C.blue,fontSize:13,fontWeight:700,cursor:"pointer"}}>✉️ Mail</button>}
     </div>
     {(!musteri.telefon&&!musteri.email)&&<div style={{fontSize:12,color:C.t3,textAlign:"center",padding:"8px 0 4px"}}>{T.iletisimYok}</div>}
+
+    {/* Müşteri Sil */}
+    <div style={{marginTop:14,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
+      {!silOnay
+        ?<button onClick={()=>setSilOnay(true)} style={{width:"100%",background:C.redBg,border:"none",borderRadius:12,padding:13,color:C.red,fontSize:13,fontWeight:700,cursor:"pointer"}}>
+          🗑️ Müşteriyi Sil
+        </button>
+        :<div style={{background:C.redBg,borderRadius:14,padding:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.red,marginBottom:6,textAlign:"center"}}>
+            ⚠️ {musteri.ad} silinecek
+          </div>
+          {musteri.isler.length>0&&<div style={{fontSize:11,color:C.red,textAlign:"center",marginBottom:10}}>
+            Bu müşteriye ait {musteri.isler.length} iş kaydı da silinecek!
+          </div>}
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setSilOnay(false)} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:11,color:C.t2,fontSize:13,fontWeight:600,cursor:"pointer"}}>{T.iptal}</button>
+            <button onClick={()=>{onSil(musteri.ad);onKapat();}} style={{flex:2,background:C.red,border:"none",borderRadius:10,padding:11,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>{T.evetSil}</button>
+          </div>
+        </div>}
+    </div>
   </BottomSheet>;
 }
 
-function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle}){
+function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil}){
   const [secili,setSecili]=useState(null);
   const [arama,setArama]=useState("");
   const [siralama,setSiralama]=useState("ciro"); // ciro | isler | ad
@@ -1930,14 +1957,14 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle}){
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           {/* Avatar */}
           <div style={{width:48,height:48,borderRadius:14,background:`linear-gradient(135deg,${P}CC,#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"#fff",flexShrink:0,position:"relative"}}>
-            {m.ad[0]}
+            {(m.ad&&m.ad[0])||"?"}
             {i===0&&<div style={{position:"absolute",top:-6,right:-6,fontSize:14}}>👑</div>}
           </div>
 
           {/* Bilgiler */}
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{m.ad}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{m.ad||"İsimsiz"}</div>
               <div style={{fontSize:15,fontWeight:800,color:C.green,flexShrink:0,marginLeft:8}}>{fmt(ciro)}</div>
             </div>
 
@@ -1961,7 +1988,7 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle}){
     })}
 
     {/* Detay modal */}
-    {secili&&<MusteriDetayModal musteri={secili} onKapat={()=>setSecili(null)} T={T}/>}
+    {secili&&<MusteriDetayModal musteri={secili} onKapat={()=>setSecili(null)} T={T} onSil={(ad)=>{onMusteriSil&&onMusteriSil(ad);setSecili(null);}}/>}
   </div>;
 }
 
@@ -2508,6 +2535,7 @@ function GirisEkrani({onGiris}){
   const [mod,setMod]=useState("giris"); // giris | kayit
   const [email,setEmail]=useState("");
   const [sifre,setSifre]=useState("");
+  const [beniHatirla,setBeniHatirla]=useState(true); // varsayılan: açık kal
   const [yukleniyor,setYukleniyor]=useState(false);
   const [hata,setHata]=useState("");
   const [bilgi,setBilgi]=useState("");
@@ -2518,6 +2546,7 @@ function GirisEkrani({onGiris}){
     if(sifre.length<6){setHata("Şifre en az 6 karakter olmalı");return;}
     setYukleniyor(true);
     try{
+      try{ window.__tfBeniHatirla = beniHatirla; }catch(e){}
       if(mod==="kayit"){
         const {data,error}=await supabase.auth.signUp({email,password:sifre});
         if(error)throw error;
@@ -2568,7 +2597,13 @@ function GirisEkrani({onGiris}){
           style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
       </div>
 
-      {hata&&<div style={{background:"#FEE2E2",color:"#DC2626",fontSize:12,fontWeight:600,padding:"10px 14px",borderRadius:10,marginBottom:14}}>⚠️ {hata}</div>}
+      {/* Beni hatırla */}
+      <div onClick={()=>setBeniHatirla(!beniHatirla)} style={{display:"flex",alignItems:"center",gap:9,marginBottom:18,cursor:"pointer",userSelect:"none"}}>
+        <div style={{width:22,height:22,borderRadius:7,border:`2px solid ${beniHatirla?"#2563EB":"#D1D5DB"}`,background:beniHatirla?"#2563EB":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
+          {beniHatirla&&<span style={{color:"#fff",fontSize:13,fontWeight:900}}>✓</span>}
+        </div>
+        <span style={{fontSize:13,color:"#374151",fontWeight:500}}>Beni hatırla <span style={{color:"#9CA3AF",fontWeight:400}}>· şifre sormadan açık kal</span></span>
+      </div>
       {bilgi&&<div style={{background:"#DCFCE7",color:"#059669",fontSize:12,fontWeight:600,padding:"10px 14px",borderRadius:10,marginBottom:14}}>✅ {bilgi}</div>}
 
       <button onClick={gonder} disabled={yukleniyor} style={{width:"100%",background:yukleniyor?"#93C5FD":"#2563EB",border:"none",borderRadius:14,padding:15,color:"#fff",fontSize:15,fontWeight:700,cursor:yukleniyor?"default":"pointer",boxShadow:"0 4px 14px rgba(37,99,235,0.4)"}}>
@@ -2631,7 +2666,16 @@ export default function TradeFlow(){
     const {data:sub}=supabase.auth.onAuthStateChange((_e,session)=>{
       setKullanici(session?.user||null);
     });
-    return ()=>sub.subscription.unsubscribe();
+    // "Beni hatırla" işaretsizse: sekme/tarayıcı kapanırken oturumu kapat
+    const kapanisTemizle=()=>{
+      try{
+        if(window.__tfBeniHatirla===false){
+          supabase.auth.signOut();
+        }
+      }catch(e){}
+    };
+    window.addEventListener("beforeunload",kapanisTemizle);
+    return ()=>{sub.subscription.unsubscribe();window.removeEventListener("beforeunload",kapanisTemizle);};
   },[]);
 
   // Kullanıcı giriş yapınca bulut verisini yükle
@@ -2863,7 +2907,14 @@ export default function TradeFlow(){
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} onFaturaKes={setFatJob} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} filtre={tahsilatFiltre} T={T}/>}
-          {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} onMusteriEkle={(m)=>{setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}}/>}
+          {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} onMusteriEkle={(m)=>{setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}} onMusteriSil={(ad)=>{
+          // Bağımsız kayıttan sil
+          setMusteriKayitlari(p=>p.filter(m=>m.ad!==ad));
+          // O müşterinin işlerini de sil (isteğe bağlı — onay modalında uyarıldı)
+          setJobs(p=>p.filter(j=>j.musteri!==ad));
+          goster("🗑️ Müşteri silindi ✓");
+          bildirimEkle("🗑️ Müşteri silindi",ad,"is");
+        }}/>}
           {sekme==="teklifler"&&<TekliflerTab teklifler={teklifler} onYeni={()=>setTeklifAc(true)} onDonustur={teklifDonustur} onSil={(id)=>{setTeklifler(p=>p.filter(t=>t.id!==id));goster(T.sil+" ✓");}} onDurumDegis={(id,d)=>{setTeklifler(p=>p.map(t=>t.id===id?{...t,durum_t:d}:t));goster(d==="onaylandi"?"✅ "+T.tamamlandi:"❌");}} T={T}/>}
           {sekme==="raporlar"&&<RaporlarTab jobs={jobs} giderler={giderler} T={T}/>}
           {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
