@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-musterisil2","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-asistan","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -1274,32 +1274,77 @@ function GizlilikEkrani({onKapat}){
 
 // ─── YARDIMCI ASİSTAN — hazır cevaplı, API maliyeti sıfır ──────
 const ASISTAN_BILGI=[
-  {k:["fatura","kes"],c:"🧾 Fatura kesmek için: bir işe dokun → 'Fatura Kes' butonuna bas → kalemleri düzenle → 'Resmî Önizleme' → 'Faturayı Kes'. KDV oranını Profil'den, tevkifatı fatura formundan ayarlarsın. GİB kuruluysa fatura otomatik gönderilir."},
-  {k:["kaparo","kısmi","taksit","bakiye","kalan"],c:"💰 Kaparo almak için: işe dokun → '+ Kaparo / Kısmi Tahsilat' → tutarı gir. Alınan/kalan çubuğu otomatik güncellenir. Tamamı ödenince iş kendiliğinden 'Tamamlandı' olur."},
-  {k:["gib","e-fatura","e-arşiv","earşiv","entegrat","mali mühür"],c:"🏛️ GİB için: Profil → 'e-Fatura / e-Arşiv Entegrasyonu'. 'Başvuru' sekmesinde 5 adımlı yol haritası var: Mali Mühür → entegratör sözleşmesi → GİB başvurusu → test → canlı. Entegratör hesabın hazır olunca API Ayarı sekmesinden bağlarsın."},
-  {k:["dil","language","ingilizce","almanca","arapça"],c:"🌐 Dil değiştirmek için: Profil → Dil satırı → gruplu listeden seç. 40+ dil var; Almanca, Fransızca, Arapça, Rusça gibi büyük dillerde arayüz tam çevrilir."},
-  {k:["teklif","onay"],c:"🏷️ Teklif akışı: Teklifler → '+ Yeni Teklif' → müşteri onaylayınca '✅ Onayla' → 'İşe Dönüştür'. Karttaki 💬 butonuyla teklifi WhatsApp'tan müşteriye gönderebilirsin. Maliyet girersen kâr marjını da kartta görürsün."},
-  {k:["periyodik","tekrar","abonelik"],c:"🔁 Periyodik iş: Yeni iş oluştururken 'Tekrarlama' bölümünden Haftalık/Aylık/Yıllık seç. İş tamamlanınca bir sonraki dönem için otomatik yeni iş oluşur — havuz bakımı aboneliği için birebir."},
-  {k:["harita","navigasyon","adres","yol","git"],c:"🗺️ Navigasyon: İşe adres girdiysen, iş detayında 'Navigasyonu Başlat' veya Müşteriler'deki 'Git' butonu Google Maps'te yol tarifini açar."},
-  {k:["yedek","dışa","içe","json","veri","kayıp","silindi","kaydet"],c:"📥 Yedekleme: Daha Fazla → 'Verileri Dışa Aktar' (JSON indirir) / 'Yedeği Geri Yükle' (geri yükler). ⚠️ Dürüst not: şu an veriler oturumla sınırlı — sayfa yenilenince gider. Kalıcı bulut kaydı (Supabase) çok yakında ekleniyor; o zamana dek düzenli JSON yedeği al."},
-  {k:["kur","dolar","euro","tcmb","döviz"],c:"🏛️ Kurlar öncelikle TCMB resmî satış kurundan gelir (her iş günü 15:30'da güncellenir), ulaşılamazsa piyasa kuruna düşer. Kaynağı Profil → Para Birimi satırında görürsün."},
-  {k:["maliyet","kâr","kar","zarar","marj"],c:"💰 Maliyet Bekçisi: İş veya teklif oluştururken 'Tahmini Maliyet' gir — uygulama net kârı ve marjı anında hesaplar. Marj %15 altındaysa sarı, zarardaysan kırmızı '⚠️ ZARAR' uyarısı verir. Benzer geçmiş işlerdeki ortalama maliyetini de ipucu olarak gösterir."},
-  {k:["karanlık","dark","tema","gece"],c:"🌙 Karanlık mod: Profil → 'Karanlık Mod' anahtarı."},
-  {k:["modül","özelleştir","sırala","düzenle"],c:"⚙️ Modül özelleştirme: Ana sayfadaki 'Özelleştir' veya 'Düzenle →' → modülleri aç/kapat, ⠿ tutacağından sürükleyerek sırala."},
-  {k:["whatsapp","paylaş","gönder"],c:"💬 WhatsApp: Fatura önizlemede 'WhatsApp'ta Gönder', teklif kartında 💬, müşteri detayında 'WhatsApp' butonu — hazır metinle açılır."},
-  {k:["tahsil","alacak","ödeme","borç"],c:"⏰ Tahsilat: Tahsilatlar sekmesinde bekleyen ve alınan ödemeler ayrı listelenir. Ana sayfadaki Tahsilat Durumu kartına dokunarak filtreli detaya girersin. Kısmi ödeme aldıysan kalan bakiye otomatik izlenir."},
-  {k:["takvim","ay","gün"],c:"📅 Takvim: İş Akışları → sağ üstteki 📅 simgesi. İşli günlerde renkli noktalar var; güne dokununca o günün işleri listelenir."},
-  {k:["sektör","iş kolu","havuz","elektrik","tesisat"],c:"🔧 Sektör akışı: Üstteki iş kolu seçicisinden sektörünü seç — iş şablonları, ikonlar ve gider kategorileri otomatik o sektöre uyarlanır. 9 sektör destekleniyor."},
-  {k:["fiyat","pro","abonelik","ücret"],c:"⚡ Pro (₺199/ay): sınırsız iş, PDF fatura, bulut yedek, GİB entegrasyonu gibi gelişmiş özellikler Pro pakette planlanıyor. Şu an uygulama ücretsiz kullanımda."},
+  // ── İŞ AKIŞLARI ──
+  {k:["iş ekle","yeni iş","iş oluştur","nasıl iş"],c:"📋 Yeni iş eklemek için: '+Yeni İş' butonuna bas (sağ üst veya alt ortadaki + butonu). İkon seç → başlık yaz → müşteri, tarih, tutar gir. İş başlığı kutusuna tıklayınca sektörüne özel hazır iş listesi çıkar, oradan seçebilirsin. İsteğe bağlı: adres, telefon, fotoğraf, tahmini maliyet ekle."},
+  {k:["iş düzenle","güncelle","değiştir","düzelt"],c:"✏️ İş düzenlemek için: İşe dokun → detay açılır → sağ üstteki kalem (✏️) butonuna bas. Tüm alanları değiştirebilirsin. 'Güncelle' ile kaydet."},
+  {k:["iş sil","işi sil","silmek"],c:"🗑️ İş silmek için: İşe dokun → detayda 'Sil' butonu → onay ver. Silinen iş 6 saniye geri alınabilir — alt kısımda '↩️ Geri Al' butonu çıkar."},
+  {k:["durum","aktif","bekliyor","tamamlandı","tamamla"],c:"🔄 İş durumu değiştirmek için: İşe dokun → '✓ Tamamla' butonuna bas. Ya da detayda durum seçeneklerinden birini seç: Aktif / Beklemede / Tamamlandı."},
+  {k:["fotoğraf","resim","öncesi","sonrası"],c:"📷 İş fotoğrafı eklemek için: Yeni iş veya düzenleme formunda '📷 İş Fotoğrafları' bölümündeki '+' butonuna bas. Öncesi/sonrası fotoğraf yükleyebilirsin. Detayda büyütmek için fotoğrafa dokun."},
+  {k:["periyodik","tekrar","abonelik","haftalık","aylık","yıllık"],c:"🔁 Periyodik iş: Yeni iş formunda 'Tekrarlama' bölümünden Haftalık/Aylık/Yıllık seç. İş tamamlanınca sonraki dönem için otomatik yeni iş oluşur. Havuz bakımı, kombi bakımı gibi düzenli işler için ideal."},
+  {k:["takvim","ay","gün","tarih"],c:"📅 Takvim görünümü: İş Akışları → sağ üstteki 📅 simgesi. İşli günlerde renkli noktalar var; güne dokununca o günün işleri listelenir. 📋 liste görünümüne geçmek için yanındaki ikona dokun."},
+  {k:["harita","navigasyon","adres","yol","git","konum"],c:"🗺️ Navigasyon: İşe adres girdiysen detayda 'Navigasyonu Başlat' butonu çıkar, Google Maps'te yol tarifi açılır. Müşteriler ekranında da 'Git' butonu var."},
+  // ── FATURA ──
+  {k:["fatura","kes","fatura oluştur"],c:"🧾 Fatura kesmek için: Bir işe dokun → 'Fatura Kes' → kalemleri düzenle → KDV ve tevkifatı ayarla → 'Resmî Önizleme' → 'Faturayı Kes'. WhatsApp'tan gönderebilir veya yazdırabilirsin. GİB kuruluysa e-fatura olarak gönderilir."},
+  {k:["kdv","tevkifat","vergi"],c:"💡 KDV oranını Profil → KDV bölümünden ayarlarsın. Fatura formunda KDV Tevkifatı seçeneği var: Yok / 5/10 / 7/10 / 9/10. Kurumsal müşterilerde tevkifat uygulanır, tutar otomatik hesaplanır."},
+  {k:["gib","e-fatura","e-arşiv","mali mühür","entegratör"],c:"🏛️ GİB entegrasyonu: Profil → 'e-Fatura/e-Arşiv'. Başvuru sekmesinde 5 adım: Mali Mühür → entegratör sözleşmesi → GİB başvurusu → test → canlı. Entegratör hesabın hazır olunca API Ayarı sekmesinden bağlarsın. Henüz başvurmadıysan rehber seni yönlendirir."},
+  {k:["whatsapp","paylaş","gönder","mesaj"],c:"💬 WhatsApp paylaşım: Fatura önizlemede 'WhatsApp'ta Gönder', teklif kartında 💬 butonu, müşteri detayında WhatsApp butonu — hazır mesajla açılır. Müşteri adı, tutar, iş bilgisi otomatik dolar."},
+  // ── TAHSİLAT ──
+  {k:["kaparo","kısmi","taksit","ön ödeme","baya"],c:"💰 Kaparo/kısmi ödeme almak için: İşe dokun → '+ Kaparo / Kısmi Tahsilat' → tutarı gir. İlerleme çubuğu 'Alınan/Kalan' gösterir. Tüm tutar ödenince iş otomatik 'Tamamlandı' olur. Ödeme geçmişi tarihleriyle listelenir."},
+  {k:["tahsilat","alacak","bekleyen","borç","tahsil"],c:"💳 Tahsilatlar: Tahsilatlar sekmesinde bekleyen ve tahsil edilen ödemeler ayrı görünür. 'Tahsil Et' butonuyla tamamını tahsil edebilirsin. Ana sayfadaki Tahsilat Durumu grafiğine dokununca detay açılır."},
+  // ── TEKLİF ──
+  {k:["teklif","fiyat teklifi","teklif oluştur","teklif ver"],c:"🏷️ Teklif vermek için: Teklifler → '+Yeni Teklif'. Müşteri, iş tanımı, tutar ve geçerlilik tarihi gir. Maliyet de girersen kâr marjı kartda gösterilir. 💬 butonuyla WhatsApp'tan müşteriye gönder. Müşteri onaylayınca 'Onayla' → 'İşe Dönüştür' ile direkt iş açılır."},
+  {k:["teklif kabul","onay","reddet","geçerlilik"],c:"✅ Teklif yönetimi: Teklif kartında '✅ Onayla' veya '❌ Reddet'. Geçerlilik süresi dolan teklifler otomatik 'Süresi Doldu' olur. Onaylanan teklifi 'İşe Dönüştür' ile iş akışına alırsın."},
+  // ── MÜŞTERİ ──
+  {k:["müşteri ekle","yeni müşteri","müşteri oluştur"],c:"👤 Müşteri eklemek için: Müşteriler → '+Yeni' butonu. Ad/soyad, telefon, e-posta ve adres girebilirsin. Adres girersen navigasyon butonu aktif olur. İşlere müşteri adı girince de otomatik müşteri oluşur."},
+  {k:["müşteri sil","müşteriyi sil"],c:"🗑️ Müşteri silmek için: Müşteriler → müşteriye dokun → detayda en altta '🗑️ Müşteriyi Sil' → onay ver. Dikkat: müşteriyle ilgili tüm işler de silinir."},
+  {k:["müşteri","ciro","en iyi","sıralama"],c:"📊 Müşteriler ekranında müşteriler ciro, iş sayısı veya ada göre sıralanabilir. En çok ciro yapan müşteri en üstte görünür. Müşteriye dokununca toplam ciro, tahsil edilen tutar ve iş geçmişi görünür."},
+  // ── GİDER ──
+  {k:["gider","masraf","harcama","gider ekle"],c:"💸 Gider eklemek için: Giderler → '+Yeni Gider'. Ad, tutar, tarih ve kategori gir. Kategoriler sektörüne göre değişir (Malzeme, Yakıt, Personel vb.). Giderler raporda gelir-gider analizine yansır."},
+  {k:["gider kategori","kategori","malzeme","yakıt","personel"],c:"📂 Gider kategorileri sektörüne göre otomatik değişir: Mekanik Tesisat'ta 'Yedek Parça', Havuzculukta 'Kimyasal', Otomitivde 'Boya Malzemesi' gibi. Sektörü üst menüden değiştirince kategoriler de değişir."},
+  // ── RAPORLAR ──
+  {k:["rapor","istatistik","analiz","grafik"],c:"📊 Raporlar: Bu Ay / Geçen Ay / Son 3 Ay / Tümü dönem filtresi var. Net Kâr kartı, son 7 günün gerçek gelir eğrisi (tamamlanan işlerden), iş bazlı tutar grafiği ve durum dağılımı gösterilir. Dönem seçince tüm grafikler güncellenir."},
+  {k:["net kâr","kâr","kar","gelir","gider analiz"],c:"💰 Net Kâr = Tamamlanan işlerin toplamı − Giderler. Raporlar ekranında dönem bazlı görünür. Maliyet Bekçisi'ni kullanıyorsan (işe tahmini maliyet girince) daha doğru kâr analizi yapabilirsin."},
+  // ── MALİYET BEKÇİSİ ──
+  {k:["maliyet","kâr marjı","marj","zarar","bekçi"],c:"💡 Maliyet Bekçisi: İş veya teklif oluştururken 'Tahmini Maliyet' gir. Uygulama anında Net Kâr ve Marj % hesaplar. ✅ Yeşil: sağlıklı kâr. ⚡ Sarı: marj %15 altında. ⚠️ Kırmızı: zarar. Benzer geçmiş işlerdeki ortalama maliyeti de ipucu olarak gösterir."},
+  // ── SEKTÖR ──
+  {k:["sektör","iş kolu","havuz","elektrik","tesisat","marangoz","otomotiv"],c:"🔧 Sektör akışı: Üstteki iş kolu seçicisinden sektörünü seç. İş şablonları, ikonlar ve gider kategorileri o sektöre göre otomatik ayarlanır. 9 sektör: Mekanik Tesisat, Havuzculuk, Elektrik, İnşaat, Mobilya, Otomotiv, Danışmanlık, Reklam, Temizlik."},
+  // ── PROFİL / AYARLAR ──
+  {k:["profil","işletme","firma","ayar"],c:"⚙️ Profil: Sol alttaki adına veya alt menüdeki 'Profil' sekmesine dokun. İşletme adı, yetkili, telefon, e-posta, adres düzenlenebilir. Bu bilgiler faturalarda görünür."},
+  {k:["dil","language","ingilizce","almanca","arapça","türkçe"],c:"🌐 Dil değiştirmek: Profil → Dil satırı → 40+ dilden seç. Almanca, Fransızca, İspanyolca, Arapça, Rusça, Çince dahil büyük dillerde menüler tam çevrilir."},
+  {k:["para birimi","dolar","euro","kur","tcmb","döviz"],c:"💱 Para birimi: Profil → Para Birimi. TL, USD veya EUR seçilebilir. Kurlar öncelikle TCMB resmî satış kurundan gelir (her iş günü 15:30 güncellenir). Kaynak bilgisi Para Birimi satırında görünür."},
+  {k:["karanlık","dark","tema","gece","açık"],c:"🌙 Karanlık/Açık mod: Profil → 'Karanlık Mod' anahtarı. Göz yorgunluğunu azaltır."},
+  {k:["bildirim","hatırlatma","uyarı","alarm"],c:"🔔 Hatırlatma: Yeni iş oluştururken '⏰ Hatırlatma' alanından tarih/saat seç. Belirlenen vakitte uygulama bildirimi gösterir. Bildirim iznini tarayıcı ayarlarından vermen gerekebilir."},
+  {k:["modül","özelleştir","sırala","ana sayfa düzen"],c:"⚙️ Modül özelleştirme: Ana sayfada 'Düzenle →' butonu veya 'Özelleştir'. Modülleri aç/kapat, ⠿ tutacağından sürükleyerek sırala. Kapalı modüller alt menüden yine erişilebilir."},
+  // ── YEDEK / VERİ ──
+  {k:["yedek","dışa aktar","içe aktar","json","veri"],c:"📥 Yedek: Daha Fazla → 'Verileri Dışa Aktar' (JSON dosyası indirir). 'Yedeği Geri Yükle' ile geri yükle. Veriler artık Supabase bulutunda kalıcı saklanıyor — sayfa yenilesen bile gitmez. JSON yedeği ekstra güvence için kullanabilirsin."},
+  {k:["giriş","şifre","hesap","kayıt","oturum"],c:"🔐 Giriş: Uygulama açılınca e-posta + şifre ile giriş ekranı gelir. 'Kayıt Ol' ile yeni hesap oluşturabilirsin. 'Beni Hatırla' işaretliyse bir daha şifre sorulmaz. Çıkış için Profil → en altta 'Çıkış Yap'."},
+  // ── GENEL ──
+  {k:["pro","abonelik","ücret","fiyat","premium"],c:"⚡ Pro plan (₺199/ay) planlanıyor: sınırsız iş, PDF fatura, GİB entegrasyonu, öncelikli destek. Şu an tüm özellikler ücretsiz kullanımda."},
+  {k:["destek","yardım","sorun","hata","çalışmıyor"],c:"🆘 Sorun mu var? WhatsApp destek: 0532 111 22 33 (7/24). E-posta: destek@tradeflow.app. Ya da sorununu buraya yaz, yönlendireyim. Beyaz ekran görüyorsan: Ctrl+Shift+R ile sayfayı yenile, düzelmezse çıkış yapıp tekrar giriş dene."},
 ];
+
 function AsistanEkrani({onKapat,T}){
   const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:"Merhaba! 👋 Ben TradeFlow asistanıyım. Fatura, tahsilat, GİB, maliyet... ne sormak istersen yaz ya da aşağıdaki hızlı sorulardan seç."}]);
   const [giris,setGiris]=useState("");
-  const HIZLI=["Fatura nasıl kesilir?","Kaparo nasıl alınır?","GİB nasıl kurulur?","Verilerim kayboldu","Zarar uyarısı nedir?","Dil nasıl değişir?"];
+  const HIZLI=[
+    "Yeni iş nasıl eklenir?",
+    "Kaparo nasıl alınır?",
+    "Fatura nasıl kesilir?",
+    "Müşteri nasıl silinir?",
+    "Maliyet Bekçisi nedir?",
+    "Teklif nasıl verilir?",
+    "Periyodik iş nedir?",
+    "Raporlar nasıl kullanılır?",
+    "GİB nasıl kurulur?",
+    "Veri kayboldu ne yapayım?",
+  ];
   const cevapla=(soru)=>{
     const s=soru.toLowerCase();
-    const bulunan=ASISTAN_BILGI.find(b=>b.k.some(k=>s.includes(k)));
-    const cevap=bulunan?bulunan.c:"🤔 Bunu henüz bilmiyorum ama öğreneceğim! Şimdilik canlı destek için 💬 WhatsApp'tan yazabilirsin: 0532 111 22 33 — ya da sorunu farklı kelimelerle tekrar dene.";
+    // Çoklu eşleşme: tüm ilgili cevapları bul
+    const bulunanlar=ASISTAN_BILGI.filter(b=>b.k.some(k=>s.includes(k)));
+    const cevap=bulunanlar.length>0
+      ?bulunanlar.map(b=>b.c).join("\n\n")
+      :"🤔 Bunu henüz bilmiyorum ama şunları deneyebilirsin:\n• Konuyu farklı kelimelerle yaz\n• Profil → Yardım Merkezi'ne bak\n• WhatsApp destek: 0532 111 22 33";
     setMesajlar(p=>[...p,{rol:"user",metin:soru},{rol:"bot",metin:cevap}]);
     setGiris("");
   };
@@ -2959,3 +3004,4 @@ export default function TradeFlow(){
     </div>
   );
 }
+
