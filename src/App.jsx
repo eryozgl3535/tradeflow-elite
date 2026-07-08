@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-giderbag","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-musterikar","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -1986,11 +1986,10 @@ function TahsilatlarTab({jobs,onTahsil,filtre,T}){
   </div>;
 }
 
-function MusteriDetayModal({musteri,onKapat,T,onSil}){
+function MusteriDetayModal({musteri,onKapat,T,onSil,giderler}){
   const [silOnay,setSilOnay]=useState(false);
   const navGit=(adres)=>{
     const q=encodeURIComponent(adres);
-    // Önce Google Maps uygulamasını dene, yoksa web'e git
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=driving`,"_blank");
   };
   const toplamIs=musteri.isler.length;
@@ -1999,6 +1998,13 @@ function MusteriDetayModal({musteri,onKapat,T,onSil}){
   const aktif=musteri.isler.filter(j=>j.durum==="aktif");
   const toplamCiro=musteri.isler.reduce((s,j)=>s+j.tutar,0);
   const tahsilEdilen=tamamlandi.reduce((s,j)=>s+j.tutar,0);
+
+  // Bu müşterinin işlerine bağlı toplam gider
+  const musteriIsIdleri=musteri.isler.map(j=>j.id);
+  const musteriGiderleri=(giderler||[]).filter(g=>musteriIsIdleri.includes(g.isId));
+  const toplamGider=musteriGiderleri.reduce((s,g)=>s+g.tutar,0);
+  const netKar=toplamCiro-toplamGider;
+  const karMarji=toplamCiro>0?Math.round(netKar/toplamCiro*100):0;
 
   return <BottomSheet onKapat={onKapat} maxH="92vh">
     {/* Başlık */}
@@ -2039,6 +2045,39 @@ function MusteriDetayModal({musteri,onKapat,T,onSil}){
         <div style={{fontSize:9,color:x.c,opacity:0.8,marginTop:2}}>{x.l}</div>
       </div>)}
     </div>
+
+    {/* Kâr / Zarar Analizi */}
+    {toplamGider>0&&<div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 KÂR / ZARAR ANALİZİ</div>
+      <Sh s={{padding:16}}>
+        {[
+          ["💰 Toplam Ciro",fmt(toplamCiro),C.t1],
+          ["💸 Toplam Gider","-"+fmt(toplamGider),C.red],
+          [netKar>=0?"✅ Net Kâr":"⚠️ Net Zarar",fmt(Math.abs(netKar)),netKar>=0?C.green:C.red],
+        ].map(([l,v,c])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+          <span style={{fontSize:12,color:C.t2}}>{l}</span>
+          <span style={{fontSize:13,fontWeight:700,color:c}}>{v}</span>
+        </div>)}
+        {/* Marj çubuğu */}
+        <div style={{marginTop:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+            <span style={{fontSize:10,color:C.t3}}>Kâr Marjı</span>
+            <span style={{fontSize:11,fontWeight:800,color:netKar>=0?C.green:C.red}}>%{karMarji}</span>
+          </div>
+          <div style={{background:C.border,borderRadius:4,height:8,overflow:"hidden"}}>
+            <div style={{width:`${Math.min(Math.max(karMarji,0),100)}%`,background:karMarji>=15?C.green:karMarji>=0?C.amber:C.red,height:"100%",borderRadius:4}}/>
+          </div>
+        </div>
+        {/* Gider detayı */}
+        {musteriGiderleri.length>0&&<div style={{marginTop:10}}>
+          <div style={{fontSize:10,color:C.t3,fontWeight:600,marginBottom:6}}>Gider Kalemleri</div>
+          {musteriGiderleri.map(g=><div key={g.id} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.t2,padding:"3px 0"}}>
+            <span>· {g.ad} <span style={{color:C.t3}}>({g.kategori})</span></span>
+            <span style={{color:C.red,fontWeight:600}}>-{fmt(g.tutar)}</span>
+          </div>)}
+        </div>}
+      </Sh>
+    </div>}
 
     {/* İş listesi */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>{T.isGecmisiB}</div>
@@ -2091,7 +2130,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil}){
   </BottomSheet>;
 }
 
-function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil}){
+function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,giderler}){
   const [secili,setSecili]=useState(null);
   const [arama,setArama]=useState("");
   const [siralama,setSiralama]=useState("ciro"); // ciro | isler | ad
@@ -2228,7 +2267,7 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil}){
     })}
 
     {/* Detay modal */}
-    {secili&&<MusteriDetayModal musteri={secili} onKapat={()=>setSecili(null)} T={T} onSil={(ad)=>{onMusteriSil&&onMusteriSil(ad);setSecili(null);}}/>}
+    {secili&&<MusteriDetayModal musteri={secili} onKapat={()=>setSecili(null)} T={T} onSil={(ad)=>{onMusteriSil&&onMusteriSil(ad);setSecili(null);}} giderler={giderler}/>}
   </div>;
 }
 
@@ -3169,7 +3208,7 @@ export default function TradeFlow(){
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} onFaturaKes={setFatJob} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} filtre={tahsilatFiltre} T={T}/>}
-          {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} onMusteriEkle={(m)=>{setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}} onMusteriSil={(ad)=>{
+          {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} giderler={giderler} onMusteriEkle={(m)=>{setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}} onMusteriSil={(ad)=>{
           // Bağımsız kayıttan sil
           setMusteriKayitlari(p=>p.filter(m=>m.ad!==ad));
           // O müşterinin işlerini de sil (isteğe bağlı — onay modalında uyarıldı)
