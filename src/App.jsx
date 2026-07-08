@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260708-crm","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260708-anlikkur","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -3107,32 +3107,22 @@ export default function TradeFlow(){
   const bannerGoster=(baslik,mesaj)=>{setBanner({baslik,mesaj});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
 
   useEffect(()=>{
-    // ── 3 KATMANLI KUR SİSTEMİ ──
-    // 1. TCMB resmî günlük kur (öncelikli — fatura/muhasebe için doğru olan)
-    // 2. Piyasa kuru (er-api, anlık)
-    // 3. Sabit yedek kur
-    const piyasaKuruCek=()=>{
-      fetch("https://open.er-api.com/v6/latest/TRY").then(r=>r.json()).then(d=>{
-        if(d&&d.rates&&d.rates.USD&&d.rates.EUR){
-          KURLAR={TL:1,USD:Math.round((1/d.rates.USD)*100)/100,EUR:Math.round((1/d.rates.EUR)*100)/100};
-          KUR_KAYNAK="canli";force(x=>x+1);
-        }
-      }).catch(()=>{});
-    };
+    // ── ANLIK KUR SİSTEMİ ──
+    // 1. Piyasa kuru (anlık — öncelikli, kullanıcı isteği)
+    // 2. TCMB resmî kur (piyasa erişilemezse yedek)
+    // 3. Sabit yedek kur (ikisi de yoksa)
     const tcmbKuruCek=()=>{
-      // TCMB günlük kur XML'i — tarayıcı CORS engellerse piyasa kuruna düşer.
-      // Vercel'e kurulduğunda /api/kur proxy'si üzerinden %100 çalışır.
       const tcmbUrl = (typeof window!=="undefined"&&window.location&&window.location.hostname!=="localhost"&&!window.location.hostname.includes("claude"))
-        ? "/api/kur"  // Vercel'de kendi proxy'miz
-        : "https://www.tcmb.gov.tr/kurlar/today.xml"; // direkt deneme
+        ? "/api/kur"
+        : "https://www.tcmb.gov.tr/kurlar/today.xml";
       fetch(tcmbUrl).then(r=>{
         const ct=r.headers.get("content-type")||"";
         return ct.includes("json")?r.json():r.text();
       }).then(data=>{
         let usd=null,eur=null;
-        if(typeof data==="object"&&data.USD){ // Vercel proxy JSON döner
+        if(typeof data==="object"&&data.USD){
           usd=data.USD;eur=data.EUR;
-        }else if(typeof data==="string"){ // TCMB XML parse
+        }else if(typeof data==="string"){
           const usdM=data.match(/CurrencyCode="USD"[\s\S]*?<ForexSelling>([\d.]+)<\/ForexSelling>/);
           const eurM=data.match(/CurrencyCode="EUR"[\s\S]*?<ForexSelling>([\d.]+)<\/ForexSelling>/);
           if(usdM)usd=parseFloat(usdM[1]);
@@ -3141,12 +3131,21 @@ export default function TradeFlow(){
         if(usd&&eur){
           KURLAR={TL:1,USD:Math.round(usd*100)/100,EUR:Math.round(eur*100)/100};
           KUR_KAYNAK="tcmb";force(x=>x+1);
-        }else{piyasaKuruCek();}
-      }).catch(()=>{piyasaKuruCek();});
+        }
+      }).catch(()=>{});
     };
-    tcmbKuruCek();
-    // Her 30 dakikada bir güncelle
-    const kurIv=setInterval(tcmbKuruCek,30*60*1000);
+    const piyasaKuruCek=()=>{
+      // Anlık piyasa kuru — öncelikli kaynak
+      fetch("https://open.er-api.com/v6/latest/TRY").then(r=>r.json()).then(d=>{
+        if(d&&d.rates&&d.rates.USD&&d.rates.EUR){
+          KURLAR={TL:1,USD:Math.round((1/d.rates.USD)*100)/100,EUR:Math.round((1/d.rates.EUR)*100)/100};
+          KUR_KAYNAK="canli";force(x=>x+1);
+        }else{tcmbKuruCek();}
+      }).catch(()=>{tcmbKuruCek();});
+    };
+    piyasaKuruCek();
+    // Her 5 dakikada bir anlık kuru yenile
+    const kurIv=setInterval(piyasaKuruCek,5*60*1000);
     return ()=>clearInterval(kurIv);
   },[]);
 
