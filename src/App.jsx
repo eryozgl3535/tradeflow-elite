@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-sektor25","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260707-giderbag","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -990,7 +990,7 @@ function JobList({jobs,onSelect,T}){
 }
 
 // ─── MODALLAR ────────────────────────────────────────────────────
-function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T}){
+function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,giderler}){
   const [silOnay,setSilOnay]=useState(false);
   const [odemeAc,setOdemeAc]=useState(false);
   const [odemeTutar,setOdemeTutar]=useState("");
@@ -998,6 +998,8 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T}){
   const odenen=(job.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
   const kalan=job.tutar-odenen;
   const TEKRAR_AD={haftalik:"Haftalık",aylik:"Aylık",yillik:"Yıllık"};
+  // Bu işe bağlı giderler
+  const isGiderleri=(giderler||[]).filter(g=>g.isId===job.id);
 
   const odemeEkle=()=>{
     const t=Number(odemeTutar)*(KURLAR[AKTIF_PARA]||1);
@@ -1054,6 +1056,21 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T}){
         <button onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(job.isAdresi)}&travelmode=driving`,"_blank")} style={{width:"100%",background:C.blueBg,border:"none",borderRadius:10,padding:"10px 0",color:C.blue,fontSize:12,fontWeight:700,cursor:"pointer"}}>🗺️ {T.navBaslat}</button>
       </div>}
     </div>
+
+    {/* İşe bağlı giderler */}
+    {isGiderleri.length>0&&<div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>💸 GİDERLER ({isGiderleri.length})</div>
+      <Sh s={{padding:"4px 14px"}}>
+        {isGiderleri.map(g=><div key={g.id} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:`1px solid ${C.border}`}}>
+          <div><div style={{fontSize:12,fontWeight:600,color:C.t1}}>{g.ad}</div><div style={{fontSize:10,color:C.t3}}>{g.kategori} · {g.tarih}</div></div>
+          <span style={{fontSize:13,fontWeight:700,color:C.red}}>-{fmt(g.tutar)}</span>
+        </div>)}
+        <div style={{display:"flex",justifyContent:"space-between",padding:"9px 0"}}>
+          <span style={{fontSize:12,fontWeight:700,color:C.t2}}>Toplam Gider</span>
+          <span style={{fontSize:13,fontWeight:800,color:C.red}}>-{fmt(isGiderleri.reduce((s,g)=>s+g.tutar,0))}</span>
+        </div>
+      </Sh>
+    </div>}
 
     {/* Fotoğraflar */}
     {(job.fotolar||[]).length>0&&<div style={{marginBottom:14}}>
@@ -1357,10 +1374,14 @@ function TeklifModal({onKapat,onEkle,T}){
   </BottomSheet>;
 }
 
-function GiderModal({onKapat,onEkle,T,isKolu}){
+function GiderModal({onKapat,onEkle,T,isKolu,jobs}){
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   const katlar=sektor.giderKat;
-  const [f,setF]=useState({ad:"",tutar:"",kategori:katlar[0],tarih:new Date().toISOString().slice(0,10)});
+  const [f,setF]=useState({ad:"",tutar:"",kategori:katlar[0],tarih:new Date().toISOString().slice(0,10),isId:null,isAdi:""});
+  // Aktif ve bekleyen işler (tamamlananlar değil)
+  const aktifIsler=(jobs||[]).filter(j=>j.durum==="aktif"||j.durum==="bekliyor");
+  const [isSecAc,setIsSecAc]=useState(false);
+
   return <BottomSheet onKapat={onKapat}>
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:16}}>{T.yeniGider}</div>
     <Inp label={T.giderL} value={f.ad} onChange={e=>setF(x=>({...x,ad:e.target.value}))} placeholder={T.malzemePh}/>
@@ -1368,6 +1389,33 @@ function GiderModal({onKapat,onEkle,T,isKolu}){
       <div style={{flex:1}}><Inp label={T.tutarL+" ("+AKTIF_PARA+")"} type="number" value={f.tutar} onChange={e=>setF(x=>({...x,tutar:e.target.value}))}/></div>
       <div style={{flex:1}}><Inp label={T.tarihL} type="date" value={f.tarih} onChange={e=>setF(x=>({...x,tarih:e.target.value}))}/></div>
     </div>
+
+    {/* İşe Bağla */}
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>📋 İşe Bağla (opsiyonel)</div>
+      {f.isId
+        ?<div style={{display:"flex",alignItems:"center",gap:10,background:C.purpleBg,borderRadius:12,padding:"11px 14px"}}>
+          <span style={{fontSize:13,fontWeight:700,color:P,flex:1}}>{f.isAdi}</span>
+          <button onClick={()=>setF(x=>({...x,isId:null,isAdi:""}))} style={{background:"none",border:"none",color:C.t3,fontSize:16,cursor:"pointer"}}>✕</button>
+        </div>
+        :<button onClick={()=>setIsSecAc(!isSecAc)} style={{width:"100%",background:C.bg,border:`1.5px dashed ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.t2,fontSize:13,cursor:"pointer",textAlign:"left"}}>
+          {isSecAc?"▲ Listeyi Kapat":"+ Aktif/Bekleyen İşlerden Seç"}
+        </button>}
+      {isSecAc&&!f.isId&&<div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,marginTop:6,maxHeight:180,overflowY:"auto"}}>
+        {aktifIsler.length===0
+          ?<div style={{padding:14,fontSize:12,color:C.t3,textAlign:"center"}}>Aktif/bekleyen iş yok</div>
+          :aktifIsler.map(j=><div key={j.id} onClick={()=>{setF(x=>({...x,isId:j.id,isAdi:j.baslik+" ("+j.musteri+")"}));setIsSecAc(false);}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 14px",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}
+            onMouseEnter={e=>e.currentTarget.style.background=C.bg}
+            onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:C.t1}}>{j.baslik}</div>
+              <div style={{fontSize:11,color:C.t3}}>{j.musteri} · {j.ref}</div>
+            </div>
+            <div style={{fontSize:11,fontWeight:700,color:j.durum==="aktif"?P:C.amber}}>{j.durum==="aktif"?"Aktif":"Bekliyor"}</div>
+          </div>)}
+      </div>}
+    </div>
+
     <div style={{marginBottom:18}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>{T.kategori||"Kategori"}</div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{katlar.map(k=><button key={k} onClick={()=>setF(x=>({...x,kategori:k}))} style={{padding:"8px 14px",borderRadius:10,border:`2px solid ${f.kategori===k?P:C.border}`,background:f.kategori===k?C.purpleBg:C.bg,color:f.kategori===k?P:C.t2,fontSize:12,fontWeight:600,cursor:"pointer"}}>{k}</button>)}</div>
@@ -2324,9 +2372,13 @@ function TekliflerTab({teklifler,onYeni,onDonustur,onSil,onDurumDegis,T}){
   </div>;
 }
 
-function GiderlerTab({giderler,onYeni,onSil,T}){
+function GiderlerTab({giderler,onYeni,onSil,T,jobs}){
+  const [filtre,setFiltre]=useState("hepsi"); // hepsi | isli | serbest
   const toplam=giderler.reduce((s,g)=>s+g.tutar,0);
   const katToplam={};giderler.forEach(g=>{katToplam[g.kategori]=(katToplam[g.kategori]||0)+g.tutar;});
+  const filtrelenen=filtre==="isli"?giderler.filter(g=>g.isId)
+    :filtre==="serbest"?giderler.filter(g=>!g.isId)
+    :giderler;
   return <div style={{padding:"16px 14px"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
       <div style={{fontSize:18,fontWeight:700,color:C.t1}}>{T.giderler}</div>
@@ -2337,11 +2389,29 @@ function GiderlerTab({giderler,onYeni,onSil,T}){
       <div style={{fontSize:24,fontWeight:900,color:C.red}}>{fmt(toplam)}</div>
       <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:8,flexWrap:"wrap"}}>{Object.entries(katToplam).map(([k,v])=><span key={k} style={{fontSize:10,background:C.bg,padding:"4px 10px",borderRadius:8,color:C.t2}}>{k}: {fmt(v)}</span>)}</div>
     </Sh>
-    {giderler.length===0&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>{T.henuzGiderYok}</div>}
-    {giderler.map(g=><Sh key={g.id} s={{padding:"14px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{g.ad}</div><div style={{fontSize:11,color:C.t3}}>{g.kategori} · {g.tarih}</div></div>
-      <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:14,fontWeight:800,color:C.red}}>-{fmt(g.tutar)}</span><button onClick={()=>onSil(g.id)} style={{background:"none",border:"none",color:C.t3,fontSize:16,cursor:"pointer"}}>×</button></div>
-    </Sh>)}
+    {/* Filtre */}
+    <div style={{display:"flex",gap:6,marginBottom:14}}>
+      {[["hepsi","Tümü"],["isli","📋 İşe Bağlı"],["serbest","Serbest"]].map(([v,l])=>
+        <button key={v} onClick={()=>setFiltre(v)} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",background:filtre===v?P:C.card,color:filtre===v?"#fff":C.t2,fontSize:12,fontWeight:600,cursor:"pointer",boxShadow:C.sh}}>{l}</button>)}
+    </div>
+    {filtrelenen.length===0&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>{T.henuzGiderYok}</div>}
+    {filtrelenen.map(g=>{
+      const baglıIs=g.isId?(jobs||[]).find(j=>j.id===g.isId):null;
+      return <Sh key={g.id} s={{padding:"14px 16px",marginBottom:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{g.ad}</div>
+            <div style={{fontSize:11,color:C.t3}}>{g.kategori} · {g.tarih}</div>
+            {baglıIs&&<div style={{fontSize:11,color:P,fontWeight:600,marginTop:3}}>📋 {baglıIs.baslik} · {baglıIs.musteri}</div>}
+            {g.isAdi&&!baglıIs&&<div style={{fontSize:11,color:C.t3,marginTop:3}}>📋 {g.isAdi}</div>}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <span style={{fontSize:14,fontWeight:800,color:C.red}}>-{fmt(g.tutar)}</span>
+            <button onClick={()=>onSil(g.id)} style={{background:"none",border:"none",color:C.t3,fontSize:16,cursor:"pointer"}}>×</button>
+          </div>
+        </div>
+      </Sh>;
+    })}
   </div>;
 }
 
@@ -3130,7 +3200,7 @@ export default function TradeFlow(){
           })}
         </div>}
 
-        {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T}/>}
+        {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T} giderler={giderler}/>}
         {fatJob&&<FaturaModal job={fatJob} isletme={isletme} kdv={kdv} T={T} onKapat={()=>setFatJob(null)} onKesildi={faturaKesildi} gibAyar={gibAyar} onGibAc={(sekme)=>{setFatJob(null);setSekme("profil");setTimeout(()=>setGibAcSekme(sekme),100);}}/>}
         {yeniAc&&<YeniIsModal onKapat={()=>setYeniAc(false)} onEkle={jobEkle} T={T} isKolu={isKolu} jobs={jobs}/>}
         {duzenlenecekJob&&<YeniIsModal onKapat={()=>setDuzenlenecekJob(null)} onEkle={jobGuncelle} T={T} duzenlenecek={duzenlenecekJob} isKolu={isKolu} jobs={jobs}/>}
@@ -3139,7 +3209,7 @@ export default function TradeFlow(){
           <button onClick={geriAl} style={{background:P,border:"none",borderRadius:8,padding:"6px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>↩️ Geri Al</button>
         </div>}
         {teklifAc&&<TeklifModal T={T} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
-        {giderAc&&<GiderModal T={T} isKolu={isKolu} onKapat={()=>setGiderAc(false)} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("Gider eklendi ✓");}}/>}
+        {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} onKapat={()=>setGiderAc(false)} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
