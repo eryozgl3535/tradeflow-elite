@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260709-fix","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260709-temizacilis","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -903,11 +903,8 @@ const SEKTOR_VERI_EK = {
 };
 // Mevcut + yeni sektörleri birleştir
 const SEKTOR_VERI_TAM = {...SEKTOR_VERI,...SEKTOR_VERI_EK};
-const initJobs = [
-  {id:7,ref:"IS-0007",baslik:"Petek Temizliği & Tesisat Kontrolü",musteri:"Ahmet Yılmaz",tarih:"2026-07-02",durum:"aktif",tutar:7500,icon:"💻",iconBg:"#EDE9FE",hatirlatma:null,hatirlatildi:false,odemeler:[],isAdresi:"Alsancak Mah. Kıbrıs Şehitleri Cad. No:14, Konak/İzmir",musteriTelefon:"0532 111 22 33"},
-  {id:6,ref:"IS-0006",baslik:"Kombi Montajı",musteri:"Mehmet Kaya",tarih:"2026-07-01",durum:"bekliyor",tutar:15000,icon:"📦",iconBg:"#FEF3C7",hatirlatma:null,hatirlatildi:false,odemeler:[{tutar:5000,tarih:"01.07.2026"}],tekrar:"yok"},
-  {id:5,ref:"IS-0005",baslik:"Su Kaçağı Onarımı",musteri:"Ali Demir",tarih:"2026-06-30",durum:"tamamlandi",tutar:3250,icon:"🔧",iconBg:"#DCFCE7",hatirlatma:null,hatirlatildi:false,odemeler:[]},
-];
+const initJobs = [];
+
 const gelirData=[{d:"Pzt",v:4200},{d:"Sal",v:5100},{d:"Çar",v:3800},{d:"Per",v:6200},{d:"Cum",v:7100},{d:"Cmt",v:5400},{d:"Paz",v:6800}];
 const GIDER_KAT=["Malzeme","Yakıt","Personel","Kira","Diğer"];
 
@@ -3934,6 +3931,12 @@ export default function TradeFlow(){
   if(!kullanici){
     return <GirisEkrani onGiris={(u)=>setKullanici(u)}/>;
   }
+  if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
+    <div style={{width:64,height:64,borderRadius:20,background:P,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,animation:"tfPulse 1.2s ease-in-out infinite"}}>⚡</div>
+    <div style={{fontSize:15,fontWeight:800,color:C.t1}}>TradeFlow</div>
+    <div style={{fontSize:12,color:C.t3}}>Verileriniz yükleniyor...</div>
+    <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.88);opacity:0.7}}`}</style>
+  </div>;
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif",display:"flex",justifyContent:MASAUSTU?"flex-start":"center"}}>
