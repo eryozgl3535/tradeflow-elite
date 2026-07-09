@@ -1,4 +1,4 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260708-karne","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260709-8dil","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -107,6 +107,19 @@ const TR = {
   kategori:"Kategori",aramaPh:"🔍 Müşteri veya iş ara...",dilAramaPh:"🔍 Dil veya ülke ara...",yardimAramaPh:"🔍 Yardım arayın...",
   isOrnekPh:"Petek Temizliği...",musteriOrnekPh:"Ahmet Yılmaz",malzemePh:"Malzeme alımı...",musteriAdiPh:"Müşteri adı",klimaPh:"Klima montajı...",aliciAdiPh:"Alıcı adı",
   maliyetL:"Tahmini Maliyet",maliyetPh:"Malzeme + işçilik + yol...",marjL:"Kâr Marjı",zararUyari:"BU İŞ ZARARDA!",dusukMarj:"Düşük kâr marjı",benzerIs:"Benzer işlerde ort. maliyetin",
+  guncelMusterilerT:"Güncel Müşteriler",musteriKayitT:"Müşteri Kayıt",kayitliMusteriler:"Kayıtlı Müşteriler",yeniKayit:"+ Yeni Kayıt",kayitYok:"Henüz kayıtlı müşteri yok",kayitYokSub:"Müşterilerini önceden kaydet, iş açarken hazır olsun",telYok:"Tel yok",isKaydiVar:"iş kaydı var",aktifMusteriDurumu:"Aktif Müşteri Durumu",
+  tahsilKisa:"Tahsil",giderKisa:"Gider",karKisa:"Kâr",zararKisa:"Zarar",karZararAnalizi:"KÂR / ZARAR ANALİZİ",netZarar:"Net Zarar",giderKalemleri:"Gider Kalemleri",yeniIsAc:"➕ Yeni İş Aç",giderEkleBtn:"💸 Gider Ekle",
+  musteriyiSil:"Müşteriyi Sil",silinecekK:"silinecek",aitIsUyariOn:"Bu müşteriye ait",aitIsUyariSon:"iş kaydı da silinecek!",isimsizMusteri:T.isimsizMusteri,isimsizK:"İsimsiz",
+  iseBagla:"İşe Bağla (opsiyonel)",islerdenSec:"+ Aktif/Bekleyen İşlerden Seç",listeyiKapat:"▲ Listeyi Kapat",aktifBekleyenYok:"Aktif/bekleyen iş yok",
+  tumuF:"Tümü",iseBagliF:"📋 İşe Bağlı",serbestF:"Serbest",giderlerB:"GİDERLER",atananL:"Atanan",atananKisi:"Atanan Kişi",benL:"Ben",
+  hazirIslerOn:"",hazirIslerSon:" için hazır işler:",
+  ekipYonetimi:"Ekip Yönetimi",ekipSub:"Üye ekle, işleri ata",yeniUyeEkle:"Yeni Üye Ekle",ekibeEkle:"+ Ekibe Ekle",ekipYok:"Henüz ekip üyesi yok",ekipYokSub:"Üye ekleyince işleri atayabilir, performansı Raporlar'da görürsün",isAtandiK:"iş atandı",buIsimVar:"Bu isim zaten ekipte",uyeCikarildi:"Üye çıkarıldı",ekibeEklendi:"ekibe eklendi",
+  rolUsta:"Usta",rolMuhasebe:"Muhasebe",rolSatis:"Satış",rolSofor:"Şoför",rolYardimci:"Yardımcı",patronRol:"Patron",
+  ekipPerformansi:"Ekip Performansı",isBirim:"iş",karSuffix:"kâr",
+  hosgeldinT:"Hoş geldin",gozAt:"Bugün işlerinize hızlıca göz atın.",
+  faturaSilUyari:"Bu fatura silinecek",gibSilNot:"Resmî kesilen faturayı iptal etmek GİB kurallarına tabidir — bu işlem sadece uygulama kaydını siler.",
+  excelIslerL:"Excel — İşler",excelGiderlerL:"Excel — Giderler",excelFaturalarL:"Excel — Faturalar",pdfRaporL:"PDF Muhasebe Raporu",muhasebeyeGonder:"Muhasebeciye gönder",yazdirKaydet:"Yazdır / PDF kaydet",
+  asistanHosgeldin:"Merhaba! 👋 Ben TradeFlow asistanıyım. Fatura, tahsilat, GİB, maliyet... ne sormak istersen yaz ya da aşağıdaki hızlı sorulardan seç.",soruPh:"Sorunu yaz...",
   asistan:"Yardımcı Asistan",asistanSub:"Sorularını anında yanıtlar",
 };
 const EN = {
@@ -163,8 +176,438 @@ const EN = {
   kategori:"Category",aramaPh:"🔍 Search customer or job...",dilAramaPh:"🔍 Search language or country...",yardimAramaPh:"🔍 Search help...",
   isOrnekPh:"Radiator Cleaning...",musteriOrnekPh:"John Smith",malzemePh:"Material purchase...",musteriAdiPh:"Customer name",klimaPh:"AC installation...",aliciAdiPh:"Recipient name",
   maliyetL:"Estimated Cost",maliyetPh:"Materials + labor + travel...",marjL:"Profit Margin",zararUyari:"THIS JOB IS AT A LOSS!",dusukMarj:"Low profit margin",benzerIs:"Avg. cost on similar jobs",
+  guncelMusterilerT:"Active Customers",musteriKayitT:"Customer Records",kayitliMusteriler:"Registered Customers",yeniKayit:"+ New Record",kayitYok:"No registered customers yet",kayitYokSub:"Save customers in advance for quick job creation",telYok:"No phone",isKaydiVar:"job record(s)",aktifMusteriDurumu:"Active Customer Status",
+  tahsilKisa:"Collected",giderKisa:"Expenses",karKisa:"Profit",zararKisa:"Loss",karZararAnalizi:"PROFIT / LOSS ANALYSIS",netZarar:"Net Loss",giderKalemleri:"Expense Items",yeniIsAc:"➕ New Job",giderEkleBtn:"💸 Add Expense",
+  musteriyiSil:"Delete Customer",silinecekK:"will be deleted",aitIsUyariOn:"This customer has",aitIsUyariSon:"job record(s) that will also be deleted!",isimsizMusteri:"Unnamed Customer",isimsizK:"Unnamed",
+  iseBagla:"Link to Job (optional)",islerdenSec:"+ Select from Active/Pending Jobs",listeyiKapat:"▲ Close List",aktifBekleyenYok:"No active/pending jobs",
+  tumuF:"All",iseBagliF:"📋 Job-linked",serbestF:"Unlinked",giderlerB:"EXPENSES",atananL:"Assigned",atananKisi:"Assigned To",benL:"Me",
+  hazirIslerOn:"Suggested jobs for ",hazirIslerSon:":",
+  ekipYonetimi:"Team Management",ekipSub:"Add members, assign jobs",yeniUyeEkle:"Add New Member",ekibeEkle:"+ Add to Team",ekipYok:"No team members yet",ekipYokSub:"Add members to assign jobs and track performance in Reports",isAtandiK:"assigned",buIsimVar:"This name is already in the team",uyeCikarildi:"Member removed",ekibeEklendi:"added to team",
+  rolUsta:"Technician",rolMuhasebe:"Accounting",rolSatis:"Sales",rolSofor:"Driver",rolYardimci:"Helper",patronRol:"Owner",
+  ekipPerformansi:"Team Performance",isBirim:"jobs",karSuffix:"profit",
+  hosgeldinT:"Welcome",gozAt:"Take a quick look at your business today.",
+  faturaSilUyari:"This invoice will be deleted",gibSilNot:"Cancelling an officially issued invoice is subject to tax authority rules — this only removes the app record.",
+  excelIslerL:"Excel — Jobs",excelGiderlerL:"Excel — Expenses",excelFaturalarL:"Excel — Invoices",pdfRaporL:"PDF Accounting Report",muhasebeyeGonder:"Send to accountant",yazdirKaydet:"Print / Save as PDF",
+  asistanHosgeldin:"Hello! 👋 I'm the TradeFlow assistant. Ask me anything about invoices, payments, costs... or pick a quick question below.",soruPh:"Type your question...",
   asistan:"Assistant",asistanSub:"Instant answers to your questions",
 };
+
+// ─── TAM ÇEVİRİ SÖZLÜKLERİ (6 dil) ───────────────────────────
+const DE = {
+  gunaydin:"Guten Morgen,",isletmem:"Mein Betrieb",yeniIs:"Neuer Auftrag",isKoluSec:"Branche wählen",ozellestir:"Anpassen",
+  aktifIs:"Aktive Aufträge",devamEden:"In Arbeit",tahsilEdildi:"Eingezogen",buAyTahsilat:"Diesen Monat",
+  bekleyenTahsilat:"Offene Zahlung",fatura:"Rechnungen",bekleyen:"Ausstehend",faturaTek:"Rechnung",
+  isAkislari:"Aufträge",faturalar:"Rechnungen",tahsilatlar:"Zahlungen",musteriler:"Kunden",
+  teklifler:"Angebote",raporlar:"Berichte",giderler:"Ausgaben",dahaFazla:"Mehr",
+  gelirGider:"Einnahmen-Ausgaben",buAy:"Diesen Monat",toplamGelir:"Gesamteinnahmen",toplamGider:"Gesamtausgaben",
+  netKar:"Nettogewinn",tahsilatDurumu:"Zahlungsstatus",toplam:"Gesamt",tahsilEdilen:"Eingezogen",
+  geciken:"Überfällig",vadesiGelmeyen:"Nicht fällig",tahsilatOrani:"Einzugsquote",
+  duzenleBaslik1:"Gestalte deine",duzenleBaslik2:"Betriebs-App",duzenleAlt:"Module wählen, neu ordnen.",duzenle:"Bearbeiten",
+  sonIsAkislari:"Letzte Aufträge",musteri:"Kunde",tumunuGoruntule:"Alle anzeigen",
+  anaSayfa:"Start",bildirimlerT:"Meldungen",profil:"Profil",tumIsAkislari:"Alle Aufträge",
+  devamEdiyor:"In Arbeit",beklemede:"Ausstehend",tamamlandi:"Abgeschlossen",
+  buAyinKarnesi:"MONATSBERICHT",isTamamlandi:"Erledigte Aufträge",tahsilat:"Eingezogen",memnuniyet:"Zufriedenheit",
+  isletme:"BETRIEB",isletmeBilgileri:"Betriebsdaten",kdvOrani:"MwSt.-Satz",logoYukle:"Logo hochladen",
+  sec:"Wählen",degistir:"Ändern",uygulama:"APP",bildirimlerL:"Benachrichtigungen",karanlikMod:"Dunkelmodus",
+  dil:"Sprache",paraBirimi:"Währung",destek:"SUPPORT",whatsappDestek:"WhatsApp-Support",
+  yardimMerkezi:"Hilfe-Center",degerlendir:"App bewerten",gizlilik:"Datenschutz",
+  cikisYap:"Abmelden",profiliDuzenle:"Profil bearbeiten",dilSecin:"Sprache wählen",paraBirimiB:"Währung",
+  iptal:"Abbrechen",kaydet:"Speichern",sil:"Löschen",silOnay:"Diesen Auftrag löschen?",evetSil:"Ja, löschen",
+  hatirlatma:"Erinnerung",faturaKes:"Rechnung erstellen",tamamla:"Abschließen",kapat:"Schließen",
+  yeniTeklif:"Neues Angebot",iseDonustur:"In Auftrag umwandeln",gecerlilik:"Gültig bis",
+  yeniGider:"Neue Ausgabe",tahsilEt:"Einziehen",oneriniz:"Ihr Vorschlag...",
+  gonder:"Senden",tesekkurler:"Danke!",verileriSifirla:"Daten zurücksetzen",
+  disaAktar:"Daten exportieren",bosBildirim:"Noch keine Meldungen",tumunuOkundu:"Alle gelesen",
+  sonucYok:"Keine Ergebnisse",gunSecin:"Tag antippen für Aufträge",buGunIsYok:"Keine Aufträge an diesem Tag",isleri:"AUFTRÄGE",
+  isDuzenle:"Auftrag bearbeiten",ikon:"Symbol",isBasligi:"Auftragstitel",tarihL:"Datum",tutarL:"Betrag",
+  tekrarlama:"Wiederholung (Wartungsplan)",tekSefer:"Einmalig",haftalikL:"Wöchentlich",aylikL:"Monatlich",yillikL:"Jährlich",
+  tekrarBilgi:"Nach Abschluss wird automatisch ein neuer Auftrag für die nächste Periode erstellt",
+  isAdresiL:"Auftragsadresse (optional)",adresPh:"Straße, Hausnr., Stadt...",musteriTel:"Kundentelefon (optional)",epostaOps:"E-Mail (optional)",
+  isFotolari:"Auftragsfotos (vorher/nachher)",durumL:"Status",guncelle:"Aktualisieren",
+  odemeDurumu:"Zahlungsstatus",kaparoEkle:"+ Anzahlung / Teilzahlung",alinan:"Erhalten",kalanL:"Restbetrag",adresL:"Adresse",navBaslat:"Navigation starten",fotograflarB:"AUFTRAGSFOTOS",
+  henuzFaturaYok:"Noch keine Rechnungen erstellt.",kesildiL:"ERSTELLT",bekleyenIslerB:"OFFENE AUFTRÄGE",alindiL:"erhalten",
+  yeniMusteri:"Neuen Kunden anlegen",adSoyadPh:"Name / Firma *",telefonL:"Telefon",epostaL:"E-Mail",adresNavPh:"Adresse (für Navigation)",vazgec:"Abbrechen",gitL:"Los",yeniL:"Neu",
+  ciroL:"Umsatz",isSayisi:"Auftragsanzahl",isAdresleriB:"AUFTRAGSADRESSEN",toplamCiro:"Gesamtumsatz",toplamIsL:"Aufträge gesamt",isGecmisiB:"AUFTRAGSHISTORIE",isKaydiYok:"Keine Auftragsdaten",araL:"Anrufen",iletisimYok:"Keine Kontaktdaten",
+  donusum:"Umwandlung",gunL:"Tage",suresiDoldu:"Abgelaufen",onaylandiL:"Genehmigt",reddedildiL:"Abgelehnt",onayla:"Genehmigen",reddet:"Ablehnen",
+  henuzTeklifYok:"Noch keine Angebote",ilkTeklif:"+ Erstes Angebot erstellen",teklifBilgi:"Erstellen Sie ein Angebot und wandeln Sie es nach Genehmigung in einen Auftrag um.",filtreEslesmedi:"Keine Angebote für diesen Filter.",bekleyenTeklifT:"Offene Angebote gesamt",
+  buAyR:"Diesen Monat",gecenAy:"Letzter Monat",son3Ay:"Letzte 3 Monate",tumu:"Alle",gelirL:"Einnahme",giderL:"Ausgabe",
+  son7Gun:"Einnahmen letzte 7 Tage",son7Yok:"Keine abgeschlossenen Aufträge in 7 Tagen.",isBazli:"Beträge pro Auftrag",donemdeIsYok:"Keine Aufträge in diesem Zeitraum",durumDagilimi:"Statusverteilung",aktifL:"Aktiv",
+  yedekGeriYukle:"Backup wiederherstellen",jsonIceAktar:"JSON importieren",hakkinda:"Über",detayL:"Details",
+  whatsappGonder:"Per WhatsApp senden",yazdirPdf:"Drucken / PDF",
+  tumIslerB:"ALLE AUFTRÄGE",listesiB:"LISTE",kategoriIsYok:"Keine Aufträge in dieser Kategorie",gelirKaynaklariB:"EINNAHMEQUELLEN",giderKategorileriB:"AUSGABENKATEGORIEN",henuzGiderYok:"Noch keine Ausgaben",devamEdenL:"In Arbeit",isL:"Aufträge",
+  isletmeAyarlariB:"BETRIEBSEINSTELLUNGEN",finansB:"FINANZEN",raporlamaDonemi:"Berichtszeitraum",bankaHesabi:"Bankkonto hinzufügen",sesEfektleri:"Soundeffekte",kompaktGorunum:"Kompaktansicht",proYukselt:"Auf Pro upgraden",haftalikHedef:"Wochenziel",
+  hizliModullerB:"SCHNELLZUGRIFF-MODULE",modulBilgi:"Module ein-/ausschalten, ziehen zum Ordnen. Änderungen gelten sofort.",modulEkle:"+ Module hinzufügen / bearbeiten →",
+  sesEfektSub:"Bestätigungstöne",kompaktSub:"Dichtere Darstellung",bildirimSub:"Auftrags-Erinnerungen und Meldungen",karanlikSub:"Schont die Augen",
+  vergiDairesiYok:"Finanzamt nicht angegeben",kdvSub:"Für Rechnungsberechnungen",logoSub:"Auf Rechnungen und im Profil sichtbar",
+  canliKur:"Live-Kurse",sabitKur:"Feste Kurse",aylikGorunum:"Monatsansicht",ibanSub:"Zahlungen per IBAN verfolgen",
+  proSub:"Unbegrenzte Aufträge · PDF-Rechnungen · WhatsApp-Versand · Cloud-Backup",epostaDestek:"E-Mail-Support",sssSub:"FAQ und Anleitungen",degerlendirSub:"Im App Store / Play Store bewerten",kvkkSub:"Datenschutzkonform",yakinda:"Bald verfügbar!",
+  gibSubAktif:"E-Rechnung aktiv",gibSubTest:"API eingerichtet, Test erforderlich",gibSubYok:"Noch nicht eingerichtet",
+  mIslerA:"Alle Aufträge und Status",mFaturaA:"Erstellte und offene Rechnungen",mTahsilatA:"Eingezogene und offene Zahlungen",mMusteriA:"Kundenliste und Umsatzanalyse",mTeklifA:"Angebote und Umwandlungen",mRaporA:"Diagramme und Statistiken",mGiderA:"Ausgabenverfolgung und Kategorien",mDahaA:"Export, Einstellungen, Hilfe",
+  modulFooter:"Aktive Module erscheinen auf Start · Deaktivierte bleiben im Menü",
+  kategori:"Kategorie",aramaPh:"🔍 Kunde oder Auftrag suchen...",dilAramaPh:"🔍 Sprache oder Land suchen...",yardimAramaPh:"🔍 Hilfe durchsuchen...",
+  isOrnekPh:"Heizkörperreinigung...",musteriOrnekPh:"Max Mustermann",malzemePh:"Materialeinkauf...",musteriAdiPh:"Kundenname",klimaPh:"Klimaanlagen-Montage...",aliciAdiPh:"Empfängername",
+  maliyetL:"Geschätzte Kosten",maliyetPh:"Material + Arbeit + Fahrt...",marjL:"Gewinnmarge",zararUyari:"DIESER AUFTRAG IST VERLUST!",dusukMarj:"Niedrige Gewinnmarge",benzerIs:"Ø-Kosten ähnlicher Aufträge",
+  guncelMusterilerT:"Aktive Kunden",musteriKayitT:"Kundenverzeichnis",kayitliMusteriler:"Registrierte Kunden",yeniKayit:"+ Neuer Eintrag",kayitYok:"Noch keine registrierten Kunden",kayitYokSub:"Kunden vorab speichern für schnelle Auftragserstellung",telYok:"Kein Telefon",isKaydiVar:"Auftragsdaten",aktifMusteriDurumu:"Aktiver Kundenstatus",
+  tahsilKisa:"Eingezogen",giderKisa:"Ausgaben",karKisa:"Gewinn",zararKisa:"Verlust",karZararAnalizi:"GEWINN- / VERLUSTANALYSE",netZarar:"Nettoverlust",giderKalemleri:"Ausgabenposten",yeniIsAc:"➕ Neuer Auftrag",giderEkleBtn:"💸 Ausgabe hinzufügen",
+  musteriyiSil:"Kunden löschen",silinecekK:"wird gelöscht",aitIsUyariOn:"Dieser Kunde hat",aitIsUyariSon:"Aufträge, die ebenfalls gelöscht werden!",isimsizMusteri:"Unbenannter Kunde",isimsizK:"Unbenannt",
+  iseBagla:"Mit Auftrag verknüpfen (optional)",islerdenSec:"+ Aus aktiven/offenen Aufträgen wählen",listeyiKapat:"▲ Liste schließen",aktifBekleyenYok:"Keine aktiven/offenen Aufträge",
+  tumuF:"Alle",iseBagliF:"📋 Verknüpft",serbestF:"Frei",giderlerB:"AUSGABEN",atananL:"Zugewiesen",atananKisi:"Zugewiesen an",benL:"Ich",
+  hazirIslerOn:"Vorschläge für ",hazirIslerSon:":",
+  ekipYonetimi:"Teamverwaltung",ekipSub:"Mitglieder hinzufügen, Aufträge zuweisen",yeniUyeEkle:"Neues Mitglied",ekibeEkle:"+ Zum Team hinzufügen",ekipYok:"Noch keine Teammitglieder",ekipYokSub:"Mitglieder hinzufügen, Aufträge zuweisen und Leistung in Berichten sehen",isAtandiK:"zugewiesen",buIsimVar:"Dieser Name ist bereits im Team",uyeCikarildi:"Mitglied entfernt",ekibeEklendi:"zum Team hinzugefügt",
+  rolUsta:"Techniker",rolMuhasebe:"Buchhaltung",rolSatis:"Vertrieb",rolSofor:"Fahrer",rolYardimci:"Helfer",patronRol:"Inhaber",
+  ekipPerformansi:"Teamleistung",isBirim:"Aufträge",karSuffix:"Gewinn",
+  hosgeldinT:"Willkommen",gozAt:"Wirf einen kurzen Blick auf dein Geschäft.",
+  faturaSilUyari:"Diese Rechnung wird gelöscht",gibSilNot:"Die Stornierung einer offiziellen Rechnung unterliegt den Steuerbehörden — hier wird nur der App-Eintrag entfernt.",
+  excelIslerL:"Excel — Aufträge",excelGiderlerL:"Excel — Ausgaben",excelFaturalarL:"Excel — Rechnungen",pdfRaporL:"PDF-Buchhaltungsbericht",muhasebeyeGonder:"An Buchhalter senden",yazdirKaydet:"Drucken / Als PDF speichern",
+  asistanHosgeldin:"Hallo! 👋 Ich bin der TradeFlow-Assistent. Frag mich zu Rechnungen, Zahlungen, Kosten... oder wähle unten eine Schnellfrage.",soruPh:"Frage eingeben...",
+  asistan:"Assistent",asistanSub:"Sofortantworten auf deine Fragen",
+};
+const FR = {
+  gunaydin:"Bonjour,",isletmem:"Mon entreprise",yeniIs:"Nouveau travail",isKoluSec:"Choisir le métier",ozellestir:"Personnaliser",
+  aktifIs:"Travaux actifs",devamEden:"En cours",tahsilEdildi:"Encaissé",buAyTahsilat:"Ce mois-ci",
+  bekleyenTahsilat:"Paiement en attente",fatura:"factures",bekleyen:"En attente",faturaTek:"Facture",
+  isAkislari:"Travaux",faturalar:"Factures",tahsilatlar:"Paiements",musteriler:"Clients",
+  teklifler:"Devis",raporlar:"Rapports",giderler:"Dépenses",dahaFazla:"Plus",
+  gelirGider:"Recettes-Dépenses",buAy:"Ce mois",toplamGelir:"Recettes totales",toplamGider:"Dépenses totales",
+  netKar:"Bénéfice net",tahsilatDurumu:"État des paiements",toplam:"Total",tahsilEdilen:"Encaissé",
+  geciken:"En retard",vadesiGelmeyen:"Non échu",tahsilatOrani:"Taux d'encaissement",
+  duzenleBaslik1:"Personnalisez votre",duzenleBaslik2:"appli pro",duzenleAlt:"Choisissez et réordonnez les modules.",duzenle:"Modifier",
+  sonIsAkislari:"Travaux récents",musteri:"Client",tumunuGoruntule:"Tout voir",
+  anaSayfa:"Accueil",bildirimlerT:"Alertes",profil:"Profil",tumIsAkislari:"Tous les travaux",
+  devamEdiyor:"En cours",beklemede:"En attente",tamamlandi:"Terminé",
+  buAyinKarnesi:"BILAN DU MOIS",isTamamlandi:"Travaux terminés",tahsilat:"Encaissé",memnuniyet:"Satisfaction",
+  isletme:"ENTREPRISE",isletmeBilgileri:"Infos entreprise",kdvOrani:"Taux de TVA",logoYukle:"Charger le logo",
+  sec:"Choisir",degistir:"Changer",uygulama:"APPLI",bildirimlerL:"Notifications",karanlikMod:"Mode sombre",
+  dil:"Langue",paraBirimi:"Devise",destek:"SUPPORT",whatsappDestek:"Support WhatsApp",
+  yardimMerkezi:"Centre d'aide",degerlendir:"Noter l'appli",gizlilik:"Confidentialité",
+  cikisYap:"Se déconnecter",profiliDuzenle:"Modifier le profil",dilSecin:"Choisir la langue",paraBirimiB:"Devise",
+  iptal:"Annuler",kaydet:"Enregistrer",sil:"Supprimer",silOnay:"Supprimer ce travail ?",evetSil:"Oui, supprimer",
+  hatirlatma:"Rappel",faturaKes:"Créer une facture",tamamla:"Terminer",kapat:"Fermer",
+  yeniTeklif:"Nouveau devis",iseDonustur:"Convertir en travail",gecerlilik:"Valable jusqu'au",
+  yeniGider:"Nouvelle dépense",tahsilEt:"Encaisser",oneriniz:"Votre suggestion...",
+  gonder:"Envoyer",tesekkurler:"Merci !",verileriSifirla:"Réinitialiser les données",
+  disaAktar:"Exporter les données",bosBildirim:"Aucune alerte",tumunuOkundu:"Tout marquer lu",
+  sonucYok:"Aucun résultat",gunSecin:"Touchez un jour pour voir ses travaux",buGunIsYok:"Aucun travail ce jour",isleri:"TRAVAUX",
+  isDuzenle:"Modifier le travail",ikon:"Icône",isBasligi:"Titre du travail",tarihL:"Date",tutarL:"Montant",
+  tekrarlama:"Récurrence (plan d'entretien)",tekSefer:"Ponctuel",haftalikL:"Hebdomadaire",aylikL:"Mensuel",yillikL:"Annuel",
+  tekrarBilgi:"Une fois terminé, un nouveau travail est créé automatiquement pour la période suivante",
+  isAdresiL:"Adresse du travail (optionnel)",adresPh:"Rue, n°, ville...",musteriTel:"Téléphone client (optionnel)",epostaOps:"E-mail (optionnel)",
+  isFotolari:"Photos du travail (avant/après)",durumL:"Statut",guncelle:"Mettre à jour",
+  odemeDurumu:"État du paiement",kaparoEkle:"+ Acompte / Paiement partiel",alinan:"Reçu",kalanL:"Restant",adresL:"Adresse",navBaslat:"Lancer la navigation",fotograflarB:"PHOTOS DU TRAVAIL",
+  henuzFaturaYok:"Aucune facture émise.",kesildiL:"ÉMISE",bekleyenIslerB:"TRAVAUX EN ATTENTE",alindiL:"reçu",
+  yeniMusteri:"Ajouter un client",adSoyadPh:"Nom / Société *",telefonL:"Téléphone",epostaL:"E-mail",adresNavPh:"Adresse (pour navigation)",vazgec:"Annuler",gitL:"Y aller",yeniL:"Nouveau",
+  ciroL:"Chiffre d'affaires",isSayisi:"Nombre de travaux",isAdresleriB:"ADRESSES DES TRAVAUX",toplamCiro:"CA total",toplamIsL:"Travaux totaux",isGecmisiB:"HISTORIQUE",isKaydiYok:"Aucun travail",araL:"Appeler",iletisimYok:"Aucun contact",
+  donusum:"Conversion",gunL:"jours",suresiDoldu:"Expiré",onaylandiL:"Approuvé",reddedildiL:"Refusé",onayla:"Approuver",reddet:"Refuser",
+  henuzTeklifYok:"Aucun devis",ilkTeklif:"+ Créer le premier devis",teklifBilgi:"Créez un devis, convertissez-le en travail après approbation.",filtreEslesmedi:"Aucun devis pour ce filtre.",bekleyenTeklifT:"Total devis en attente",
+  buAyR:"Ce mois",gecenAy:"Mois dernier",son3Ay:"3 derniers mois",tumu:"Tous",gelirL:"Recette",giderL:"Dépense",
+  son7Gun:"Recettes 7 derniers jours",son7Yok:"Aucun travail terminé en 7 jours.",isBazli:"Montants par travail",donemdeIsYok:"Aucun travail sur cette période",durumDagilimi:"Répartition des statuts",aktifL:"Actif",
+  yedekGeriYukle:"Restaurer la sauvegarde",jsonIceAktar:"Importer JSON",hakkinda:"À propos",detayL:"Détails",
+  whatsappGonder:"Envoyer via WhatsApp",yazdirPdf:"Imprimer / PDF",
+  tumIslerB:"TOUS LES TRAVAUX",listesiB:"LISTE",kategoriIsYok:"Aucun travail dans cette catégorie",gelirKaynaklariB:"SOURCES DE REVENUS",giderKategorileriB:"CATÉGORIES DE DÉPENSES",henuzGiderYok:"Aucune dépense",devamEdenL:"En cours",isL:"travaux",
+  isletmeAyarlariB:"PARAMÈTRES ENTREPRISE",finansB:"FINANCES",raporlamaDonemi:"Période de rapport",bankaHesabi:"Ajouter un compte bancaire",sesEfektleri:"Effets sonores",kompaktGorunum:"Vue compacte",proYukselt:"Passer à Pro",haftalikHedef:"Objectif hebdo",
+  hizliModullerB:"MODULES D'ACCÈS RAPIDE",modulBilgi:"Activez/désactivez les modules, glissez pour réordonner. Effet immédiat.",modulEkle:"+ Ajouter / modifier des modules →",
+  sesEfektSub:"Sons de confirmation",kompaktSub:"Affichage plus dense",bildirimSub:"Rappels et alertes de travaux",karanlikSub:"Repose les yeux",
+  vergiDairesiYok:"Centre des impôts non renseigné",kdvSub:"Appliqué aux calculs de facture",logoSub:"Visible sur factures et profil",
+  canliKur:"Taux en direct",sabitKur:"Taux fixes",aylikGorunum:"Vue mensuelle",ibanSub:"Suivi des paiements par IBAN",
+  proSub:"Travaux illimités · Factures PDF · Envoi WhatsApp · Sauvegarde cloud",epostaDestek:"Support e-mail",sssSub:"FAQ et guides",degerlendirSub:"Noter sur App Store / Play Store",kvkkSub:"Conforme RGPD",yakinda:"Bientôt !",
+  gibSubAktif:"Facture électronique active",gibSubTest:"API configurée, test requis",gibSubYok:"Non configuré",
+  mIslerA:"Tous les ordres de travail et statuts",mFaturaA:"Factures émises et en attente",mTahsilatA:"Paiements encaissés et en attente",mMusteriA:"Liste clients et analyse du CA",mTeklifA:"Devis et conversions",mRaporA:"Graphiques et statistiques",mGiderA:"Suivi des dépenses et catégories",mDahaA:"Export, paramètres, aide",
+  modulFooter:"Modules actifs sur l'Accueil · Les désactivés restent au menu",
+  kategori:"Catégorie",aramaPh:"🔍 Rechercher client ou travail...",dilAramaPh:"🔍 Rechercher langue ou pays...",yardimAramaPh:"🔍 Rechercher de l'aide...",
+  isOrnekPh:"Purge des radiateurs...",musteriOrnekPh:"Jean Dupont",malzemePh:"Achat de matériel...",musteriAdiPh:"Nom du client",klimaPh:"Installation clim...",aliciAdiPh:"Nom du destinataire",
+  maliyetL:"Coût estimé",maliyetPh:"Matériel + main-d'œuvre + trajet...",marjL:"Marge bénéficiaire",zararUyari:"CE TRAVAIL EST À PERTE !",dusukMarj:"Marge faible",benzerIs:"Coût moyen sur travaux similaires",
+  guncelMusterilerT:"Clients actifs",musteriKayitT:"Fichier clients",kayitliMusteriler:"Clients enregistrés",yeniKayit:"+ Nouvelle fiche",kayitYok:"Aucun client enregistré",kayitYokSub:"Enregistrez vos clients à l'avance pour créer des travaux plus vite",telYok:"Pas de téléphone",isKaydiVar:"travaux",aktifMusteriDurumu:"État des clients actifs",
+  tahsilKisa:"Encaissé",giderKisa:"Dépenses",karKisa:"Bénéfice",zararKisa:"Perte",karZararAnalizi:"ANALYSE PROFIT / PERTE",netZarar:"Perte nette",giderKalemleri:"Postes de dépense",yeniIsAc:"➕ Nouveau travail",giderEkleBtn:"💸 Ajouter une dépense",
+  musteriyiSil:"Supprimer le client",silinecekK:"sera supprimé",aitIsUyariOn:"Ce client a",aitIsUyariSon:"travaux qui seront aussi supprimés !",isimsizMusteri:"Client sans nom",isimsizK:"Sans nom",
+  iseBagla:"Lier à un travail (optionnel)",islerdenSec:"+ Choisir parmi les travaux actifs/en attente",listeyiKapat:"▲ Fermer la liste",aktifBekleyenYok:"Aucun travail actif/en attente",
+  tumuF:"Tous",iseBagliF:"📋 Liés",serbestF:"Libres",giderlerB:"DÉPENSES",atananL:"Assigné",atananKisi:"Assigné à",benL:"Moi",
+  hazirIslerOn:"Suggestions pour ",hazirIslerSon:" :",
+  ekipYonetimi:"Gestion d'équipe",ekipSub:"Ajouter des membres, assigner des travaux",yeniUyeEkle:"Nouveau membre",ekibeEkle:"+ Ajouter à l'équipe",ekipYok:"Aucun membre d'équipe",ekipYokSub:"Ajoutez des membres pour assigner des travaux et suivre la performance dans Rapports",isAtandiK:"assignés",buIsimVar:"Ce nom est déjà dans l'équipe",uyeCikarildi:"Membre retiré",ekibeEklendi:"ajouté à l'équipe",
+  rolUsta:"Technicien",rolMuhasebe:"Comptabilité",rolSatis:"Ventes",rolSofor:"Chauffeur",rolYardimci:"Assistant",patronRol:"Patron",
+  ekipPerformansi:"Performance de l'équipe",isBirim:"travaux",karSuffix:"bénéfice",
+  hosgeldinT:"Bienvenue",gozAt:"Jetez un œil rapide à votre activité.",
+  faturaSilUyari:"Cette facture sera supprimée",gibSilNot:"L'annulation d'une facture officielle est soumise aux règles fiscales — seule la fiche dans l'appli est supprimée.",
+  excelIslerL:"Excel — Travaux",excelGiderlerL:"Excel — Dépenses",excelFaturalarL:"Excel — Factures",pdfRaporL:"Rapport comptable PDF",muhasebeyeGonder:"Envoyer au comptable",yazdirKaydet:"Imprimer / Enregistrer en PDF",
+  asistanHosgeldin:"Bonjour ! 👋 Je suis l'assistant TradeFlow. Posez vos questions sur factures, paiements, coûts... ou choisissez une question rapide ci-dessous.",soruPh:"Écrivez votre question...",
+  asistan:"Assistant",asistanSub:"Réponses instantanées à vos questions",
+};
+const ES = {
+  gunaydin:"Buenos días,",isletmem:"Mi negocio",yeniIs:"Nuevo trabajo",isKoluSec:"Elegir oficio",ozellestir:"Personalizar",
+  aktifIs:"Trabajos activos",devamEden:"En curso",tahsilEdildi:"Cobrado",buAyTahsilat:"Este mes",
+  bekleyenTahsilat:"Pago pendiente",fatura:"facturas",bekleyen:"Pendiente",faturaTek:"Factura",
+  isAkislari:"Trabajos",faturalar:"Facturas",tahsilatlar:"Cobros",musteriler:"Clientes",
+  teklifler:"Presupuestos",raporlar:"Informes",giderler:"Gastos",dahaFazla:"Más",
+  gelirGider:"Ingresos-Gastos",buAy:"Este mes",toplamGelir:"Ingresos totales",toplamGider:"Gastos totales",
+  netKar:"Beneficio neto",tahsilatDurumu:"Estado de cobros",toplam:"Total",tahsilEdilen:"Cobrado",
+  geciken:"Vencido",vadesiGelmeyen:"No vencido",tahsilatOrani:"Tasa de cobro",
+  duzenleBaslik1:"Personaliza tu",duzenleBaslik2:"app de negocio",duzenleAlt:"Elige módulos, reordena.",duzenle:"Editar",
+  sonIsAkislari:"Trabajos recientes",musteri:"Cliente",tumunuGoruntule:"Ver todo",
+  anaSayfa:"Inicio",bildirimlerT:"Avisos",profil:"Perfil",tumIsAkislari:"Todos los trabajos",
+  devamEdiyor:"En curso",beklemede:"Pendiente",tamamlandi:"Completado",
+  buAyinKarnesi:"INFORME DEL MES",isTamamlandi:"Trabajos hechos",tahsilat:"Cobrado",memnuniyet:"Satisfacción",
+  isletme:"NEGOCIO",isletmeBilgileri:"Datos del negocio",kdvOrani:"Tipo de IVA",logoYukle:"Subir logo",
+  sec:"Elegir",degistir:"Cambiar",uygulama:"APP",bildirimlerL:"Notificaciones",karanlikMod:"Modo oscuro",
+  dil:"Idioma",paraBirimi:"Moneda",destek:"SOPORTE",whatsappDestek:"Soporte WhatsApp",
+  yardimMerkezi:"Centro de ayuda",degerlendir:"Valorar la app",gizlilik:"Privacidad",
+  cikisYap:"Cerrar sesión",profiliDuzenle:"Editar perfil",dilSecin:"Elegir idioma",paraBirimiB:"Moneda",
+  iptal:"Cancelar",kaydet:"Guardar",sil:"Eliminar",silOnay:"¿Eliminar este trabajo?",evetSil:"Sí, eliminar",
+  hatirlatma:"Recordatorio",faturaKes:"Crear factura",tamamla:"Completar",kapat:"Cerrar",
+  yeniTeklif:"Nuevo presupuesto",iseDonustur:"Convertir en trabajo",gecerlilik:"Válido hasta",
+  yeniGider:"Nuevo gasto",tahsilEt:"Cobrar",oneriniz:"Tu sugerencia...",
+  gonder:"Enviar",tesekkurler:"¡Gracias!",verileriSifirla:"Restablecer datos",
+  disaAktar:"Exportar datos",bosBildirim:"Sin avisos",tumunuOkundu:"Marcar todo leído",
+  sonucYok:"Sin resultados",gunSecin:"Toca un día para ver sus trabajos",buGunIsYok:"Sin trabajos este día",isleri:"TRABAJOS",
+  isDuzenle:"Editar trabajo",ikon:"Icono",isBasligi:"Título del trabajo",tarihL:"Fecha",tutarL:"Importe",
+  tekrarlama:"Recurrencia (plan de mantenimiento)",tekSefer:"Único",haftalikL:"Semanal",aylikL:"Mensual",yillikL:"Anual",
+  tekrarBilgi:"Al completarse, se crea automáticamente un nuevo trabajo para el siguiente período",
+  isAdresiL:"Dirección del trabajo (opcional)",adresPh:"Calle, número, ciudad...",musteriTel:"Teléfono del cliente (opcional)",epostaOps:"Correo (opcional)",
+  isFotolari:"Fotos del trabajo (antes/después)",durumL:"Estado",guncelle:"Actualizar",
+  odemeDurumu:"Estado del pago",kaparoEkle:"+ Anticipo / Pago parcial",alinan:"Recibido",kalanL:"Restante",adresL:"Dirección",navBaslat:"Iniciar navegación",fotograflarB:"FOTOS DEL TRABAJO",
+  henuzFaturaYok:"Sin facturas emitidas.",kesildiL:"EMITIDA",bekleyenIslerB:"TRABAJOS PENDIENTES",alindiL:"recibido",
+  yeniMusteri:"Añadir cliente",adSoyadPh:"Nombre / Empresa *",telefonL:"Teléfono",epostaL:"Correo",adresNavPh:"Dirección (para navegación)",vazgec:"Cancelar",gitL:"Ir",yeniL:"Nuevo",
+  ciroL:"Facturación",isSayisi:"Nº de trabajos",isAdresleriB:"DIRECCIONES DE TRABAJOS",toplamCiro:"Facturación total",toplamIsL:"Trabajos totales",isGecmisiB:"HISTORIAL",isKaydiYok:"Sin trabajos",araL:"Llamar",iletisimYok:"Sin datos de contacto",
+  donusum:"Conversión",gunL:"días",suresiDoldu:"Caducado",onaylandiL:"Aprobado",reddedildiL:"Rechazado",onayla:"Aprobar",reddet:"Rechazar",
+  henuzTeklifYok:"Sin presupuestos",ilkTeklif:"+ Crear primer presupuesto",teklifBilgi:"Crea un presupuesto y conviértelo en trabajo tras la aprobación.",filtreEslesmedi:"Ningún presupuesto con este filtro.",bekleyenTeklifT:"Total presupuestos pendientes",
+  buAyR:"Este mes",gecenAy:"Mes pasado",son3Ay:"Últimos 3 meses",tumu:"Todos",gelirL:"Ingreso",giderL:"Gasto",
+  son7Gun:"Ingresos últimos 7 días",son7Yok:"Sin trabajos completados en 7 días.",isBazli:"Importes por trabajo",donemdeIsYok:"Sin trabajos en este período",durumDagilimi:"Distribución de estados",aktifL:"Activo",
+  yedekGeriYukle:"Restaurar copia",jsonIceAktar:"Importar JSON",hakkinda:"Acerca de",detayL:"Detalles",
+  whatsappGonder:"Enviar por WhatsApp",yazdirPdf:"Imprimir / PDF",
+  tumIslerB:"TODOS LOS TRABAJOS",listesiB:"LISTA",kategoriIsYok:"Sin trabajos en esta categoría",gelirKaynaklariB:"FUENTES DE INGRESO",giderKategorileriB:"CATEGORÍAS DE GASTO",henuzGiderYok:"Sin gastos",devamEdenL:"En curso",isL:"trabajos",
+  isletmeAyarlariB:"AJUSTES DEL NEGOCIO",finansB:"FINANZAS",raporlamaDonemi:"Período del informe",bankaHesabi:"Añadir cuenta bancaria",sesEfektleri:"Efectos de sonido",kompaktGorunum:"Vista compacta",proYukselt:"Mejorar a Pro",haftalikHedef:"Meta semanal",
+  hizliModullerB:"MÓDULOS DE ACCESO RÁPIDO",modulBilgi:"Activa/desactiva módulos, arrastra para ordenar. Efecto inmediato.",modulEkle:"+ Añadir / editar módulos →",
+  sesEfektSub:"Sonidos de confirmación",kompaktSub:"Contenido más denso",bildirimSub:"Recordatorios y avisos de trabajos",karanlikSub:"Menos fatiga visual",
+  vergiDairesiYok:"Oficina fiscal sin definir",kdvSub:"Aplicado a los cálculos de factura",logoSub:"Visible en facturas y perfil",
+  canliKur:"Tipos en vivo",sabitKur:"Tipos fijos",aylikGorunum:"Vista mensual",ibanSub:"Seguimiento de pagos por IBAN",
+  proSub:"Trabajos ilimitados · Facturas PDF · Envío WhatsApp · Copia en la nube",epostaDestek:"Soporte por correo",sssSub:"FAQ y guías",degerlendirSub:"Valorar en App Store / Play Store",kvkkSub:"Cumple privacidad",yakinda:"¡Próximamente!",
+  gibSubAktif:"Factura electrónica activa",gibSubTest:"API configurada, falta prueba",gibSubYok:"Sin configurar",
+  mIslerA:"Todas las órdenes y estados",mFaturaA:"Facturas emitidas y pendientes",mTahsilatA:"Cobros realizados y pendientes",mMusteriA:"Lista de clientes y análisis de facturación",mTeklifA:"Presupuestos y conversiones",mRaporA:"Gráficos y estadísticas",mGiderA:"Seguimiento de gastos y categorías",mDahaA:"Exportar, ajustes, ayuda",
+  modulFooter:"Los módulos activos aparecen en Inicio · Los desactivados quedan en el menú",
+  kategori:"Categoría",aramaPh:"🔍 Buscar cliente o trabajo...",dilAramaPh:"🔍 Buscar idioma o país...",yardimAramaPh:"🔍 Buscar ayuda...",
+  isOrnekPh:"Purga de radiadores...",musteriOrnekPh:"Juan García",malzemePh:"Compra de material...",musteriAdiPh:"Nombre del cliente",klimaPh:"Instalación de aire...",aliciAdiPh:"Nombre del destinatario",
+  maliyetL:"Coste estimado",maliyetPh:"Material + mano de obra + viaje...",marjL:"Margen de beneficio",zararUyari:"¡ESTE TRABAJO DA PÉRDIDAS!",dusukMarj:"Margen bajo",benzerIs:"Coste medio en trabajos similares",
+  guncelMusterilerT:"Clientes activos",musteriKayitT:"Registro de clientes",kayitliMusteriler:"Clientes registrados",yeniKayit:"+ Nuevo registro",kayitYok:"Sin clientes registrados",kayitYokSub:"Registra clientes por adelantado para crear trabajos más rápido",telYok:"Sin teléfono",isKaydiVar:"trabajos",aktifMusteriDurumu:"Estado de clientes activos",
+  tahsilKisa:"Cobrado",giderKisa:"Gastos",karKisa:"Beneficio",zararKisa:"Pérdida",karZararAnalizi:"ANÁLISIS BENEFICIO / PÉRDIDA",netZarar:"Pérdida neta",giderKalemleri:"Partidas de gasto",yeniIsAc:"➕ Nuevo trabajo",giderEkleBtn:"💸 Añadir gasto",
+  musteriyiSil:"Eliminar cliente",silinecekK:"se eliminará",aitIsUyariOn:"Este cliente tiene",aitIsUyariSon:"trabajos que también se eliminarán!",isimsizMusteri:"Cliente sin nombre",isimsizK:"Sin nombre",
+  iseBagla:"Vincular a trabajo (opcional)",islerdenSec:"+ Elegir entre trabajos activos/pendientes",listeyiKapat:"▲ Cerrar lista",aktifBekleyenYok:"Sin trabajos activos/pendientes",
+  tumuF:"Todos",iseBagliF:"📋 Vinculados",serbestF:"Libres",giderlerB:"GASTOS",atananL:"Asignado",atananKisi:"Asignado a",benL:"Yo",
+  hazirIslerOn:"Sugerencias para ",hazirIslerSon:":",
+  ekipYonetimi:"Gestión de equipo",ekipSub:"Añade miembros, asigna trabajos",yeniUyeEkle:"Nuevo miembro",ekibeEkle:"+ Añadir al equipo",ekipYok:"Sin miembros de equipo",ekipYokSub:"Añade miembros para asignar trabajos y ver el rendimiento en Informes",isAtandiK:"asignados",buIsimVar:"Ese nombre ya está en el equipo",uyeCikarildi:"Miembro eliminado",ekibeEklendi:"añadido al equipo",
+  rolUsta:"Técnico",rolMuhasebe:"Contabilidad",rolSatis:"Ventas",rolSofor:"Conductor",rolYardimci:"Ayudante",patronRol:"Dueño",
+  ekipPerformansi:"Rendimiento del equipo",isBirim:"trabajos",karSuffix:"beneficio",
+  hosgeldinT:"Bienvenido",gozAt:"Echa un vistazo rápido a tu negocio.",
+  faturaSilUyari:"Esta factura se eliminará",gibSilNot:"Anular una factura oficial está sujeto a normas fiscales — esto solo borra el registro en la app.",
+  excelIslerL:"Excel — Trabajos",excelGiderlerL:"Excel — Gastos",excelFaturalarL:"Excel — Facturas",pdfRaporL:"Informe contable PDF",muhasebeyeGonder:"Enviar al contable",yazdirKaydet:"Imprimir / Guardar PDF",
+  asistanHosgeldin:"¡Hola! 👋 Soy el asistente de TradeFlow. Pregunta sobre facturas, cobros, costes... o elige una pregunta rápida abajo.",soruPh:"Escribe tu pregunta...",
+  asistan:"Asistente",asistanSub:"Respuestas instantáneas a tus preguntas",
+};
+const IT = {
+  gunaydin:"Buongiorno,",isletmem:"La mia attività",yeniIs:"Nuovo lavoro",isKoluSec:"Scegli mestiere",ozellestir:"Personalizza",
+  aktifIs:"Lavori attivi",devamEden:"In corso",tahsilEdildi:"Incassato",buAyTahsilat:"Questo mese",
+  bekleyenTahsilat:"Pagamento in sospeso",fatura:"fatture",bekleyen:"In attesa",faturaTek:"Fattura",
+  isAkislari:"Lavori",faturalar:"Fatture",tahsilatlar:"Incassi",musteriler:"Clienti",
+  teklifler:"Preventivi",raporlar:"Report",giderler:"Spese",dahaFazla:"Altro",
+  gelirGider:"Entrate-Uscite",buAy:"Questo mese",toplamGelir:"Entrate totali",toplamGider:"Uscite totali",
+  netKar:"Utile netto",tahsilatDurumu:"Stato incassi",toplam:"Totale",tahsilEdilen:"Incassato",
+  geciken:"Scaduto",vadesiGelmeyen:"Non scaduto",tahsilatOrani:"Tasso d'incasso",
+  duzenleBaslik1:"Personalizza la tua",duzenleBaslik2:"app aziendale",duzenleAlt:"Scegli i moduli, riordina.",duzenle:"Modifica",
+  sonIsAkislari:"Lavori recenti",musteri:"Cliente",tumunuGoruntule:"Vedi tutto",
+  anaSayfa:"Home",bildirimlerT:"Avvisi",profil:"Profilo",tumIsAkislari:"Tutti i lavori",
+  devamEdiyor:"In corso",beklemede:"In attesa",tamamlandi:"Completato",
+  buAyinKarnesi:"REPORT DEL MESE",isTamamlandi:"Lavori completati",tahsilat:"Incassato",memnuniyet:"Soddisfazione",
+  isletme:"ATTIVITÀ",isletmeBilgileri:"Dati attività",kdvOrani:"Aliquota IVA",logoYukle:"Carica logo",
+  sec:"Scegli",degistir:"Cambia",uygulama:"APP",bildirimlerL:"Notifiche",karanlikMod:"Tema scuro",
+  dil:"Lingua",paraBirimi:"Valuta",destek:"SUPPORTO",whatsappDestek:"Supporto WhatsApp",
+  yardimMerkezi:"Centro assistenza",degerlendir:"Valuta l'app",gizlilik:"Privacy",
+  cikisYap:"Esci",profiliDuzenle:"Modifica profilo",dilSecin:"Scegli lingua",paraBirimiB:"Valuta",
+  iptal:"Annulla",kaydet:"Salva",sil:"Elimina",silOnay:"Eliminare questo lavoro?",evetSil:"Sì, elimina",
+  hatirlatma:"Promemoria",faturaKes:"Crea fattura",tamamla:"Completa",kapat:"Chiudi",
+  yeniTeklif:"Nuovo preventivo",iseDonustur:"Converti in lavoro",gecerlilik:"Valido fino al",
+  yeniGider:"Nuova spesa",tahsilEt:"Incassa",oneriniz:"Il tuo suggerimento...",
+  gonder:"Invia",tesekkurler:"Grazie!",verileriSifirla:"Ripristina dati",
+  disaAktar:"Esporta dati",bosBildirim:"Nessun avviso",tumunuOkundu:"Segna tutto letto",
+  sonucYok:"Nessun risultato",gunSecin:"Tocca un giorno per vedere i lavori",buGunIsYok:"Nessun lavoro in questo giorno",isleri:"LAVORI",
+  isDuzenle:"Modifica lavoro",ikon:"Icona",isBasligi:"Titolo del lavoro",tarihL:"Data",tutarL:"Importo",
+  tekrarlama:"Ricorrenza (piano manutenzione)",tekSefer:"Una tantum",haftalikL:"Settimanale",aylikL:"Mensile",yillikL:"Annuale",
+  tekrarBilgi:"Al completamento, viene creato automaticamente un nuovo lavoro per il periodo successivo",
+  isAdresiL:"Indirizzo del lavoro (opzionale)",adresPh:"Via, numero, città...",musteriTel:"Telefono cliente (opzionale)",epostaOps:"Email (opzionale)",
+  isFotolari:"Foto del lavoro (prima/dopo)",durumL:"Stato",guncelle:"Aggiorna",
+  odemeDurumu:"Stato pagamento",kaparoEkle:"+ Acconto / Pagamento parziale",alinan:"Ricevuto",kalanL:"Rimanente",adresL:"Indirizzo",navBaslat:"Avvia navigazione",fotograflarB:"FOTO DEL LAVORO",
+  henuzFaturaYok:"Nessuna fattura emessa.",kesildiL:"EMESSA",bekleyenIslerB:"LAVORI IN ATTESA",alindiL:"ricevuto",
+  yeniMusteri:"Aggiungi cliente",adSoyadPh:"Nome / Azienda *",telefonL:"Telefono",epostaL:"Email",adresNavPh:"Indirizzo (per navigazione)",vazgec:"Annulla",gitL:"Vai",yeniL:"Nuovo",
+  ciroL:"Fatturato",isSayisi:"N. lavori",isAdresleriB:"INDIRIZZI DEI LAVORI",toplamCiro:"Fatturato totale",toplamIsL:"Lavori totali",isGecmisiB:"STORICO LAVORI",isKaydiYok:"Nessun lavoro",araL:"Chiama",iletisimYok:"Nessun contatto",
+  donusum:"Conversione",gunL:"giorni",suresiDoldu:"Scaduto",onaylandiL:"Approvato",reddedildiL:"Rifiutato",onayla:"Approva",reddet:"Rifiuta",
+  henuzTeklifYok:"Nessun preventivo",ilkTeklif:"+ Crea il primo preventivo",teklifBilgi:"Crea un preventivo e convertilo in lavoro dopo l'approvazione.",filtreEslesmedi:"Nessun preventivo per questo filtro.",bekleyenTeklifT:"Totale preventivi in attesa",
+  buAyR:"Questo mese",gecenAy:"Mese scorso",son3Ay:"Ultimi 3 mesi",tumu:"Tutti",gelirL:"Entrata",giderL:"Uscita",
+  son7Gun:"Entrate ultimi 7 giorni",son7Yok:"Nessun lavoro completato in 7 giorni.",isBazli:"Importi per lavoro",donemdeIsYok:"Nessun lavoro nel periodo",durumDagilimi:"Distribuzione stati",aktifL:"Attivo",
+  yedekGeriYukle:"Ripristina backup",jsonIceAktar:"Importa JSON",hakkinda:"Info",detayL:"Dettagli",
+  whatsappGonder:"Invia via WhatsApp",yazdirPdf:"Stampa / PDF",
+  tumIslerB:"TUTTI I LAVORI",listesiB:"ELENCO",kategoriIsYok:"Nessun lavoro in questa categoria",gelirKaynaklariB:"FONTI DI ENTRATA",giderKategorileriB:"CATEGORIE DI SPESA",henuzGiderYok:"Nessuna spesa",devamEdenL:"In corso",isL:"lavori",
+  isletmeAyarlariB:"IMPOSTAZIONI ATTIVITÀ",finansB:"FINANZE",raporlamaDonemi:"Periodo report",bankaHesabi:"Aggiungi conto bancario",sesEfektleri:"Effetti sonori",kompaktGorunum:"Vista compatta",proYukselt:"Passa a Pro",haftalikHedef:"Obiettivo settimanale",
+  hizliModullerB:"MODULI RAPIDI",modulBilgi:"Attiva/disattiva moduli, trascina per riordinare. Effetto immediato.",modulEkle:"+ Aggiungi / modifica moduli →",
+  sesEfektSub:"Suoni di conferma",kompaktSub:"Contenuti più densi",bildirimSub:"Promemoria e avvisi lavori",karanlikSub:"Riduce l'affaticamento degli occhi",
+  vergiDairesiYok:"Ufficio fiscale non impostato",kdvSub:"Applicata ai calcoli fattura",logoSub:"Visibile su fatture e profilo",
+  canliKur:"Tassi live",sabitKur:"Tassi fissi",aylikGorunum:"Vista mensile",ibanSub:"Traccia pagamenti via IBAN",
+  proSub:"Lavori illimitati · Fatture PDF · Invio WhatsApp · Backup cloud",epostaDestek:"Supporto email",sssSub:"FAQ e guide",degerlendirSub:"Valuta su App Store / Play Store",kvkkSub:"Conforme privacy",yakinda:"In arrivo!",
+  gibSubAktif:"Fattura elettronica attiva",gibSubTest:"API impostata, serve test",gibSubYok:"Non configurato",
+  mIslerA:"Tutti gli ordini e gli stati",mFaturaA:"Fatture emesse e in attesa",mTahsilatA:"Incassi effettuati e in attesa",mMusteriA:"Elenco clienti e analisi fatturato",mTeklifA:"Preventivi e conversioni",mRaporA:"Grafici e statistiche",mGiderA:"Tracciamento spese e categorie",mDahaA:"Esporta, impostazioni, aiuto",
+  modulFooter:"I moduli attivi appaiono in Home · Quelli disattivati restano nel menu",
+  kategori:"Categoria",aramaPh:"🔍 Cerca cliente o lavoro...",dilAramaPh:"🔍 Cerca lingua o paese...",yardimAramaPh:"🔍 Cerca aiuto...",
+  isOrnekPh:"Pulizia radiatori...",musteriOrnekPh:"Mario Rossi",malzemePh:"Acquisto materiale...",musteriAdiPh:"Nome cliente",klimaPh:"Installazione clima...",aliciAdiPh:"Nome destinatario",
+  maliyetL:"Costo stimato",maliyetPh:"Materiale + manodopera + viaggio...",marjL:"Margine di profitto",zararUyari:"QUESTO LAVORO È IN PERDITA!",dusukMarj:"Margine basso",benzerIs:"Costo medio su lavori simili",
+  guncelMusterilerT:"Clienti attivi",musteriKayitT:"Anagrafica clienti",kayitliMusteriler:"Clienti registrati",yeniKayit:"+ Nuova scheda",kayitYok:"Nessun cliente registrato",kayitYokSub:"Registra i clienti in anticipo per creare lavori più velocemente",telYok:"Nessun telefono",isKaydiVar:"lavori",aktifMusteriDurumu:"Stato clienti attivi",
+  tahsilKisa:"Incassato",giderKisa:"Spese",karKisa:"Utile",zararKisa:"Perdita",karZararAnalizi:"ANALISI UTILE / PERDITA",netZarar:"Perdita netta",giderKalemleri:"Voci di spesa",yeniIsAc:"➕ Nuovo lavoro",giderEkleBtn:"💸 Aggiungi spesa",
+  musteriyiSil:"Elimina cliente",silinecekK:"sarà eliminato",aitIsUyariOn:"Questo cliente ha",aitIsUyariSon:"lavori che saranno eliminati anch'essi!",isimsizMusteri:"Cliente senza nome",isimsizK:"Senza nome",
+  iseBagla:"Collega a lavoro (opzionale)",islerdenSec:"+ Scegli tra lavori attivi/in attesa",listeyiKapat:"▲ Chiudi elenco",aktifBekleyenYok:"Nessun lavoro attivo/in attesa",
+  tumuF:"Tutti",iseBagliF:"📋 Collegati",serbestF:"Liberi",giderlerB:"SPESE",atananL:"Assegnato",atananKisi:"Assegnato a",benL:"Io",
+  hazirIslerOn:"Suggerimenti per ",hazirIslerSon:":",
+  ekipYonetimi:"Gestione team",ekipSub:"Aggiungi membri, assegna lavori",yeniUyeEkle:"Nuovo membro",ekibeEkle:"+ Aggiungi al team",ekipYok:"Nessun membro del team",ekipYokSub:"Aggiungi membri per assegnare lavori e vedere le prestazioni nei Report",isAtandiK:"assegnati",buIsimVar:"Questo nome è già nel team",uyeCikarildi:"Membro rimosso",ekibeEklendi:"aggiunto al team",
+  rolUsta:"Tecnico",rolMuhasebe:"Contabilità",rolSatis:"Vendite",rolSofor:"Autista",rolYardimci:"Aiutante",patronRol:"Titolare",
+  ekipPerformansi:"Prestazioni del team",isBirim:"lavori",karSuffix:"utile",
+  hosgeldinT:"Benvenuto",gozAt:"Dai un'occhiata veloce alla tua attività.",
+  faturaSilUyari:"Questa fattura sarà eliminata",gibSilNot:"L'annullamento di una fattura ufficiale è soggetto alle norme fiscali — qui si elimina solo il record nell'app.",
+  excelIslerL:"Excel — Lavori",excelGiderlerL:"Excel — Spese",excelFaturalarL:"Excel — Fatture",pdfRaporL:"Report contabile PDF",muhasebeyeGonder:"Invia al commercialista",yazdirKaydet:"Stampa / Salva PDF",
+  asistanHosgeldin:"Ciao! 👋 Sono l'assistente TradeFlow. Chiedimi di fatture, incassi, costi... o scegli una domanda rapida qui sotto.",soruPh:"Scrivi la tua domanda...",
+  asistan:"Assistente",asistanSub:"Risposte immediate alle tue domande",
+};
+const PT = {
+  gunaydin:"Bom dia,",isletmem:"Meu negócio",yeniIs:"Novo trabalho",isKoluSec:"Escolher ofício",ozellestir:"Personalizar",
+  aktifIs:"Trabalhos ativos",devamEden:"Em andamento",tahsilEdildi:"Recebido",buAyTahsilat:"Este mês",
+  bekleyenTahsilat:"Pagamento pendente",fatura:"faturas",bekleyen:"Pendente",faturaTek:"Fatura",
+  isAkislari:"Trabalhos",faturalar:"Faturas",tahsilatlar:"Recebimentos",musteriler:"Clientes",
+  teklifler:"Orçamentos",raporlar:"Relatórios",giderler:"Despesas",dahaFazla:"Mais",
+  gelirGider:"Receitas-Despesas",buAy:"Este mês",toplamGelir:"Receita total",toplamGider:"Despesa total",
+  netKar:"Lucro líquido",tahsilatDurumu:"Estado dos recebimentos",toplam:"Total",tahsilEdilen:"Recebido",
+  geciken:"Vencido",vadesiGelmeyen:"Não vencido",tahsilatOrani:"Taxa de recebimento",
+  duzenleBaslik1:"Personalize a sua",duzenleBaslik2:"app de negócio",duzenleAlt:"Escolha módulos, reordene.",duzenle:"Editar",
+  sonIsAkislari:"Trabalhos recentes",musteri:"Cliente",tumunuGoruntule:"Ver tudo",
+  anaSayfa:"Início",bildirimlerT:"Alertas",profil:"Perfil",tumIsAkislari:"Todos os trabalhos",
+  devamEdiyor:"Em andamento",beklemede:"Pendente",tamamlandi:"Concluído",
+  buAyinKarnesi:"RELATÓRIO DO MÊS",isTamamlandi:"Trabalhos feitos",tahsilat:"Recebido",memnuniyet:"Satisfação",
+  isletme:"NEGÓCIO",isletmeBilgileri:"Dados do negócio",kdvOrani:"Taxa de IVA",logoYukle:"Carregar logo",
+  sec:"Escolher",degistir:"Alterar",uygulama:"APP",bildirimlerL:"Notificações",karanlikMod:"Modo escuro",
+  dil:"Idioma",paraBirimi:"Moeda",destek:"SUPORTE",whatsappDestek:"Suporte WhatsApp",
+  yardimMerkezi:"Central de ajuda",degerlendir:"Avaliar a app",gizlilik:"Privacidade",
+  cikisYap:"Terminar sessão",profiliDuzenle:"Editar perfil",dilSecin:"Escolher idioma",paraBirimiB:"Moeda",
+  iptal:"Cancelar",kaydet:"Guardar",sil:"Eliminar",silOnay:"Eliminar este trabalho?",evetSil:"Sim, eliminar",
+  hatirlatma:"Lembrete",faturaKes:"Criar fatura",tamamla:"Concluir",kapat:"Fechar",
+  yeniTeklif:"Novo orçamento",iseDonustur:"Converter em trabalho",gecerlilik:"Válido até",
+  yeniGider:"Nova despesa",tahsilEt:"Receber",oneriniz:"A sua sugestão...",
+  gonder:"Enviar",tesekkurler:"Obrigado!",verileriSifirla:"Repor dados",
+  disaAktar:"Exportar dados",bosBildirim:"Sem alertas",tumunuOkundu:"Marcar tudo lido",
+  sonucYok:"Sem resultados",gunSecin:"Toque num dia para ver os trabalhos",buGunIsYok:"Sem trabalhos neste dia",isleri:"TRABALHOS",
+  isDuzenle:"Editar trabalho",ikon:"Ícone",isBasligi:"Título do trabalho",tarihL:"Data",tutarL:"Valor",
+  tekrarlama:"Recorrência (plano de manutenção)",tekSefer:"Único",haftalikL:"Semanal",aylikL:"Mensal",yillikL:"Anual",
+  tekrarBilgi:"Ao concluir, é criado automaticamente um novo trabalho para o período seguinte",
+  isAdresiL:"Endereço do trabalho (opcional)",adresPh:"Rua, número, cidade...",musteriTel:"Telefone do cliente (opcional)",epostaOps:"Email (opcional)",
+  isFotolari:"Fotos do trabalho (antes/depois)",durumL:"Estado",guncelle:"Atualizar",
+  odemeDurumu:"Estado do pagamento",kaparoEkle:"+ Sinal / Pagamento parcial",alinan:"Recebido",kalanL:"Restante",adresL:"Endereço",navBaslat:"Iniciar navegação",fotograflarB:"FOTOS DO TRABALHO",
+  henuzFaturaYok:"Nenhuma fatura emitida.",kesildiL:"EMITIDA",bekleyenIslerB:"TRABALHOS PENDENTES",alindiL:"recebido",
+  yeniMusteri:"Adicionar cliente",adSoyadPh:"Nome / Empresa *",telefonL:"Telefone",epostaL:"Email",adresNavPh:"Endereço (para navegação)",vazgec:"Cancelar",gitL:"Ir",yeniL:"Novo",
+  ciroL:"Faturação",isSayisi:"N.º de trabalhos",isAdresleriB:"ENDEREÇOS DOS TRABALHOS",toplamCiro:"Faturação total",toplamIsL:"Trabalhos totais",isGecmisiB:"HISTÓRICO",isKaydiYok:"Sem trabalhos",araL:"Ligar",iletisimYok:"Sem contactos",
+  donusum:"Conversão",gunL:"dias",suresiDoldu:"Expirado",onaylandiL:"Aprovado",reddedildiL:"Recusado",onayla:"Aprovar",reddet:"Recusar",
+  henuzTeklifYok:"Sem orçamentos",ilkTeklif:"+ Criar primeiro orçamento",teklifBilgi:"Crie um orçamento e converta em trabalho após aprovação.",filtreEslesmedi:"Nenhum orçamento neste filtro.",bekleyenTeklifT:"Total de orçamentos pendentes",
+  buAyR:"Este mês",gecenAy:"Mês passado",son3Ay:"Últimos 3 meses",tumu:"Todos",gelirL:"Receita",giderL:"Despesa",
+  son7Gun:"Receitas últimos 7 dias",son7Yok:"Sem trabalhos concluídos em 7 dias.",isBazli:"Valores por trabalho",donemdeIsYok:"Sem trabalhos neste período",durumDagilimi:"Distribuição de estados",aktifL:"Ativo",
+  yedekGeriYukle:"Restaurar cópia",jsonIceAktar:"Importar JSON",hakkinda:"Sobre",detayL:"Detalhes",
+  whatsappGonder:"Enviar por WhatsApp",yazdirPdf:"Imprimir / PDF",
+  tumIslerB:"TODOS OS TRABALHOS",listesiB:"LISTA",kategoriIsYok:"Sem trabalhos nesta categoria",gelirKaynaklariB:"FONTES DE RECEITA",giderKategorileriB:"CATEGORIAS DE DESPESA",henuzGiderYok:"Sem despesas",devamEdenL:"Em andamento",isL:"trabalhos",
+  isletmeAyarlariB:"DEFINIÇÕES DO NEGÓCIO",finansB:"FINANÇAS",raporlamaDonemi:"Período do relatório",bankaHesabi:"Adicionar conta bancária",sesEfektleri:"Efeitos sonoros",kompaktGorunum:"Vista compacta",proYukselt:"Passar a Pro",haftalikHedef:"Meta semanal",
+  hizliModullerB:"MÓDULOS DE ACESSO RÁPIDO",modulBilgi:"Ative/desative módulos, arraste para ordenar. Efeito imediato.",modulEkle:"+ Adicionar / editar módulos →",
+  sesEfektSub:"Sons de confirmação",kompaktSub:"Conteúdo mais denso",bildirimSub:"Lembretes e alertas de trabalhos",karanlikSub:"Reduz o cansaço visual",
+  vergiDairesiYok:"Repartição fiscal não definida",kdvSub:"Aplicado aos cálculos da fatura",logoSub:"Visível em faturas e perfil",
+  canliKur:"Taxas em direto",sabitKur:"Taxas fixas",aylikGorunum:"Vista mensal",ibanSub:"Acompanhe pagamentos por IBAN",
+  proSub:"Trabalhos ilimitados · Faturas PDF · Envio WhatsApp · Cópia na nuvem",epostaDestek:"Suporte por email",sssSub:"FAQ e guias",degerlendirSub:"Avaliar na App Store / Play Store",kvkkSub:"Conforme privacidade",yakinda:"Em breve!",
+  gibSubAktif:"Fatura eletrónica ativa",gibSubTest:"API configurada, falta teste",gibSubYok:"Não configurado",
+  mIslerA:"Todas as ordens e estados",mFaturaA:"Faturas emitidas e pendentes",mTahsilatA:"Recebimentos feitos e pendentes",mMusteriA:"Lista de clientes e análise de faturação",mTeklifA:"Orçamentos e conversões",mRaporA:"Gráficos e estatísticas",mGiderA:"Controlo de despesas e categorias",mDahaA:"Exportar, definições, ajuda",
+  modulFooter:"Módulos ativos aparecem no Início · Os desativados ficam no menu",
+  kategori:"Categoria",aramaPh:"🔍 Procurar cliente ou trabalho...",dilAramaPh:"🔍 Procurar idioma ou país...",yardimAramaPh:"🔍 Procurar ajuda...",
+  isOrnekPh:"Purga de radiadores...",musteriOrnekPh:"João Silva",malzemePh:"Compra de material...",musteriAdiPh:"Nome do cliente",klimaPh:"Instalação de AC...",aliciAdiPh:"Nome do destinatário",
+  maliyetL:"Custo estimado",maliyetPh:"Material + mão de obra + deslocação...",marjL:"Margem de lucro",zararUyari:"ESTE TRABALHO DÁ PREJUÍZO!",dusukMarj:"Margem baixa",benzerIs:"Custo médio em trabalhos semelhantes",
+  guncelMusterilerT:"Clientes ativos",musteriKayitT:"Registo de clientes",kayitliMusteriler:"Clientes registados",yeniKayit:"+ Novo registo",kayitYok:"Sem clientes registados",kayitYokSub:"Registe clientes antecipadamente para criar trabalhos mais depressa",telYok:"Sem telefone",isKaydiVar:"trabalhos",aktifMusteriDurumu:"Estado dos clientes ativos",
+  tahsilKisa:"Recebido",giderKisa:"Despesas",karKisa:"Lucro",zararKisa:"Prejuízo",karZararAnalizi:"ANÁLISE LUCRO / PREJUÍZO",netZarar:"Prejuízo líquido",giderKalemleri:"Itens de despesa",yeniIsAc:"➕ Novo trabalho",giderEkleBtn:"💸 Adicionar despesa",
+  musteriyiSil:"Eliminar cliente",silinecekK:"será eliminado",aitIsUyariOn:"Este cliente tem",aitIsUyariSon:"trabalhos que também serão eliminados!",isimsizMusteri:"Cliente sem nome",isimsizK:"Sem nome",
+  iseBagla:"Ligar a trabalho (opcional)",islerdenSec:"+ Escolher entre trabalhos ativos/pendentes",listeyiKapat:"▲ Fechar lista",aktifBekleyenYok:"Sem trabalhos ativos/pendentes",
+  tumuF:"Todos",iseBagliF:"📋 Ligados",serbestF:"Livres",giderlerB:"DESPESAS",atananL:"Atribuído",atananKisi:"Atribuído a",benL:"Eu",
+  hazirIslerOn:"Sugestões para ",hazirIslerSon:":",
+  ekipYonetimi:"Gestão de equipa",ekipSub:"Adicione membros, atribua trabalhos",yeniUyeEkle:"Novo membro",ekibeEkle:"+ Adicionar à equipa",ekipYok:"Sem membros na equipa",ekipYokSub:"Adicione membros para atribuir trabalhos e ver o desempenho nos Relatórios",isAtandiK:"atribuídos",buIsimVar:"Esse nome já está na equipa",uyeCikarildi:"Membro removido",ekibeEklendi:"adicionado à equipa",
+  rolUsta:"Técnico",rolMuhasebe:"Contabilidade",rolSatis:"Vendas",rolSofor:"Motorista",rolYardimci:"Ajudante",patronRol:"Dono",
+  ekipPerformansi:"Desempenho da equipa",isBirim:"trabalhos",karSuffix:"lucro",
+  hosgeldinT:"Bem-vindo",gozAt:"Dê uma olhada rápida ao seu negócio.",
+  faturaSilUyari:"Esta fatura será eliminada",gibSilNot:"Anular uma fatura oficial está sujeito às regras fiscais — isto apenas remove o registo na app.",
+  excelIslerL:"Excel — Trabalhos",excelGiderlerL:"Excel — Despesas",excelFaturalarL:"Excel — Faturas",pdfRaporL:"Relatório contabilístico PDF",muhasebeyeGonder:"Enviar ao contabilista",yazdirKaydet:"Imprimir / Guardar PDF",
+  asistanHosgeldin:"Olá! 👋 Sou o assistente TradeFlow. Pergunte sobre faturas, recebimentos, custos... ou escolha uma pergunta rápida abaixo.",soruPh:"Escreva a sua pergunta...",
+  asistan:"Assistente",asistanSub:"Respostas imediatas às suas perguntas",
+};
+const NL = {
+  gunaydin:"Goedemorgen,",isletmem:"Mijn bedrijf",yeniIs:"Nieuwe klus",isKoluSec:"Vak kiezen",ozellestir:"Aanpassen",
+  aktifIs:"Actieve klussen",devamEden:"In uitvoering",tahsilEdildi:"Geïnd",buAyTahsilat:"Deze maand",
+  bekleyenTahsilat:"Openstaande betaling",fatura:"facturen",bekleyen:"In afwachting",faturaTek:"Factuur",
+  isAkislari:"Klussen",faturalar:"Facturen",tahsilatlar:"Betalingen",musteriler:"Klanten",
+  teklifler:"Offertes",raporlar:"Rapporten",giderler:"Uitgaven",dahaFazla:"Meer",
+  gelirGider:"Inkomsten-Uitgaven",buAy:"Deze maand",toplamGelir:"Totale inkomsten",toplamGider:"Totale uitgaven",
+  netKar:"Nettowinst",tahsilatDurumu:"Betalingsstatus",toplam:"Totaal",tahsilEdilen:"Geïnd",
+  geciken:"Achterstallig",vadesiGelmeyen:"Nog niet vervallen",tahsilatOrani:"Incassoquote",
+  duzenleBaslik1:"Personaliseer je",duzenleBaslik2:"bedrijfsapp",duzenleAlt:"Kies modules, herschik.",duzenle:"Bewerken",
+  sonIsAkislari:"Recente klussen",musteri:"Klant",tumunuGoruntule:"Alles bekijken",
+  anaSayfa:"Start",bildirimlerT:"Meldingen",profil:"Profiel",tumIsAkislari:"Alle klussen",
+  devamEdiyor:"In uitvoering",beklemede:"In afwachting",tamamlandi:"Afgerond",
+  buAyinKarnesi:"MAANDRAPPORT",isTamamlandi:"Afgeronde klussen",tahsilat:"Geïnd",memnuniyet:"Tevredenheid",
+  isletme:"BEDRIJF",isletmeBilgileri:"Bedrijfsgegevens",kdvOrani:"Btw-tarief",logoYukle:"Logo uploaden",
+  sec:"Kiezen",degistir:"Wijzigen",uygulama:"APP",bildirimlerL:"Meldingen",karanlikMod:"Donkere modus",
+  dil:"Taal",paraBirimi:"Valuta",destek:"SUPPORT",whatsappDestek:"WhatsApp-support",
+  yardimMerkezi:"Helpcentrum",degerlendir:"App beoordelen",gizlilik:"Privacy",
+  cikisYap:"Uitloggen",profiliDuzenle:"Profiel bewerken",dilSecin:"Taal kiezen",paraBirimiB:"Valuta",
+  iptal:"Annuleren",kaydet:"Opslaan",sil:"Verwijderen",silOnay:"Deze klus verwijderen?",evetSil:"Ja, verwijderen",
+  hatirlatma:"Herinnering",faturaKes:"Factuur maken",tamamla:"Afronden",kapat:"Sluiten",
+  yeniTeklif:"Nieuwe offerte",iseDonustur:"Omzetten naar klus",gecerlilik:"Geldig tot",
+  yeniGider:"Nieuwe uitgave",tahsilEt:"Innen",oneriniz:"Uw suggestie...",
+  gonder:"Verzenden",tesekkurler:"Bedankt!",verileriSifirla:"Gegevens resetten",
+  disaAktar:"Gegevens exporteren",bosBildirim:"Nog geen meldingen",tumunuOkundu:"Alles gelezen",
+  sonucYok:"Geen resultaten",gunSecin:"Tik op een dag voor de klussen",buGunIsYok:"Geen klussen op deze dag",isleri:"KLUSSEN",
+  isDuzenle:"Klus bewerken",ikon:"Pictogram",isBasligi:"Klustitel",tarihL:"Datum",tutarL:"Bedrag",
+  tekrarlama:"Herhaling (onderhoudsplan)",tekSefer:"Eenmalig",haftalikL:"Wekelijks",aylikL:"Maandelijks",yillikL:"Jaarlijks",
+  tekrarBilgi:"Na afronding wordt automatisch een nieuwe klus aangemaakt voor de volgende periode",
+  isAdresiL:"Klusadres (optioneel)",adresPh:"Straat, nummer, stad...",musteriTel:"Telefoon klant (optioneel)",epostaOps:"E-mail (optioneel)",
+  isFotolari:"Klusfoto's (voor/na)",durumL:"Status",guncelle:"Bijwerken",
+  odemeDurumu:"Betalingsstatus",kaparoEkle:"+ Aanbetaling / Deelbetaling",alinan:"Ontvangen",kalanL:"Resterend",adresL:"Adres",navBaslat:"Navigatie starten",fotograflarB:"KLUSFOTO'S",
+  henuzFaturaYok:"Nog geen facturen aangemaakt.",kesildiL:"AANGEMAAKT",bekleyenIslerB:"OPENSTAANDE KLUSSEN",alindiL:"ontvangen",
+  yeniMusteri:"Klant toevoegen",adSoyadPh:"Naam / Bedrijf *",telefonL:"Telefoon",epostaL:"E-mail",adresNavPh:"Adres (voor navigatie)",vazgec:"Annuleren",gitL:"Ga",yeniL:"Nieuw",
+  ciroL:"Omzet",isSayisi:"Aantal klussen",isAdresleriB:"KLUSADRESSEN",toplamCiro:"Totale omzet",toplamIsL:"Totaal klussen",isGecmisiB:"KLUSGESCHIEDENIS",isKaydiYok:"Geen klussen",araL:"Bellen",iletisimYok:"Geen contactgegevens",
+  donusum:"Conversie",gunL:"dagen",suresiDoldu:"Verlopen",onaylandiL:"Goedgekeurd",reddedildiL:"Afgewezen",onayla:"Goedkeuren",reddet:"Afwijzen",
+  henuzTeklifYok:"Nog geen offertes",ilkTeklif:"+ Eerste offerte maken",teklifBilgi:"Maak een offerte en zet deze na goedkeuring om in een klus.",filtreEslesmedi:"Geen offertes voor dit filter.",bekleyenTeklifT:"Totaal openstaande offertes",
+  buAyR:"Deze maand",gecenAy:"Vorige maand",son3Ay:"Laatste 3 maanden",tumu:"Alle",gelirL:"Inkomst",giderL:"Uitgave",
+  son7Gun:"Inkomsten laatste 7 dagen",son7Yok:"Geen afgeronde klussen in 7 dagen.",isBazli:"Bedragen per klus",donemdeIsYok:"Geen klussen in deze periode",durumDagilimi:"Statusverdeling",aktifL:"Actief",
+  yedekGeriYukle:"Back-up terugzetten",jsonIceAktar:"JSON importeren",hakkinda:"Over",detayL:"Details",
+  whatsappGonder:"Verzenden via WhatsApp",yazdirPdf:"Afdrukken / PDF",
+  tumIslerB:"ALLE KLUSSEN",listesiB:"LIJST",kategoriIsYok:"Geen klussen in deze categorie",gelirKaynaklariB:"INKOMSTENBRONNEN",giderKategorileriB:"UITGAVENCATEGORIEËN",henuzGiderYok:"Nog geen uitgaven",devamEdenL:"In uitvoering",isL:"klussen",
+  isletmeAyarlariB:"BEDRIJFSINSTELLINGEN",finansB:"FINANCIËN",raporlamaDonemi:"Rapportperiode",bankaHesabi:"Bankrekening toevoegen",sesEfektleri:"Geluidseffecten",kompaktGorunum:"Compacte weergave",proYukselt:"Upgrade naar Pro",haftalikHedef:"Weekdoel",
+  hizliModullerB:"SNELTOEGANG-MODULES",modulBilgi:"Modules aan/uit, sleep om te ordenen. Direct effect.",modulEkle:"+ Modules toevoegen / bewerken →",
+  sesEfektSub:"Bevestigingsgeluiden",kompaktSub:"Compactere inhoud",bildirimSub:"Klusherinneringen en meldingen",karanlikSub:"Minder vermoeide ogen",
+  vergiDairesiYok:"Belastingkantoor niet ingesteld",kdvSub:"Toegepast op factuurberekeningen",logoSub:"Zichtbaar op facturen en profiel",
+  canliKur:"Live koersen",sabitKur:"Vaste koersen",aylikGorunum:"Maandweergave",ibanSub:"Betalingen volgen via IBAN",
+  proSub:"Onbeperkte klussen · PDF-facturen · WhatsApp-verzending · Cloudback-up",epostaDestek:"E-mailsupport",sssSub:"FAQ en handleidingen",degerlendirSub:"Beoordeel in App Store / Play Store",kvkkSub:"Privacyconform",yakinda:"Binnenkort!",
+  gibSubAktif:"E-factuur actief",gibSubTest:"API ingesteld, test nodig",gibSubYok:"Nog niet ingesteld",
+  mIslerA:"Alle werkorders en statussen",mFaturaA:"Aangemaakte en openstaande facturen",mTahsilatA:"Geïnde en openstaande betalingen",mMusteriA:"Klantenlijst en omzetanalyse",mTeklifA:"Offertes en conversies",mRaporA:"Grafieken en statistieken",mGiderA:"Uitgavenbeheer en categorieën",mDahaA:"Export, instellingen, hulp",
+  modulFooter:"Actieve modules op Start · Uitgeschakelde blijven in het menu",
+  kategori:"Categorie",aramaPh:"🔍 Zoek klant of klus...",dilAramaPh:"🔍 Zoek taal of land...",yardimAramaPh:"🔍 Zoek hulp...",
+  isOrnekPh:"Radiatoren spoelen...",musteriOrnekPh:"Jan de Vries",malzemePh:"Materiaalinkoop...",musteriAdiPh:"Klantnaam",klimaPh:"Airco-installatie...",aliciAdiPh:"Naam ontvanger",
+  maliyetL:"Geschatte kosten",maliyetPh:"Materiaal + arbeid + reis...",marjL:"Winstmarge",zararUyari:"DEZE KLUS IS VERLIESGEVEND!",dusukMarj:"Lage winstmarge",benzerIs:"Gem. kosten vergelijkbare klussen",
+  guncelMusterilerT:"Actieve klanten",musteriKayitT:"Klantenbestand",kayitliMusteriler:"Geregistreerde klanten",yeniKayit:"+ Nieuwe registratie",kayitYok:"Nog geen geregistreerde klanten",kayitYokSub:"Registreer klanten vooraf voor snelle klusaanmaak",telYok:"Geen telefoon",isKaydiVar:"klussen",aktifMusteriDurumu:"Status actieve klanten",
+  tahsilKisa:"Geïnd",giderKisa:"Uitgaven",karKisa:"Winst",zararKisa:"Verlies",karZararAnalizi:"WINST- / VERLIESANALYSE",netZarar:"Nettoverlies",giderKalemleri:"Uitgavenposten",yeniIsAc:"➕ Nieuwe klus",giderEkleBtn:"💸 Uitgave toevoegen",
+  musteriyiSil:"Klant verwijderen",silinecekK:"wordt verwijderd",aitIsUyariOn:"Deze klant heeft",aitIsUyariSon:"klussen die ook worden verwijderd!",isimsizMusteri:"Naamloze klant",isimsizK:"Naamloos",
+  iseBagla:"Koppelen aan klus (optioneel)",islerdenSec:"+ Kies uit actieve/openstaande klussen",listeyiKapat:"▲ Lijst sluiten",aktifBekleyenYok:"Geen actieve/openstaande klussen",
+  tumuF:"Alle",iseBagliF:"📋 Gekoppeld",serbestF:"Los",giderlerB:"UITGAVEN",atananL:"Toegewezen",atananKisi:"Toegewezen aan",benL:"Ik",
+  hazirIslerOn:"Suggesties voor ",hazirIslerSon:":",
+  ekipYonetimi:"Teambeheer",ekipSub:"Leden toevoegen, klussen toewijzen",yeniUyeEkle:"Nieuw lid",ekibeEkle:"+ Aan team toevoegen",ekipYok:"Nog geen teamleden",ekipYokSub:"Voeg leden toe om klussen toe te wijzen en prestaties te zien in Rapporten",isAtandiK:"toegewezen",buIsimVar:"Deze naam zit al in het team",uyeCikarildi:"Lid verwijderd",ekibeEklendi:"toegevoegd aan team",
+  rolUsta:"Monteur",rolMuhasebe:"Boekhouding",rolSatis:"Verkoop",rolSofor:"Chauffeur",rolYardimci:"Assistent",patronRol:"Eigenaar",
+  ekipPerformansi:"Teamprestaties",isBirim:"klussen",karSuffix:"winst",
+  hosgeldinT:"Welkom",gozAt:"Bekijk snel hoe je bedrijf ervoor staat.",
+  faturaSilUyari:"Deze factuur wordt verwijderd",gibSilNot:"Het annuleren van een officiële factuur valt onder fiscale regels — dit verwijdert alleen de app-registratie.",
+  excelIslerL:"Excel — Klussen",excelGiderlerL:"Excel — Uitgaven",excelFaturalarL:"Excel — Facturen",pdfRaporL:"PDF-boekhoudrapport",muhasebeyeGonder:"Naar boekhouder sturen",yazdirKaydet:"Afdrukken / Opslaan als PDF",
+  asistanHosgeldin:"Hallo! 👋 Ik ben de TradeFlow-assistent. Vraag me over facturen, betalingen, kosten... of kies hieronder een snelle vraag.",soruPh:"Typ je vraag...",
+  asistan:"Assistent",asistanSub:"Direct antwoord op je vragen",
+};
+
 const PARTIALS = {
   es:{gunaydin:"Buenos días,",yeniIs:"Nuevo Trabajo",anaSayfa:"Inicio",isAkislari:"Trabajos",bildirimlerT:"Alertas",profil:"Perfil",tamamlandi:"Completado",dil:"Idioma",kaydet:"Guardar",iptal:"Cancelar",sil:"Eliminar",isletmem:"Mi Negocio",faturalar:"Facturas",tahsilatlar:"Cobros",musteriler:"Clientes",teklifler:"Presupuestos",raporlar:"Informes",giderler:"Gastos",dahaFazla:"Más",toplamGelir:"Ingresos Totales",toplamGider:"Gastos Totales",netKar:"Beneficio Neto",bekleyen:"Pendiente",tahsilEdilen:"Cobrado",musteri:"Cliente",tarihL:"Fecha",tutarL:"Importe",durumL:"Estado",kapat:"Cerrar",tamamla:"Completar",faturaKes:"Crear Factura",yeniTeklif:"Nuevo Presupuesto",yeniGider:"Nuevo Gasto",tahsilEt:"Cobrar",guncelle:"Actualizar",vazgec:"Cancelar",tumu:"Todos",gelirL:"Ingresos",giderL:"Gastos",aktifL:"Activo",beklemede:"Pendiente",devamEdiyor:"En curso",sesEfektSub:"Sonidos de confirmación",kompaktSub:"Vista compacta",bildirimSub:"Recordatorios y alertas",karanlikSub:"Descansa la vista",kdvSub:"Se aplica a las facturas",logoSub:"Visible en facturas y perfil",canliKur:"Tasas en vivo",sabitKur:"Tasas fijas",aylikGorunum:"Vista mensual",ibanSub:"Seguimiento de pagos por IBAN",proSub:"Trabajos ilimitados · Facturas PDF · WhatsApp · Copia en la nube",epostaDestek:"Soporte por Email",sssSub:"FAQ y guías",degerlendirSub:"Valorar en App Store",kvkkSub:"Cumple privacidad",yakinda:"¡Próximamente!",mIslerA:"Todos los trabajos y estados",mFaturaA:"Facturas emitidas y pendientes",mTahsilatA:"Cobros recibidos y pendientes",mMusteriA:"Lista de clientes y análisis",mTeklifA:"Presupuestos y conversiones",mRaporA:"Gráficos y estadísticas",mGiderA:"Control de gastos",mDahaA:"Exportar, ajustes, ayuda",modulFooter:"Los módulos activos aparecen en Inicio",vergiDairesiYok:"Oficina fiscal no definida",gibSubYok:"Aún no configurado",gibSubAktif:"e-Factura activa",gibSubTest:"API configurada, prueba requerida"},
   zh:{gunaydin:"早上好，",yeniIs:"新工作",anaSayfa:"首页",isAkislari:"工作流",bildirimlerT:"通知",profil:"我的",tamamlandi:"已完成",dil:"语言",kaydet:"保存",iptal:"取消",sil:"删除",isletmem:"我的生意",faturalar:"发票",tahsilatlar:"收款",musteriler:"客户",teklifler:"报价",raporlar:"报表",giderler:"支出",dahaFazla:"更多",toplamGelir:"总收入",toplamGider:"总支出",netKar:"净利润",bekleyen:"待处理",tahsilEdilen:"已收款",musteri:"客户",tarihL:"日期",tutarL:"金额",durumL:"状态",kapat:"关闭",tamamla:"完成",faturaKes:"开具发票",tahsilEt:"收款",guncelle:"更新",vazgec:"取消",tumu:"全部",gelirL:"收入",giderL:"支出",aktifL:"进行中",beklemede:"等待中",devamEdiyor:"进行中",sesEfektSub:"操作确认音",kompaktSub:"紧凑视图",bildirimSub:"工作提醒和警报",karanlikSub:"缓解眼睛疲劳",kdvSub:"应用于发票计算",logoSub:"显示在发票和资料上",canliKur:"实时汇率",sabitKur:"固定汇率",aylikGorunum:"月视图",ibanSub:"通过IBAN跟踪付款",proSub:"无限工作 · PDF发票 · WhatsApp · 云备份",epostaDestek:"邮件支持",sssSub:"常见问题和指南",degerlendirSub:"在应用商店评分",kvkkSub:"符合隐私规定",yakinda:"即将推出!",mIslerA:"所有工单和状态",mFaturaA:"已开和待开发票",mTahsilatA:"已收和待收款项",mMusteriA:"客户列表和营收分析",mTeklifA:"报价和转化",mRaporA:"图表和统计",mGiderA:"支出跟踪",mDahaA:"导出、设置、帮助",modulFooter:"活动模块显示在首页",vergiDairesiYok:"未设置税务局",gibSubYok:"尚未设置",gibSubAktif:"电子发票已启用",gibSubTest:"API已设置,需要测试"},
@@ -200,58 +643,21 @@ const DIL_GRUPLARI = [
     {code:"tr",ad:"Türkçe",bayrak:"🇹🇷",bolge:"Türkiye"},
     {code:"en",ad:"English",bayrak:"🇬🇧",bolge:"United Kingdom / USA"},
   ]},
-  {grup:"🌍 Batı Avrupa", diller:[
-    {code:"de",ad:"Deutsch",bayrak:"🇩🇪",bolge:"Almanya · Avusturya · İsviçre"},
-    {code:"fr",ad:"Français",bayrak:"🇫🇷",bolge:"Fransa · Belçika · İsviçre"},
-    {code:"it",ad:"Italiano",bayrak:"🇮🇹",bolge:"İtalya"},
-    {code:"nl",ad:"Nederlands",bayrak:"🇳🇱",bolge:"Hollanda · Belçika (Flemenkçe)"},
-    {code:"es",ad:"Español",bayrak:"🇪🇸",bolge:"İspanya"},
-    {code:"pt",ad:"Português",bayrak:"🇵🇹",bolge:"Portekiz"},
-  ]},
-  {grup:"🌍 Kuzey & Doğu Avrupa", diller:[
-    {code:"sv",ad:"Svenska",bayrak:"🇸🇪",bolge:"İsveç"},
-    {code:"da",ad:"Dansk",bayrak:"🇩🇰",bolge:"Danimarka"},
-    {code:"no",ad:"Norsk",bayrak:"🇳🇴",bolge:"Norveç"},
-    {code:"fi",ad:"Suomi",bayrak:"🇫🇮",bolge:"Finlandiya"},
-    {code:"pl",ad:"Polski",bayrak:"🇵🇱",bolge:"Polonya"},
-    {code:"cs",ad:"Čeština",bayrak:"🇨🇿",bolge:"Çekya"},
-    {code:"ro",ad:"Română",bayrak:"🇷🇴",bolge:"Romanya"},
-    {code:"hu",ad:"Magyar",bayrak:"🇭🇺",bolge:"Macaristan"},
-    {code:"el",ad:"Ελληνικά",bayrak:"🇬🇷",bolge:"Yunanistan"},
-    {code:"uk",ad:"Українська",bayrak:"🇺🇦",bolge:"Ukrayna"},
-    {code:"ru",ad:"Русский",bayrak:"🇷🇺",bolge:"Rusya"},
-  ]},
-  {grup:"🌎 Latin Amerika", diller:[
-    {code:"es_la",ad:"Español (Lat.)",bayrak:"🇲🇽",bolge:"Meksika · Arjantin · Kolombiya"},
-    {code:"pt_br",ad:"Português (BR)",bayrak:"🇧🇷",bolge:"Brezilya"},
-  ]},
-  {grup:"🌏 Orta Doğu & Türk Dünyası", diller:[
-    {code:"ar",ad:"العربية",bayrak:"🇸🇦",bolge:"Arap Dünyası"},
-    {code:"fa",ad:"فارسی",bayrak:"🇮🇷",bolge:"İran"},
-    {code:"he",ad:"עברית",bayrak:"🇮🇱",bolge:"İsrail"},
-    {code:"az",ad:"Azərbaycan",bayrak:"🇦🇿",bolge:"Azerbaycan"},
-    {code:"uz",ad:"Oʻzbek",bayrak:"🇺🇿",bolge:"Özbekistan"},
-    {code:"kk",ad:"Қазақ",bayrak:"🇰🇿",bolge:"Kazakistan"},
-    {code:"tr_az",ad:"Türkmen",bayrak:"🇹🇲",bolge:"Türkmenistan"},
-  ]},
-  {grup:"🌏 Asya-Pasifik", diller:[
-    {code:"zh",ad:"中文 (简体)",bayrak:"🇨🇳",bolge:"Çin"},
-    {code:"zh_tw",ad:"中文 (繁體)",bayrak:"🇹🇼",bolge:"Tayvan"},
-    {code:"ja",ad:"日本語",bayrak:"🇯🇵",bolge:"Japonya"},
-    {code:"ko",ad:"한국어",bayrak:"🇰🇷",bolge:"Güney Kore"},
-    {code:"hi",ad:"हिन्दी",bayrak:"🇮🇳",bolge:"Hindistan"},
-    {code:"bn",ad:"বাংলা",bayrak:"🇧🇩",bolge:"Bangladeş"},
-    {code:"ur",ad:"اردو",bayrak:"🇵🇰",bolge:"Pakistan"},
-    {code:"vi",ad:"Tiếng Việt",bayrak:"🇻🇳",bolge:"Vietnam"},
-    {code:"th",ad:"ไทย",bayrak:"🇹🇭",bolge:"Tayland"},
-    {code:"id",ad:"Indonesia",bayrak:"🇮🇩",bolge:"Endonezya"},
-    {code:"ms",ad:"Melayu",bayrak:"🇲🇾",bolge:"Malezya"},
+  {grup:"🌍 Avrupa (Tam Çeviri)", diller:[
+    {code:"de",ad:"Deutsch",bayrak:"🇩🇪",bolge:"Deutschland · Österreich · Schweiz"},
+    {code:"fr",ad:"Français",bayrak:"🇫🇷",bolge:"France · Belgique · Suisse"},
+    {code:"es",ad:"Español",bayrak:"🇪🇸",bolge:"España · Latinoamérica"},
+    {code:"it",ad:"Italiano",bayrak:"🇮🇹",bolge:"Italia"},
+    {code:"pt",ad:"Português",bayrak:"🇵🇹",bolge:"Portugal · Brasil"},
+    {code:"nl",ad:"Nederlands",bayrak:"🇳🇱",bolge:"Nederland · België"},
   ]},
 ];
 const DIL_LISTESI = DIL_GRUPLARI.flatMap(g=>g.diller);
+const TAM_DILLER = {de:()=>DE,fr:()=>FR,es:()=>ES,it:()=>IT,pt:()=>PT,nl:()=>NL};
 const getT = (dil) => {
   if(dil==="tr") return TR;
   if(dil==="en") return EN;
+  if(TAM_DILLER[dil]) return {...EN,...TAM_DILLER[dil]()};
   return {...EN,...(PARTIALS[dil]||{})};
 };
 
@@ -1047,7 +1453,7 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,gide
     </div>}
 
     <div style={{background:C.bg,borderRadius:14,padding:"4px 16px",marginBottom:14}}>
-      {[[T.tarihL,job.tarih],[T.durumL,DURUM[job.durum]?.label],[T.tutarL,fmt(job.tutar)],job.atanan?["👷 Atanan",job.atanan]:null,job.maliyet>0?["💰 "+T.maliyetL,fmt(job.maliyet)]:null,job.maliyet>0?[(job.tutar-job.maliyet>=0?"✅ ":"⚠️ ")+T.netKar,fmt(job.tutar-job.maliyet)+" (%"+Math.round((job.tutar-job.maliyet)/job.tutar*100)+")"]:null,job.isAdresi?["📍 "+T.adresL,job.isAdresi]:null,job.hatirlatma?["⏰ "+T.hatirlatma,new Date(job.hatirlatma).toLocaleString("tr-TR")]:null].filter(Boolean).map(([l,v])=>(
+      {[[T.tarihL,job.tarih],[T.durumL,DURUM[job.durum]?.label],[T.tutarL,fmt(job.tutar)],job.atanan?["👷 "+T.atananL,job.atanan]:null,job.maliyet>0?["💰 "+T.maliyetL,fmt(job.maliyet)]:null,job.maliyet>0?[(job.tutar-job.maliyet>=0?"✅ ":"⚠️ ")+T.netKar,fmt(job.tutar-job.maliyet)+" (%"+Math.round((job.tutar-job.maliyet)/job.tutar*100)+")"]:null,job.isAdresi?["📍 "+T.adresL,job.isAdresi]:null,job.hatirlatma?["⏰ "+T.hatirlatma,new Date(job.hatirlatma).toLocaleString("tr-TR")]:null].filter(Boolean).map(([l,v])=>(
         <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:`1px solid ${C.border}`,gap:10}}>
           <span style={{fontSize:13,color:C.t2,flexShrink:0}}>{l}</span><span style={{fontSize:13,fontWeight:600,color:C.t1,textAlign:"right"}}>{v}</span>
         </div>
@@ -1059,14 +1465,14 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,gide
 
     {/* İşe bağlı giderler */}
     {isGiderleri.length>0&&<div style={{marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>💸 GİDERLER ({isGiderleri.length})</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>💸 {T.giderlerB} ({isGiderleri.length})</div>
       <Sh s={{padding:"4px 14px"}}>
         {isGiderleri.map(g=><div key={g.id} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:`1px solid ${C.border}`}}>
           <div><div style={{fontSize:12,fontWeight:600,color:C.t1}}>{g.ad}</div><div style={{fontSize:10,color:C.t3}}>{g.kategori} · {g.tarih}</div></div>
           <span style={{fontSize:13,fontWeight:700,color:C.red}}>-{fmt(g.tutar)}</span>
         </div>)}
         <div style={{display:"flex",justifyContent:"space-between",padding:"9px 0"}}>
-          <span style={{fontSize:12,fontWeight:700,color:C.t2}}>Toplam Gider</span>
+          <span style={{fontSize:12,fontWeight:700,color:C.t2}}>{T.toplamGider}</span>
           <span style={{fontSize:13,fontWeight:800,color:C.red}}>-{fmt(isGiderleri.reduce((s,g)=>s+g.tutar,0))}</span>
         </div>
       </Sh>
@@ -1300,7 +1706,7 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
       <Inp label={T.isBasligi} value={form.baslik} onChange={e=>set("baslik",e.target.value)} onFocus={()=>!edit&&setOneriGoster(true)} placeholder={sektor.isOrnekPh}/>
       {/* Sektöre özel iş önerileri */}
       {oneriGoster&&!edit&&<div style={{marginTop:-6,marginBottom:14,background:C.bg,borderRadius:12,padding:"6px",border:`1px solid ${C.border}`}}>
-        <div style={{fontSize:10,color:C.t3,padding:"4px 8px",fontWeight:600}}>💡 {isKolu} için hazır işler:</div>
+        <div style={{fontSize:10,color:C.t3,padding:"4px 8px",fontWeight:600}}>💡 {T.hazirIslerOn}{isKolu}{T.hazirIslerSon}</div>
         {sektor.ornekIsler.map(is=><div key={is} onClick={()=>{set("baslik",is);setOneriGoster(false);}} style={{padding:"9px 10px",borderRadius:8,cursor:"pointer",fontSize:13,color:C.t1,display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>e.currentTarget.style.background=C.card} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           <span style={{color:P}}>+</span> {is}
         </div>)}
@@ -1313,9 +1719,9 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     </div>
     {/* 👷 Atanan kişi (ekip varsa) */}
     {ekip&&ekip.length>0&&<div style={{marginBottom:14}}>
-      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>👷 Atanan Kişi</div>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>👷 {T.atananKisi}</div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        <button onClick={()=>set("atanan","")} style={{padding:"8px 13px",borderRadius:10,border:`2px solid ${!form.atanan?P:C.border}`,background:!form.atanan?C.purpleBg:C.bg,color:!form.atanan?P:C.t2,fontSize:12,fontWeight:600,cursor:"pointer"}}>Ben</button>
+        <button onClick={()=>set("atanan","")} style={{padding:"8px 13px",borderRadius:10,border:`2px solid ${!form.atanan?P:C.border}`,background:!form.atanan?C.purpleBg:C.bg,color:!form.atanan?P:C.t2,fontSize:12,fontWeight:600,cursor:"pointer"}}>{T.benL}</button>
         {ekip.map(u=><button key={u.ad} onClick={()=>set("atanan",u.ad)} style={{padding:"8px 13px",borderRadius:10,border:`2px solid ${form.atanan===u.ad?P:C.border}`,background:form.atanan===u.ad?C.purpleBg:C.bg,color:form.atanan===u.ad?P:C.t2,fontSize:12,fontWeight:600,cursor:"pointer"}}>{u.ad}</button>)}
       </div>
     </div>}
@@ -1400,18 +1806,18 @@ function GiderModal({onKapat,onEkle,T,isKolu,jobs,musteriFiltre}){
 
     {/* İşe Bağla */}
     <div style={{marginBottom:14}}>
-      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>📋 İşe Bağla (opsiyonel)</div>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>📋 {T.iseBagla}</div>
       {f.isId
         ?<div style={{display:"flex",alignItems:"center",gap:10,background:C.purpleBg,borderRadius:12,padding:"11px 14px"}}>
           <span style={{fontSize:13,fontWeight:700,color:P,flex:1}}>{f.isAdi}</span>
           <button onClick={()=>setF(x=>({...x,isId:null,isAdi:""}))} style={{background:"none",border:"none",color:C.t3,fontSize:16,cursor:"pointer"}}>✕</button>
         </div>
         :<button onClick={()=>setIsSecAc(!isSecAc)} style={{width:"100%",background:C.bg,border:`1.5px dashed ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.t2,fontSize:13,cursor:"pointer",textAlign:"left"}}>
-          {isSecAc?"▲ Listeyi Kapat":"+ Aktif/Bekleyen İşlerden Seç"}
+          {isSecAc?T.listeyiKapat:T.islerdenSec}
         </button>}
       {isSecAc&&!f.isId&&<div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,marginTop:6,maxHeight:180,overflowY:"auto"}}>
         {aktifIsler.length===0
-          ?<div style={{padding:14,fontSize:12,color:C.t3,textAlign:"center"}}>Aktif/bekleyen iş yok</div>
+          ?<div style={{padding:14,fontSize:12,color:C.t3,textAlign:"center"}}>{T.aktifBekleyenYok}</div>
           :aktifIsler.map(j=><div key={j.id} onClick={()=>{setF(x=>({...x,isId:j.id,isAdi:j.baslik+" ("+j.musteri+")"}));setIsSecAc(false);}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 14px",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}
             onMouseEnter={e=>e.currentTarget.style.background=C.bg}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
@@ -1419,7 +1825,7 @@ function GiderModal({onKapat,onEkle,T,isKolu,jobs,musteriFiltre}){
               <div style={{fontSize:13,fontWeight:600,color:C.t1}}>{j.baslik}</div>
               <div style={{fontSize:11,color:C.t3}}>{j.musteri} · {j.ref}</div>
             </div>
-            <div style={{fontSize:11,fontWeight:700,color:j.durum==="aktif"?P:C.amber}}>{j.durum==="aktif"?"Aktif":"Bekliyor"}</div>
+            <div style={{fontSize:11,fontWeight:700,color:j.durum==="aktif"?P:C.amber}}>{j.durum==="aktif"?T.aktifL:T.bekleyen}</div>
           </div>)}
       </div>}
     </div>
@@ -1526,28 +1932,56 @@ const ASISTAN_BILGI=[
   {k:["destek","yardım","sorun","hata","çalışmıyor"],c:"🆘 Sorun mu var? WhatsApp destek: 0532 111 22 33 (7/24). E-posta: destek@tradeflow.app. Ya da sorununu buraya yaz, yönlendireyim. Beyaz ekran görüyorsan: Ctrl+Shift+R ile sayfayı yenile, düzelmezse çıkış yapıp tekrar giriş dene."},
 ];
 
+const ASISTAN_BILGI_EN=[
+  {k:["add job","new job","create job"],c:"📋 To add a job: tap '+New Job' → pick an icon → enter title, customer, date, amount. Tap the title field for sector-specific suggestions. Optionally add address, photos, estimated cost."},
+  {k:["edit","update job","change"],c:"✏️ To edit: tap a job → pencil (✏️) button → change fields → Update."},
+  {k:["delete job","remove job"],c:"🗑️ To delete a job: tap it → 'Delete' → confirm. You get 6 seconds to undo."},
+  {k:["status","complete","done","active"],c:"🔄 Change status: tap a job → '✓ Complete' or pick Active / Pending / Completed."},
+  {k:["photo","picture","image"],c:"📷 Job photos: in the job form, use the '📷 Job Photos' section to upload before/after shots."},
+  {k:["recurring","repeat","weekly","monthly"],c:"🔁 Recurring jobs: in the job form choose Weekly/Monthly/Yearly under 'Repeat'. When completed, the next period's job is created automatically."},
+  {k:["calendar"],c:"📅 Calendar: Jobs tab → 📅 icon top-right. Days with jobs show dots; tap a day to list them."},
+  {k:["map","navigation","address","directions"],c:"🗺️ Navigation: if a job has an address, tap 'Start Navigation' in its details to open Google Maps."},
+  {k:["invoice","bill"],c:"🧾 To invoice: tap a job → 'Create Invoice' → edit line items → set VAT/withholding → Preview → Issue. Send via WhatsApp or print."},
+  {k:["vat","tax","withholding"],c:"💡 Set VAT rate in Profile. Withholding options (5/10, 7/10, 9/10) appear in the invoice form for corporate clients."},
+  {k:["whatsapp","share","send"],c:"💬 WhatsApp: invoice preview, quote cards and customer details all have WhatsApp buttons with a prefilled message."},
+  {k:["deposit","partial","installment"],c:"💰 Deposit/partial payment: tap a job → '+ Deposit / Partial Payment' → enter amount. The Received/Remaining bar updates; job auto-completes when fully paid."},
+  {k:["collection","receivable","pending payment"],c:"💳 Collections tab lists pending and collected payments separately. 'Collect' marks the full amount as paid."},
+  {k:["quote","offer","proposal"],c:"🏷️ Quotes: Quotes tab → '+New Quote'. Add cost to see profit margin. Send via 💬 WhatsApp. When approved: 'Approve' → 'Convert to Job'."},
+  {k:["customer add","new customer","register customer"],c:"👤 Add customers in Customers → Customer Records → '+ New Record', or just type a name when creating a job."},
+  {k:["delete customer","remove customer"],c:"🗑️ Delete a customer: open their details → '🗑️ Delete Customer' → confirm. Their jobs are deleted too."},
+  {k:["expense","cost","spending"],c:"💸 Add expenses in Expenses → '+New Expense'. Optionally link to an active/pending job — it then counts in that customer's profit/loss."},
+  {k:["report","statistics","analytics"],c:"📊 Reports: period filter (This Month / Last Month / 3 Months / All), Net Profit card, 7-day revenue curve, job charts, and Team Performance if you have team members."},
+  {k:["profit","margin","loss","cost guard"],c:"💡 Cost Guard: enter 'Estimated Cost' on a job/quote to see instant Net Profit and Margin %. Green = healthy, yellow = margin under 15%, red = LOSS."},
+  {k:["sector","industry","trade"],c:"🔧 Pick your sector from the top selector — job templates, icons and expense categories adapt automatically. 25 sectors supported."},
+  {k:["language"],c:"🌐 Change language: Profile → Language. 40+ languages available."},
+  {k:["currency","rate","dollar","euro","exchange"],c:"💱 Currency: Profile → Currency (TL/USD/EUR). Live market rates refresh every 5 minutes; official central bank rate is the fallback."},
+  {k:["dark","theme","night"],c:"🌙 Dark mode: Profile → 'Dark Mode' toggle."},
+  {k:["notification","reminder","alert"],c:"🔔 Reminders: set date/time in the job form under '⏰ Reminder'. Allow browser notifications when asked."},
+  {k:["module","customize","layout"],c:"⚙️ Customize home: 'Edit →' on the home screen — toggle modules, drag ⠿ to reorder."},
+  {k:["backup","export","import","excel","pdf"],c:"📥 More menu: Excel exports (Jobs/Expenses/Invoices) for your accountant, PDF accounting report, and JSON backup/restore. Data is also auto-saved to the cloud."},
+  {k:["login","password","account","sign"],c:"🔐 Sign in with email + password. 'Remember me' keeps you signed in. Sign out: Profile → bottom."},
+  {k:["team","staff","assign","member"],c:"👷 Team: Profile → Team Management — add members with roles, assign jobs via 'Assigned To' in the job form, see performance in Reports."},
+  {k:["price","pro","subscription"],c:"⚡ Pro plan (₺199/mo) is planned: unlimited jobs, PDF invoices, integrations. Everything is free for now."},
+  {k:["help","support","problem","error","broken"],c:"🆘 Trouble? WhatsApp support: 0532 111 22 33 (24/7). White screen? Refresh with Ctrl+Shift+R or sign out and back in."},
+];
 function AsistanEkrani({onKapat,T}){
-  const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:"Merhaba! 👋 Ben TradeFlow asistanıyım. Fatura, tahsilat, GİB, maliyet... ne sormak istersen yaz ya da aşağıdaki hızlı sorulardan seç."}]);
+  const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:T.asistanHosgeldin}]);
   const [giris,setGiris]=useState("");
-  const HIZLI=[
-    "Yeni iş nasıl eklenir?",
-    "Kaparo nasıl alınır?",
-    "Fatura nasıl kesilir?",
-    "Müşteri nasıl silinir?",
-    "Maliyet Bekçisi nedir?",
-    "Teklif nasıl verilir?",
-    "Periyodik iş nedir?",
-    "Raporlar nasıl kullanılır?",
-    "GİB nasıl kurulur?",
-    "Veri kayboldu ne yapayım?",
+  const TR_Mi=(T.anaSayfa==="Ana Sayfa");
+  const HIZLI=TR_Mi?[
+    "Yeni iş nasıl eklenir?","Kaparo nasıl alınır?","Fatura nasıl kesilir?","Müşteri nasıl silinir?","Maliyet Bekçisi nedir?","Teklif nasıl verilir?","Periyodik iş nedir?","Raporlar nasıl kullanılır?","GİB nasıl kurulur?","Veri kayboldu ne yapayım?",
+  ]:[
+    "How do I add a job?","How do I take a deposit?","How do I create an invoice?","How do I delete a customer?","What is Cost Guard?","How do I send a quote?","What are recurring jobs?","How do reports work?","How do I export to Excel?","My data is missing",
   ];
   const cevapla=(soru)=>{
     const s=soru.toLowerCase();
-    // Çoklu eşleşme: tüm ilgili cevapları bul
-    const bulunanlar=ASISTAN_BILGI.filter(b=>b.k.some(k=>s.includes(k)));
+    const taban=TR_Mi?ASISTAN_BILGI:ASISTAN_BILGI_EN;
+    const bulunanlar=taban.filter(b=>b.k.some(k=>s.includes(k)));
     const cevap=bulunanlar.length>0
       ?bulunanlar.map(b=>b.c).join("\n\n")
-      :"🤔 Bunu henüz bilmiyorum ama şunları deneyebilirsin:\n• Konuyu farklı kelimelerle yaz\n• Profil → Yardım Merkezi'ne bak\n• WhatsApp destek: 0532 111 22 33";
+      :(TR_Mi
+        ?"🤔 Bunu henüz bilmiyorum ama şunları deneyebilirsin:\n• Konuyu farklı kelimelerle yaz\n• Profil → Yardım Merkezi'ne bak\n• WhatsApp destek: 0532 111 22 33"
+        :"🤔 I don't know that one yet. Try:\n• Rephrasing your question\n• Profile → Help Center\n• WhatsApp support: 0532 111 22 33");
     setMesajlar(p=>[...p,{rol:"user",metin:soru},{rol:"bot",metin:cevap}]);
     setGiris("");
   };
@@ -1566,7 +2000,7 @@ function AsistanEkrani({onKapat,T}){
       </div>
       {/* Giriş */}
       <div style={{padding:"12px 14px 28px",background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
-        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim())cevapla(giris.trim());}} placeholder="Sorunu yaz..."
+        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim())cevapla(giris.trim());}} placeholder={T.soruPh}
           style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none"}}/>
         <button onClick={()=>giris.trim()&&cevapla(giris.trim())} style={{background:P,border:"none",borderRadius:14,padding:"0 20px",color:"#fff",fontSize:17,cursor:"pointer"}}>➤</button>
       </div>
@@ -1575,36 +2009,36 @@ function AsistanEkrani({onKapat,T}){
 }
 
 // ─── EKİP YÖNETİMİ ──────────────────────────────────────────────
-function EkipEkrani({onKapat,ekip,setEkip,jobs,goster}){
+function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T}){
   const [ad,setAd]=useState("");
   const [rol,setRol]=useState("Usta");
-  const ROLLER=["Usta","Muhasebe","Satış","Şoför","Yardımcı"];
+  const ROLLER=[T.rolUsta,T.rolMuhasebe,T.rolSatis,T.rolSofor,T.rolYardimci];
   const ekle=()=>{
     const t=ad.trim();
     if(!t)return;
-    if(ekip.some(e=>e.ad===t)){goster("Bu isim zaten ekipte");return;}
+    if(ekip.some(e=>e.ad===t)){goster(T.buIsimVar);return;}
     setEkip(p=>[...p,{ad:t,rol}]);
-    setAd("");goster("👷 "+t+" ekibe eklendi");
+    setAd("");goster("👷 "+t+" "+T.ekibeEklendi);
   };
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:MASAUSTU?640:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
-      <GeriBaslik baslik="👷 Ekip Yönetimi" onKapat={onKapat}/>
+      <GeriBaslik baslik={"👷 "+T.ekipYonetimi} onKapat={onKapat}/>
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px"}}>
         {/* Üye ekleme */}
         <Sh s={{padding:16,marginBottom:14}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:10}}>Yeni Üye Ekle</div>
-          <input value={ad} onChange={e=>setAd(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")ekle();}} placeholder="Ad Soyad (örn. Volkan Gülcemal)"
+          <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:10}}>{T.yeniUyeEkle}</div>
+          <input value={ad} onChange={e=>setAd(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")ekle();}} placeholder={T.adSoyadPh}
             style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.t1,fontSize:13,outline:"none",marginBottom:10}}/>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
             {ROLLER.map(r=><button key={r} onClick={()=>setRol(r)} style={{padding:"7px 13px",borderRadius:10,border:`2px solid ${rol===r?P:C.border}`,background:rol===r?C.purpleBg:C.bg,color:rol===r?P:C.t2,fontSize:12,fontWeight:600,cursor:"pointer"}}>{r}</button>)}
           </div>
-          <button onClick={ekle} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:12,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>+ Ekibe Ekle</button>
+          <button onClick={ekle} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:12,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>{T.ekibeEkle}</button>
         </Sh>
         {/* Üye listesi */}
         {ekip.length===0&&<Sh s={{padding:28,textAlign:"center"}}>
           <div style={{fontSize:36,marginBottom:8}}>👷</div>
-          <div style={{fontSize:13,color:C.t2}}>Henüz ekip üyesi yok</div>
-          <div style={{fontSize:11,color:C.t3,marginTop:4}}>Üye ekleyince işleri atayabilir, performansı Raporlar'da görürsün</div>
+          <div style={{fontSize:13,color:C.t2}}>{T.ekipYok}</div>
+          <div style={{fontSize:11,color:C.t3,marginTop:4}}>{T.ekipYokSub}</div>
         </Sh>}
         {ekip.map(u=>{
           const uyeIsler=jobs.filter(j=>j.atanan===u.ad);
@@ -1614,9 +2048,9 @@ function EkipEkrani({onKapat,ekip,setEkip,jobs,goster}){
               <div style={{width:42,height:42,borderRadius:12,background:C.blueBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:C.blue,flexShrink:0}}>{u.ad[0]}</div>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{u.ad}</div>
-                <div style={{fontSize:11,color:C.t3}}>{u.rol} · {uyeIsler.length} iş atandı · {tamam} tamamlandı</div>
+                <div style={{fontSize:11,color:C.t3}}>{u.rol} · {uyeIsler.length} {T.isAtandiK} · {tamam} {T.tamamlandi.toLowerCase()}</div>
               </div>
-              <button onClick={()=>{setEkip(p=>p.filter(x=>x.ad!==u.ad));goster("Üye çıkarıldı");}} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer"}}>×</button>
+              <button onClick={()=>{setEkip(p=>p.filter(x=>x.ad!==u.ad));goster(T.uyeCikarildi);}} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer"}}>×</button>
             </div>
           </Sh>;
         })}
@@ -1990,15 +2424,31 @@ function IslerTab({jobs,onSelect,T,filtre}){
   </div>;
 }
 
-function FaturalarTab({faturalar,jobs,onFaturaKes,T}){
+function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T}){
+  const [silOnayId,setSilOnayId]=useState(null);
   return <div style={{padding:"16px 14px"}}>
     <div style={{fontSize:18,fontWeight:700,color:C.t1,marginBottom:14}}>{T.faturalar} ({faturalar.length})</div>
     {faturalar.length===0&&<Sh s={{padding:28,textAlign:"center",marginBottom:14}}><div style={{fontSize:36,marginBottom:8}}>🧾</div><div style={{fontSize:14,color:C.t2}}>{T.henuzFaturaYok}</div><div style={{fontSize:12,color:C.t3,marginTop:4}}>{T.faturaKes} seçeneğini kullanın.</div></Sh>}
     {faturalar.map(f=><Sh key={f.no} s={{padding:"16px 18px",marginBottom:10}}>
-      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:11,fontFamily:"monospace",color:P,fontWeight:700}}>{f.no}</span><span style={{fontSize:11,color:C.green,background:C.greenBg,padding:"3px 9px",borderRadius:20,fontWeight:700}}>{T.kesildiL}</span></div>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+        <span style={{fontSize:11,fontFamily:"monospace",color:P,fontWeight:700}}>{f.no}</span>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:11,color:C.green,background:C.greenBg,padding:"3px 9px",borderRadius:20,fontWeight:700}}>{T.kesildiL}</span>
+          <button onClick={()=>setSilOnayId(silOnayId===f.no?null:f.no)} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer",padding:"0 2px"}}>🗑️</button>
+        </div>
+      </div>
       <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{f.musteri}</div>
       <div style={{fontSize:10,color:C.t3,fontFamily:"monospace",margin:"3px 0"}}>ETTN: {f.ettn.slice(0,18)}...</div>
       <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><span style={{fontSize:11,color:C.t3}}>{f.tarih} · {f.jobRef}</span><span style={{fontSize:15,fontWeight:800,color:C.green}}>{fmt(f.tutar)}</span></div>
+      {/* Silme onayı */}
+      {silOnayId===f.no&&<div style={{background:C.redBg,borderRadius:12,padding:12,marginTop:10}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:4,textAlign:"center"}}>⚠️ {T.faturaSilUyari}</div>
+        <div style={{fontSize:10,color:C.red,textAlign:"center",marginBottom:8}}>{T.gibSilNot}</div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>setSilOnayId(null)} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:9,padding:9,color:C.t2,fontSize:12,fontWeight:600,cursor:"pointer"}}>{T.iptal}</button>
+          <button onClick={()=>{onFaturaSil(f.no);setSilOnayId(null);}} style={{flex:2,background:C.red,border:"none",borderRadius:9,padding:9,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>{T.evetSil}</button>
+        </div>
+      </div>}
     </Sh>)}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"14px 4px 8px"}}>{T.faturaKes.toUpperCase()} — {T.bekleyenIslerB}</div>
     {jobs.filter(j=>!faturalar.some(f=>f.jobRef===j.ref)).map(j=><Sh key={j.id} s={{padding:"14px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -2070,7 +2520,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
     <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18}}>
       <div style={{width:54,height:54,borderRadius:16,background:`linear-gradient(135deg,${P},#7C3AED)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:"#fff",flexShrink:0}}>{musteri.ad[0]}</div>
       <div style={{flex:1}}>
-        <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{musteri.ad||"İsimsiz Müşteri"}</div>
+        <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{musteri.ad||T.isimsizMusteri}</div>
         {musteri.telefon&&<div style={{fontSize:12,color:C.t2,marginTop:2}}>📞 {musteri.telefon}</div>}
         {musteri.email&&<div style={{fontSize:12,color:C.t2}}>✉️ {musteri.email}</div>}
       </div>
@@ -2107,18 +2557,18 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
 
     {/* Hızlı İşlemler */}
     <div style={{display:"flex",gap:8,marginBottom:14}}>
-      <button onClick={()=>onYeniIs&&onYeniIs(musteri.ad)} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:"12px 0",color:C.green,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>➕ Yeni İş Aç</button>
-      <button onClick={()=>onGider&&onGider(musteri.ad)} style={{flex:1,background:C.redBg,border:"none",borderRadius:12,padding:"12px 0",color:C.red,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>💸 Gider Ekle</button>
+      <button onClick={()=>onYeniIs&&onYeniIs(musteri.ad)} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:"12px 0",color:C.green,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.yeniIsAc}</button>
+      <button onClick={()=>onGider&&onGider(musteri.ad)} style={{flex:1,background:C.redBg,border:"none",borderRadius:12,padding:"12px 0",color:C.red,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.giderEkleBtn}</button>
     </div>
 
     {/* Kâr / Zarar Analizi */}
     {toplamGider>0&&<div style={{marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 KÂR / ZARAR ANALİZİ</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 {T.karZararAnalizi}</div>
       <Sh s={{padding:16}}>
         {[
-          ["💰 Toplam Ciro",fmt(toplamCiro),C.t1],
-          ["💸 Toplam Gider","-"+fmt(toplamGider),C.red],
-          [netKar>=0?"✅ Net Kâr":"⚠️ Net Zarar",fmt(Math.abs(netKar)),netKar>=0?C.green:C.red],
+          ["💰 "+T.toplamCiro,fmt(toplamCiro),C.t1],
+          ["💸 "+T.toplamGider,"-"+fmt(toplamGider),C.red],
+          [netKar>=0?"✅ "+T.netKar:"⚠️ "+T.netZarar,fmt(Math.abs(netKar)),netKar>=0?C.green:C.red],
         ].map(([l,v,c])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
           <span style={{fontSize:12,color:C.t2}}>{l}</span>
           <span style={{fontSize:13,fontWeight:700,color:c}}>{v}</span>
@@ -2126,7 +2576,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
         {/* Marj çubuğu */}
         <div style={{marginTop:10}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-            <span style={{fontSize:10,color:C.t3}}>Kâr Marjı</span>
+            <span style={{fontSize:10,color:C.t3}}>{T.marjL}</span>
             <span style={{fontSize:11,fontWeight:800,color:netKar>=0?C.green:C.red}}>%{karMarji}</span>
           </div>
           <div style={{background:C.border,borderRadius:4,height:8,overflow:"hidden"}}>
@@ -2135,7 +2585,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
         </div>
         {/* Gider detayı */}
         {musteriGiderleri.length>0&&<div style={{marginTop:10}}>
-          <div style={{fontSize:10,color:C.t3,fontWeight:600,marginBottom:6}}>Gider Kalemleri</div>
+          <div style={{fontSize:10,color:C.t3,fontWeight:600,marginBottom:6}}>{T.giderKalemleri}</div>
           {musteriGiderleri.map(g=><div key={g.id} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.t2,padding:"3px 0"}}>
             <span>· {g.ad} <span style={{color:C.t3}}>({g.kategori})</span></span>
             <span style={{color:C.red,fontWeight:600}}>-{fmt(g.tutar)}</span>
@@ -2177,14 +2627,14 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
     <div style={{marginTop:14,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
       {!silOnay
         ?<button onClick={()=>setSilOnay(true)} style={{width:"100%",background:C.redBg,border:"none",borderRadius:12,padding:13,color:C.red,fontSize:13,fontWeight:700,cursor:"pointer"}}>
-          🗑️ Müşteriyi Sil
+          🗑️ {T.musteriyiSil}
         </button>
         :<div style={{background:C.redBg,borderRadius:14,padding:14}}>
           <div style={{fontSize:13,fontWeight:700,color:C.red,marginBottom:6,textAlign:"center"}}>
-            ⚠️ {musteri.ad} silinecek
+            ⚠️ {musteri.ad} {T.silinecekK}
           </div>
           {musteri.isler.length>0&&<div style={{fontSize:11,color:C.red,textAlign:"center",marginBottom:10}}>
-            Bu müşteriye ait {musteri.isler.length} iş kaydı da silinecek!
+            {T.aitIsUyariOn} {musteri.isler.length} {T.aitIsUyariSon}
           </div>}
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>setSilOnay(false)} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:11,color:C.t2,fontSize:13,fontWeight:600,cursor:"pointer"}}>{T.iptal}</button>
@@ -2255,15 +2705,15 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
   return <div style={{padding:"16px 14px"}}>
     {/* Alt sekme değiştirici */}
     <div style={{display:"flex",gap:6,marginBottom:14,background:C.card,borderRadius:14,padding:5,boxShadow:C.sh}}>
-      {[["guncel","📊 Güncel Müşteriler ("+guncelListe.length+")"],["kayit","👤 Müşteri Kayıt ("+kayitListe.length+")"]].map(([v,l])=>
+      {[["guncel","📊 "+T.guncelMusterilerT+" ("+guncelListe.length+")"],["kayit","👤 "+T.musteriKayitT+" ("+kayitListe.length+")"]].map(([v,l])=>
         <button key={v} onClick={()=>setAltSekme(v)} style={{flex:1,padding:"11px 0",borderRadius:10,border:"none",background:altSekme===v?P:"transparent",color:altSekme===v?"#fff":C.t2,fontSize:12.5,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}>{l}</button>)}
     </div>
 
     {altSekme==="kayit"?<>
     {/* ══ MÜŞTERİ KAYIT SEKMESİ ══ */}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div style={{fontSize:15,fontWeight:700,color:C.t1}}>Kayıtlı Müşteriler</div>
-      <button onClick={()=>setYeniAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"8px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>+ Yeni Kayıt</button>
+      <div style={{fontSize:15,fontWeight:700,color:C.t1}}>{T.kayitliMusteriler}</div>
+      <button onClick={()=>setYeniAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"8px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>{T.yeniKayit}</button>
     </div>
     {yeniAc&&<Sh s={{padding:16,marginBottom:12,border:`2px solid ${P}44`}}>
       <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:12}}>👤 {T.yeniMusteri}</div>
@@ -2280,8 +2730,8 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
     </Sh>}
     {kayitListe.length===0&&!yeniAc&&<Sh s={{padding:30,textAlign:"center"}}>
       <div style={{fontSize:36,marginBottom:8}}>📇</div>
-      <div style={{fontSize:13,color:C.t2}}>Henüz kayıtlı müşteri yok</div>
-      <div style={{fontSize:11,color:C.t3,marginTop:4}}>Müşterilerini önceden kaydet, iş açarken hazır olsun</div>
+      <div style={{fontSize:13,color:C.t2}}>{T.kayitYok}</div>
+      <div style={{fontSize:11,color:C.t3,marginTop:4}}>{T.kayitYokSub}</div>
     </Sh>}
     {kayitListe.map(m=>{
       const isSayi=jobs.filter(j=>j.musteri===m.ad).length;
@@ -2290,8 +2740,8 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
           <div style={{width:42,height:42,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:P,flexShrink:0}}>{(m.ad&&m.ad[0])||"?"}</div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.ad}</div>
-            <div style={{fontSize:11,color:C.t3}}>{m.telefon||"Tel yok"} {m.email?"· "+m.email:""}</div>
-            {isSayi>0&&<div style={{fontSize:10,color:P,fontWeight:600,marginTop:2}}>📋 {isSayi} iş kaydı var</div>}
+            <div style={{fontSize:11,color:C.t3}}>{m.telefon||T.telYok} {m.email?"· "+m.email:""}</div>
+            {isSayi>0&&<div style={{fontSize:10,color:P,fontWeight:600,marginTop:2}}>📋 {isSayi} {T.isKaydiVar}</div>}
           </div>
           <button onClick={()=>onYeniIsIcin&&onYeniIsIcin(m.ad)} title="Bu müşteriye iş aç" style={{background:C.greenBg,border:"none",borderRadius:9,padding:"8px 11px",color:C.green,fontSize:11,fontWeight:700,cursor:"pointer"}}>+ İş</button>
           <button onClick={()=>onKayitSil&&onKayitSil(m.ad)} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer"}}>×</button>
@@ -2301,7 +2751,7 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
     </>:<>
     {/* ══ GÜNCEL MÜŞTERİLER SEKMESİ ══ */}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div style={{fontSize:15,fontWeight:700,color:C.t1}}>Aktif Müşteri Durumu</div>
+      <div style={{fontSize:15,fontWeight:700,color:C.t1}}>{T.aktifMusteriDurumu}</div>
       <div style={{display:"flex",gap:8,alignItems:"center"}}>
         <select value={siralama} onChange={e=>setSiralama(e.target.value)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 10px",color:C.t2,fontSize:11,cursor:"pointer",outline:"none"}}>
           <option value="ciro">↓ {T.ciroL}</option>
@@ -2350,7 +2800,7 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
           {/* Bilgiler */}
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{m.ad||"İsimsiz"}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{m.ad||T.isimsizK}</div>
               <div style={{fontSize:15,fontWeight:800,color:C.green,flexShrink:0,marginLeft:8}}>{fmt(ciro)}</div>
             </div>
 
@@ -2362,10 +2812,10 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
 
             {/* Finansal özet satırı */}
             <div style={{display:"flex",gap:10,marginTop:6,marginBottom:adresVarMi?8:0,fontSize:10.5,flexWrap:"wrap"}}>
-              {bekleyenT>0&&<span style={{color:C.amber,fontWeight:700}}>⏳ Bekleyen: {fmt(bekleyenT)}</span>}
-              {tahsilE>0&&<span style={{color:C.green,fontWeight:700}}>✅ Tahsil: {fmt(tahsilE)}</span>}
-              {mGider>0&&<span style={{color:C.red,fontWeight:700}}>💸 Gider: {fmt(mGider)}</span>}
-              {mGider>0&&<span style={{color:mKar>=0?C.green:C.red,fontWeight:800}}>{mKar>=0?"📈 Kâr":"📉 Zarar"}: {fmt(Math.abs(mKar))}</span>}
+              {bekleyenT>0&&<span style={{color:C.amber,fontWeight:700}}>⏳ {T.bekleyen}: {fmt(bekleyenT)}</span>}
+              {tahsilE>0&&<span style={{color:C.green,fontWeight:700}}>✅ {T.tahsilKisa}: {fmt(tahsilE)}</span>}
+              {mGider>0&&<span style={{color:C.red,fontWeight:700}}>💸 {T.giderKisa}: {fmt(mGider)}</span>}
+              {mGider>0&&<span style={{color:mKar>=0?C.green:C.red,fontWeight:800}}>{mKar>=0?"📈 "+T.karKisa:"📉 "+T.zararKisa}: {fmt(Math.abs(mKar))}</span>}
             </div>
 
             {/* Adres satırı — sağda navigasyon butonu */}
@@ -2547,7 +2997,7 @@ function GiderlerTab({giderler,onYeni,onSil,T,jobs}){
     </Sh>
     {/* Filtre */}
     <div style={{display:"flex",gap:6,marginBottom:14}}>
-      {[["hepsi","Tümü"],["isli","📋 İşe Bağlı"],["serbest","Serbest"]].map(([v,l])=>
+      {[["hepsi",T.tumuF],["isli",T.iseBagliF],["serbest",T.serbestF]].map(([v,l])=>
         <button key={v} onClick={()=>setFiltre(v)} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",background:filtre===v?P:C.card,color:filtre===v?"#fff":C.t2,fontSize:12,fontWeight:600,cursor:"pointer",boxShadow:C.sh}}>{l}</button>)}
     </div>
     {filtrelenen.length===0&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>{T.henuzGiderYok}</div>}
@@ -2626,8 +3076,8 @@ function RaporlarTab({jobs,giderler,T,ekip}){
 
     {/* 👷 EKİP PERFORMANSI */}
     {ekip&&ekip.length>0&&(()=>{
-      const uyeler=[{ad:"Ben",rol:"Patron"},...ekip].map(u=>{
-        const uIsler=fJobs.filter(j=>u.ad==="Ben"?!j.atanan:j.atanan===u.ad);
+      const uyeler=[{ad:T.benL,rol:T.patronRol},...ekip].map(u=>{
+        const uIsler=fJobs.filter(j=>u.ad===T.benL?!j.atanan:j.atanan===u.ad);
         const tamam=uIsler.filter(j=>j.durum==="tamamlandi");
         const ciro=tamam.reduce((s,j)=>s+j.tutar,0);
         const uIds=uIsler.map(j=>j.id);
@@ -2637,11 +3087,11 @@ function RaporlarTab({jobs,giderler,T,ekip}){
       if(uyeler.length===0)return null;
       const maxKar=Math.max(...uyeler.map(u=>Math.abs(u.kar)),1);
       return <Sh s={{padding:16,marginBottom:12}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:12}}>👷 Ekip Performansı</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:12}}>👷 {T.ekipPerformansi}</div>
         {uyeler.map((u,i)=><div key={u.ad} style={{marginBottom:12}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-            <span style={{fontSize:12,fontWeight:700,color:C.t1}}>{i===0?"🏆 ":""}{u.ad} <span style={{fontSize:10,color:C.t3,fontWeight:400}}>· {u.tamamSayi}/{u.isSayi} iş</span></span>
-            <span style={{fontSize:12,fontWeight:800,color:u.kar>=0?C.green:C.red}}>{fmt(u.kar)} kâr</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.t1}}>{i===0?"🏆 ":""}{u.ad} <span style={{fontSize:10,color:C.t3,fontWeight:400}}>· {u.tamamSayi}/{u.isSayi} {T.isBirim}</span></span>
+            <span style={{fontSize:12,fontWeight:800,color:u.kar>=0?C.green:C.red}}>{fmt(u.kar)} {T.karSuffix}</span>
           </div>
           <div style={{background:C.border,borderRadius:4,height:8,overflow:"hidden"}}>
             <div style={{width:`${Math.min(Math.abs(u.kar)/maxKar*100,100)}%`,background:u.kar>=0?(i===0?C.green:P):C.red,height:"100%",borderRadius:4}}/>
@@ -2699,10 +3149,10 @@ function BildirimlerTab({bildirimler,onOkundu,T}){
 function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider,onExcelFatura,onPdf}){
   const items=[
     {icon:"🤖",label:T.asistan,alt:T.asistanSub,act:()=>onAc("asistan")},
-    {icon:"📊",label:"Excel — İşler",alt:"Muhasebeciye gönder",act:onExcelIs},
-    {icon:"💸",label:"Excel — Giderler",alt:"Muhasebeciye gönder",act:onExcelGider},
-    {icon:"🧾",label:"Excel — Faturalar",alt:"Muhasebeciye gönder",act:onExcelFatura},
-    {icon:"🖨️",label:"PDF Muhasebe Raporu",alt:"Yazdır / PDF kaydet",act:onPdf},
+    {icon:"📊",label:T.excelIslerL,alt:T.muhasebeyeGonder,act:onExcelIs},
+    {icon:"💸",label:T.excelGiderlerL,alt:T.muhasebeyeGonder,act:onExcelGider},
+    {icon:"🧾",label:T.excelFaturalarL,alt:T.muhasebeyeGonder,act:onExcelFatura},
+    {icon:"🖨️",label:T.pdfRaporL,alt:T.yazdirKaydet,act:onPdf},
     {icon:"📤",label:T.disaAktar,alt:"JSON",act:onExport},
     {icon:"📥",label:T.yedekGeriYukle,alt:T.jsonIceAktar,file:true},
     {icon:"❓",label:T.yardimMerkezi,alt:"SSS",act:()=>onAc("yardim")},
@@ -2855,7 +3305,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,se
     {/* Destek */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.destek}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
-      <Row icon="👷" label="Ekip Yönetimi" sub="Üye ekle, işleri ata" onClick={()=>onAc("ekip")}/>
+      <Row icon="👷" label={T.ekipYonetimi} sub={T.ekipSub} onClick={()=>onAc("ekip")}/>
       <Row icon="🤖" label={T.asistan} sub={T.asistanSub} onClick={()=>onAc("asistan")}/>
       <Row icon="💬" label={T.whatsappDestek} sub="0532 111 22 33 — 7/24" onClick={()=>window.open("https://wa.me/905321112233","_blank")}/>
       <Row icon="✉️" label={T.epostaDestek} sub="destek@tradeflow.app" onClick={()=>window.open("mailto:destek@tradeflow.app","_blank")}/>
@@ -2990,8 +3440,8 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
   return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"28px 28px 20px",gap:16,flexWrap:"wrap"}}>
     <div>
-      <div style={{fontSize:24,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>Hoş geldin, {ad}! 👋</div>
-      <div style={{fontSize:13,color:C.t2,marginTop:3}}>Bugün işlerinize hızlıca göz atın.</div>
+      <div style={{fontSize:24,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>{T.hosgeldinT}, {ad}! 👋</div>
+      <div style={{fontSize:13,color:C.t2,marginTop:3}}>{T.gozAt}</div>
     </div>
     <div style={{display:"flex",alignItems:"center",gap:10}}>
       <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.t1,fontSize:13,fontWeight:600,cursor:"pointer",outline:"none",boxShadow:C.sh}}>
@@ -3039,6 +3489,20 @@ function DesktopStats({jobs,faturalar,T,onStatClick}){
 
 // ─── GİRİŞ / KAYIT EKRANI ──────────────────────────────────────
 function GirisEkrani({onGiris}){
+  const trMi=typeof navigator!=="undefined"&&(navigator.language||"").toLowerCase().startsWith("tr");
+  const L=trMi?{
+    girisYap:"Giriş Yap",kayitOl:"Kayıt Ol",hesabaGiris:"Hesabınıza giriş yapın",yeniHesap:"Yeni hesap oluşturun",
+    eposta:"E-posta",sifre:"Şifre",sifrePh:"En az 6 karakter",bekle:"Lütfen bekleyin...",
+    beniHatirla:"Beni hatırla",acikKal:"şifre sormadan açık kal",
+    hesapYok:"Hesabın yok mu? ",hesapVar:"Zaten hesabın var mı? ",
+    hataGerekli:"E-posta ve şifre gerekli",hataKisa:"Şifre en az 6 karakter olmalı",hataYanlis:"E-posta veya şifre hatalı",hataKayitli:"Bu e-posta zaten kayıtlı, giriş yapın",hataOnay:"E-posta onayı gerekli. Gelen kutunuzu kontrol edin.",hataGenel:"Bir hata oluştu",
+  }:{
+    girisYap:"Sign In",kayitOl:"Sign Up",hesabaGiris:"Sign in to your account",yeniHesap:"Create a new account",
+    eposta:"Email",sifre:"Password",sifrePh:"At least 6 characters",bekle:"Please wait...",
+    beniHatirla:"Remember me",acikKal:"stay signed in",
+    hesapYok:"No account? ",hesapVar:"Already have an account? ",
+    hataGerekli:"Email and password required",hataKisa:"Password must be at least 6 characters",hataYanlis:"Invalid email or password",hataKayitli:"Email already registered, sign in",hataOnay:"Email confirmation required. Check your inbox.",hataGenel:"Something went wrong",
+  };
   const [mod,setMod]=useState("giris"); // giris | kayit
   const [email,setEmail]=useState("");
   const [sifre,setSifre]=useState("");
@@ -3049,8 +3513,8 @@ function GirisEkrani({onGiris}){
 
   const gonder=async()=>{
     setHata("");setBilgi("");
-    if(!email||!sifre){setHata("E-posta ve şifre gerekli");return;}
-    if(sifre.length<6){setHata("Şifre en az 6 karakter olmalı");return;}
+    if(!email||!sifre){setHata(L.hataGerekli);return;}
+    if(sifre.length<6){setHata(L.hataKisa);return;}
     setYukleniyor(true);
     try{
       try{ window.__tfBeniHatirla = beniHatirla; }catch(e){}
@@ -3073,10 +3537,10 @@ function GirisEkrani({onGiris}){
       }
     }catch(e){
       const m=e.message||"";
-      if(m.includes("Invalid login"))setHata("E-posta veya şifre hatalı");
-      else if(m.includes("already registered"))setHata("Bu e-posta zaten kayıtlı, giriş yapın");
-      else if(m.includes("Email not confirmed"))setHata("E-posta onayı gerekli. Gelen kutunuzu kontrol edin.");
-      else setHata(m||"Bir hata oluştu");
+      if(m.includes("Invalid login"))setHata(L.hataYanlis);
+      else if(m.includes("already registered"))setHata(L.hataKayitli);
+      else if(m.includes("Email not confirmed"))setHata(L.hataOnay);
+      else setHata(m||L.hataGenel);
     }
     setYukleniyor(false);
   };
@@ -3089,18 +3553,18 @@ function GirisEkrani({onGiris}){
           <div style={{width:0,height:0,borderLeft:"14px solid transparent",borderRight:"14px solid transparent",borderBottom:"22px solid #fff"}}/>
         </div>
         <div style={{fontSize:20,fontWeight:900,color:"#111827",letterSpacing:"-0.02em"}}>TRADEFLOW <span style={{color:"#2563EB"}}>ELITE</span></div>
-        <div style={{fontSize:13,color:"#6B7280",marginTop:4}}>{mod==="giris"?"Hesabınıza giriş yapın":"Yeni hesap oluşturun"}</div>
+        <div style={{fontSize:13,color:"#6B7280",marginTop:4}}>{mod==="giris"?L.hesabaGiris:L.yeniHesap}</div>
       </div>
 
       {/* Form */}
       <div style={{marginBottom:14}}>
-        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>E-posta</div>
+        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{L.eposta}</div>
         <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ornek@mail.com"
           style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
       </div>
       <div style={{marginBottom:18}}>
-        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>Şifre</div>
-        <input type="password" value={sifre} onChange={e=>setSifre(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")gonder();}} placeholder="En az 6 karakter"
+        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{L.sifre}</div>
+        <input type="password" value={sifre} onChange={e=>setSifre(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")gonder();}} placeholder={L.sifrePh}
           style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
       </div>
 
@@ -3109,18 +3573,18 @@ function GirisEkrani({onGiris}){
         <div style={{width:22,height:22,borderRadius:7,border:`2px solid ${beniHatirla?"#2563EB":"#D1D5DB"}`,background:beniHatirla?"#2563EB":"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
           {beniHatirla&&<span style={{color:"#fff",fontSize:13,fontWeight:900}}>✓</span>}
         </div>
-        <span style={{fontSize:13,color:"#374151",fontWeight:500}}>Beni hatırla <span style={{color:"#9CA3AF",fontWeight:400}}>· şifre sormadan açık kal</span></span>
+        <span style={{fontSize:13,color:"#374151",fontWeight:500}}>{L.beniHatirla} <span style={{color:"#9CA3AF",fontWeight:400}}>· {L.acikKal}</span></span>
       </div>
       {bilgi&&<div style={{background:"#DCFCE7",color:"#059669",fontSize:12,fontWeight:600,padding:"10px 14px",borderRadius:10,marginBottom:14}}>✅ {bilgi}</div>}
 
       <button onClick={gonder} disabled={yukleniyor} style={{width:"100%",background:yukleniyor?"#93C5FD":"#2563EB",border:"none",borderRadius:14,padding:15,color:"#fff",fontSize:15,fontWeight:700,cursor:yukleniyor?"default":"pointer",boxShadow:"0 4px 14px rgba(37,99,235,0.4)"}}>
-        {yukleniyor?"Lütfen bekleyin...":mod==="giris"?"Giriş Yap":"Kayıt Ol"}
+        {yukleniyor?L.bekle:mod==="giris"?L.girisYap:L.kayitOl}
       </button>
 
       <div style={{textAlign:"center",marginTop:18,fontSize:13,color:"#6B7280"}}>
-        {mod==="giris"?"Hesabın yok mu? ":"Zaten hesabın var mı? "}
+        {mod==="giris"?L.hesapYok:L.hesapVar}
         <span onClick={()=>{setMod(mod==="giris"?"kayit":"giris");setHata("");setBilgi("");}} style={{color:"#2563EB",fontWeight:700,cursor:"pointer"}}>
-          {mod==="giris"?"Kayıt Ol":"Giriş Yap"}
+          {mod==="giris"?L.kayitOl:L.girisYap}
         </span>
       </div>
     </div>
@@ -3415,7 +3879,7 @@ export default function TradeFlow(){
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
           {sekme==="anasayfa"&&<>{MASAUSTU?<DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/>:<><div style={{height:14}}/><HeroCard jobs={jobs} onYeniIs={()=>setYeniAc(true)} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} isKoluAc={isKoluAc} setIsKoluAc={setIsKoluAc} T={T} onStatClick={statClick} isletmeAd={isletme.ad} onOzellestir={()=>setOzellestirAc(true)}/></>}<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/><Charts jobs={jobs} giderler={giderler} T={T} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}}/><Sh s={{margin:"0 14px 14px",padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}><div style={{width:46,height:46,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚙️</div><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:2}}><span style={{color:P}}>{T.duzenleBaslik1}</span> {T.duzenleBaslik2}</div><div style={{fontSize:11,color:C.t2}}>{T.duzenleAlt}</div></div><button onClick={()=>setOzellestirAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>{T.duzenle} →</button></Sh><JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
-          {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} onFaturaKes={setFatJob} T={T}/>}
+          {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} onFaturaKes={setFatJob} onFaturaSil={(no)=>{setFaturalar(p=>p.filter(f=>f.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} filtre={tahsilatFiltre} T={T}/>}
           {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} giderler={giderler}
           onYeniIsIcin={(ad)=>{setYeniIsMusteri(ad);setYeniAc(true);}}
@@ -3469,7 +3933,7 @@ export default function TradeFlow(){
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T}/>}
-        {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster}/>}
+        {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
         {ekran==="degerlendir"&&<DegerlendirModal onKapat={()=>setEkran(null)} onGonder={(y,o)=>{goster("⭐".repeat(y)+" "+T.tesekkurler);bildirimEkle("⭐ Değerlendirme gönderildi",y+" yıldız"+(o?" + öneri":""),"is");}} T={T}/>}
         {ozellestirAc&&<OzellestirModal moduller={moduller} setModuller={setModuller} onKapat={()=>setOzellestirAc(false)} T={T}/>}
