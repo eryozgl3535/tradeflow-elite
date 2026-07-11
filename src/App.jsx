@@ -1,4 +1,26 @@
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260709-mobilpro","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+i
+
+// ─── ÇEVRİMDIŞI YEREL DEPO (IndexedDB) ──────────────────────────
+const IDB_AD="tradeflow-yerel",IDB_STORE="paketler";
+function idbAc(){return new Promise((res,rej)=>{
+  const r=indexedDB.open(IDB_AD,1);
+  r.onupgradeneeded=()=>{r.result.createObjectStore(IDB_STORE);};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);
+});}
+async function yerelKaydet(kullaniciId,paket){
+  try{const db=await idbAc();
+    await new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,"readwrite");
+      tx.objectStore(IDB_STORE).put({paket,zaman:Date.now()},kullaniciId);
+      tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+  }catch(e){console.warn("Yerel kayıt:",e);}
+}
+async function yerelYukle(kullaniciId){
+  try{const db=await idbAc();
+    return await new Promise((res)=>{const rq=db.transaction(IDB_STORE).objectStore(IDB_STORE).get(kullaniciId);
+      rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>res(null);});
+  }catch(e){return null;}
+}
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260710-faturaplus","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -54,6 +76,8 @@ const fmt = (n) => {
 };
 
 const TR = {
+  iskontoL:"İskonto",
+  cevrimdisiB:"📡 Çevrimdışı — değişiklikler cihaza kaydediliyor",senkronB:"🔄 İnternet geldi — buluta senkronize ediliyor...",senkronOk:"✅ Buluta senkronize edildi",
   malzemeKalemleri:"Malzeme / Hizmet Kalemleri",kalemAdPh:"Malzeme veya hizmet adı",adetL:"Adet",birimFiyatL:"Birim Fiyat",kalemEkle:"+ Kalem Ekle",araToplamL:"Ara Toplam",kdvL:"KDV",genelToplamL:"Genel Toplam",teklifBelgesi:"FİYAT TEKLİFİ",gecerlilikNot:"Bu teklif belirtilen tarihe kadar geçerlidir.",kaseImza:"Kaşe / İmza",teklifPdfBtn:"PDF",
   gunaydin:"Günaydın,",isletmem:"İşletmem",yeniIs:"Yeni İş",isKoluSec:"İş Kolunu Seç",ozellestir:"Özelleştir",
   aktifIs:"Aktif İş",devamEden:"Devam eden",tahsilEdildi:"Tahsil Edildi",buAyTahsilat:"Bu ay",
@@ -124,6 +148,8 @@ const TR = {
   asistan:"Yardımcı Asistan",asistanSub:"Sorularını anında yanıtlar",
 };
 const EN = {
+  iskontoL:"Discount",
+  cevrimdisiB:"📡 Offline — changes saved on this device",senkronB:"🔄 Back online — syncing to cloud...",senkronOk:"✅ Synced to cloud",
   malzemeKalemleri:"Material / Service Items",kalemAdPh:"Material or service name",adetL:"Qty",birimFiyatL:"Unit Price",kalemEkle:"+ Add Item",araToplamL:"Subtotal",kdvL:"VAT",genelToplamL:"Grand Total",teklifBelgesi:"PRICE QUOTE",gecerlilikNot:"This quote is valid until the stated date.",kaseImza:"Stamp / Signature",teklifPdfBtn:"PDF",
   gunaydin:"Good morning,",isletmem:"My Business",yeniIs:"New Job",isKoluSec:"Select Trade",ozellestir:"Customize",
   aktifIs:"Active Jobs",devamEden:"In progress",tahsilEdildi:"Collected",buAyTahsilat:"This month",
@@ -196,6 +222,8 @@ const EN = {
 
 // ─── TAM ÇEVİRİ SÖZLÜKLERİ (6 dil) ───────────────────────────
 const DE = {
+  iskontoL:"Rabatt",
+  cevrimdisiB:"📡 Offline — Änderungen werden auf dem Gerät gespeichert",senkronB:"🔄 Wieder online — Synchronisierung...",senkronOk:"✅ Mit Cloud synchronisiert",
   malzemeKalemleri:"Material- / Leistungsposten",kalemAdPh:"Material oder Leistung",adetL:"Menge",birimFiyatL:"Einzelpreis",kalemEkle:"+ Posten hinzufügen",araToplamL:"Zwischensumme",kdvL:"MwSt.",genelToplamL:"Gesamtsumme",teklifBelgesi:"ANGEBOT",gecerlilikNot:"Dieses Angebot ist bis zum angegebenen Datum gültig.",kaseImza:"Stempel / Unterschrift",teklifPdfBtn:"PDF",
   gunaydin:"Guten Morgen,",isletmem:"Mein Betrieb",yeniIs:"Neuer Auftrag",isKoluSec:"Branche wählen",ozellestir:"Anpassen",
   aktifIs:"Aktive Aufträge",devamEden:"In Arbeit",tahsilEdildi:"Eingezogen",buAyTahsilat:"Diesen Monat",
@@ -266,6 +294,8 @@ const DE = {
   asistan:"Assistent",asistanSub:"Sofortantworten auf deine Fragen",
 };
 const FR = {
+  iskontoL:"Remise",
+  cevrimdisiB:"📡 Hors ligne — modifications enregistrées sur l'appareil",senkronB:"🔄 De retour en ligne — synchronisation...",senkronOk:"✅ Synchronisé avec le cloud",
   malzemeKalemleri:"Postes matériel / service",kalemAdPh:"Matériel ou service",adetL:"Qté",birimFiyatL:"Prix unitaire",kalemEkle:"+ Ajouter un poste",araToplamL:"Sous-total",kdvL:"TVA",genelToplamL:"Total général",teklifBelgesi:"DEVIS",gecerlilikNot:"Ce devis est valable jusqu'à la date indiquée.",kaseImza:"Cachet / Signature",teklifPdfBtn:"PDF",
   gunaydin:"Bonjour,",isletmem:"Mon entreprise",yeniIs:"Nouveau travail",isKoluSec:"Choisir le métier",ozellestir:"Personnaliser",
   aktifIs:"Travaux actifs",devamEden:"En cours",tahsilEdildi:"Encaissé",buAyTahsilat:"Ce mois-ci",
@@ -336,6 +366,8 @@ const FR = {
   asistan:"Assistant",asistanSub:"Réponses instantanées à vos questions",
 };
 const ES = {
+  iskontoL:"Descuento",
+  cevrimdisiB:"📡 Sin conexión — cambios guardados en el dispositivo",senkronB:"🔄 Conexión recuperada — sincronizando...",senkronOk:"✅ Sincronizado con la nube",
   malzemeKalemleri:"Partidas de material / servicio",kalemAdPh:"Material o servicio",adetL:"Cant.",birimFiyatL:"Precio unit.",kalemEkle:"+ Añadir partida",araToplamL:"Subtotal",kdvL:"IVA",genelToplamL:"Total general",teklifBelgesi:"PRESUPUESTO",gecerlilikNot:"Este presupuesto es válido hasta la fecha indicada.",kaseImza:"Sello / Firma",teklifPdfBtn:"PDF",
   gunaydin:"Buenos días,",isletmem:"Mi negocio",yeniIs:"Nuevo trabajo",isKoluSec:"Elegir oficio",ozellestir:"Personalizar",
   aktifIs:"Trabajos activos",devamEden:"En curso",tahsilEdildi:"Cobrado",buAyTahsilat:"Este mes",
@@ -406,6 +438,8 @@ const ES = {
   asistan:"Asistente",asistanSub:"Respuestas instantáneas a tus preguntas",
 };
 const IT = {
+  iskontoL:"Sconto",
+  cevrimdisiB:"📡 Offline — modifiche salvate sul dispositivo",senkronB:"🔄 Di nuovo online — sincronizzazione...",senkronOk:"✅ Sincronizzato con il cloud",
   malzemeKalemleri:"Voci materiale / servizio",kalemAdPh:"Materiale o servizio",adetL:"Qtà",birimFiyatL:"Prezzo unit.",kalemEkle:"+ Aggiungi voce",araToplamL:"Subtotale",kdvL:"IVA",genelToplamL:"Totale generale",teklifBelgesi:"PREVENTIVO",gecerlilikNot:"Questo preventivo è valido fino alla data indicata.",kaseImza:"Timbro / Firma",teklifPdfBtn:"PDF",
   gunaydin:"Buongiorno,",isletmem:"La mia attività",yeniIs:"Nuovo lavoro",isKoluSec:"Scegli mestiere",ozellestir:"Personalizza",
   aktifIs:"Lavori attivi",devamEden:"In corso",tahsilEdildi:"Incassato",buAyTahsilat:"Questo mese",
@@ -476,6 +510,8 @@ const IT = {
   asistan:"Assistente",asistanSub:"Risposte immediate alle tue domande",
 };
 const PT = {
+  iskontoL:"Desconto",
+  cevrimdisiB:"📡 Offline — alterações guardadas no dispositivo",senkronB:"🔄 Online novamente — a sincronizar...",senkronOk:"✅ Sincronizado com a nuvem",
   malzemeKalemleri:"Itens de material / serviço",kalemAdPh:"Material ou serviço",adetL:"Qtd.",birimFiyatL:"Preço unit.",kalemEkle:"+ Adicionar item",araToplamL:"Subtotal",kdvL:"IVA",genelToplamL:"Total geral",teklifBelgesi:"ORÇAMENTO",gecerlilikNot:"Este orçamento é válido até à data indicada.",kaseImza:"Carimbo / Assinatura",teklifPdfBtn:"PDF",
   gunaydin:"Bom dia,",isletmem:"Meu negócio",yeniIs:"Novo trabalho",isKoluSec:"Escolher ofício",ozellestir:"Personalizar",
   aktifIs:"Trabalhos ativos",devamEden:"Em andamento",tahsilEdildi:"Recebido",buAyTahsilat:"Este mês",
@@ -546,6 +582,8 @@ const PT = {
   asistan:"Assistente",asistanSub:"Respostas imediatas às suas perguntas",
 };
 const NL = {
+  iskontoL:"Korting",
+  cevrimdisiB:"📡 Offline — wijzigingen opgeslagen op dit apparaat",senkronB:"🔄 Weer online — synchroniseren...",senkronOk:"✅ Gesynchroniseerd met de cloud",
   malzemeKalemleri:"Materiaal- / dienstposten",kalemAdPh:"Materiaal of dienst",adetL:"Aant.",birimFiyatL:"Stukprijs",kalemEkle:"+ Post toevoegen",araToplamL:"Subtotaal",kdvL:"Btw",genelToplamL:"Totaal",teklifBelgesi:"OFFERTE",gecerlilikNot:"Deze offerte is geldig tot de vermelde datum.",kaseImza:"Stempel / Handtekening",teklifPdfBtn:"PDF",
   gunaydin:"Goedemorgen,",isletmem:"Mijn bedrijf",yeniIs:"Nieuwe klus",isKoluSec:"Vak kiezen",ozellestir:"Aanpassen",
   aktifIs:"Actieve klussen",devamEden:"In uitvoering",tahsilEdildi:"Geïnd",buAyTahsilat:"Deze maand",
@@ -959,7 +997,7 @@ function HeroCard({jobs,faturalar,onYeniIs,isKolu,setIsKolu,isKoluAc,setIsKoluAc
   const aktif=jobs.filter(j=>j.durum==="aktif").length;
   const tahsil=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
   const beklT=jobs.filter(j=>j.durum==="bekliyor").reduce((s,j)=>s+j.tutar,0);
-  const beklFat=jobs.filter(j=>!(faturalar||[]).some(f=>f.jobRef===j.ref)).reduce((s,j)=>s+j.tutar,0);
+  const beklFat=jobs.filter(j=>!j.faturalandi&&!(faturalar||[]).some(f=>f.jobRef===j.ref)).reduce((s,j)=>s+j.tutar,0);
   // Masaüstüyle birebir aynı kart seti
   const kartlar=[
     {icon:"📈",l:T.aktifIs,sub:T.devamEden,v:aktif,c:"#2563EB",bg:C.blueBg,ic:"#2563EB",go:"stat-aktif"},
@@ -1520,10 +1558,13 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   const [preview,setPreview]=useState(false);
   const [gibGonder,setGibGonder]=useState(false); // GİB gönderim animasyonu
   const [tevkifat,setTevkifat]=useState(0); // 0 | 5 | 7 | 9  (x/10)
+  const [iskonto,setIskonto]=useState(""); // % müşteri indirimi
   const ara=kalemler.reduce((s,k)=>s+k.miktar*k.birim,0);
-  const kdvT=Math.round(ara*kdv/100);
+  const iskontoT=Number(iskonto)>0?Math.round(ara*Number(iskonto)/100):0;
+  const matrah=ara-iskontoT;
+  const kdvT=Math.round(matrah*kdv/100);
   const tevkifatT=tevkifat>0?Math.round(kdvT*tevkifat/10):0;
-  const genel=ara+kdvT-tevkifatT;
+  const genel=matrah+kdvT-tevkifatT;
   const belgeNo="TFE"+new Date().getFullYear()+String(fatNo).padStart(9,"0");
   const ettn=("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx").replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&0x3|0x8)).toString(16);});
   const simdi=new Date();
@@ -1531,13 +1572,13 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   const gibBekliyor=gibAyar?.apiKey&&!gibAyar?.canliAktif;
 
   const whatsappPaylas=()=>{
-    const metin=`🧾 *FATURA — ${isletme.ad}*\n\nSayın ${alici.ad},\n\nFatura No: ${belgeNo}\nTarih: ${simdi.toLocaleDateString("tr-TR")}\n\n${kalemler.map(k=>`• ${k.tanim}: ${(k.miktar*k.birim).toLocaleString("tr-TR")} TL`).join("\n")}\n\nToplam: ${ara.toLocaleString("tr-TR")} TL\nKDV (%${kdv}): ${kdvT.toLocaleString("tr-TR")} TL${tevkifatT>0?`\nTevkifat (${tevkifat}/10): -${tevkifatT.toLocaleString("tr-TR")} TL`:""}\n*ÖDENECEK: ${genel.toLocaleString("tr-TR")} TL*\n\n${isletme.telefon||""}`;
+    const metin=`🧾 *FATURA — ${isletme.ad}*\n\nSayın ${alici.ad},\n\nFatura No: ${belgeNo}\nTarih: ${simdi.toLocaleDateString("tr-TR")}\n\n${kalemler.map(k=>`• ${k.tanim}: ${(k.miktar*k.birim).toLocaleString("tr-TR")} TL`).join("\n")}\n\nToplam: ${ara.toLocaleString("tr-TR")} TL${iskontoT>0?`\nİskonto (%${iskonto}): -${iskontoT.toLocaleString("tr-TR")} TL`:""}\nKDV (%${kdv}): ${kdvT.toLocaleString("tr-TR")} TL${tevkifatT>0?`\nTevkifat (${tevkifat}/10): -${tevkifatT.toLocaleString("tr-TR")} TL`:""}\n*ÖDENECEK: ${genel.toLocaleString("tr-TR")} TL*\n\n${isletme.telefon||""}`;
     window.open("https://wa.me/?text="+encodeURIComponent(metin),"_blank");
   };
   const yazdir=()=>{window.print();};
 
   const faturaKes=()=>{
-    const fatura={no:belgeNo,jobRef:job.ref,musteri:alici.ad,tutar:genel,tarih:simdi.toLocaleDateString("tr-TR"),ettn,alici,kalemler,kdv,ara,kdvT,tevkifat,tevkifatT};
+    const fatura={no:belgeNo,jobRef:job.ref,musteri:alici.ad,tutar:genel,tarih:simdi.toLocaleDateString("tr-TR"),ettn,alici,kalemler,kdv,ara,iskonto:Number(iskonto)||0,iskontoT,kdvT,tevkifat,tevkifatT};
     onKesildi(fatura);
     fatNo++;
     if(gibAktif){
@@ -1599,7 +1640,7 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
       </table>
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:12}}>
         <div style={{minWidth:220}}>
-          {[["Mal Hizmet Toplam",ara],["Hesaplanan KDV (%"+kdv+")",kdvT],...(tevkifatT>0?[["KDV Tevkifatı ("+tevkifat+"/10)",-tevkifatT]]:[]),["ÖDENECEK TUTAR",genel]].map(([l,v],i,arr)=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderTop:i===arr.length-1?"2px solid #111":"none",fontWeight:i===arr.length-1?800:400,fontSize:i===arr.length-1?12:10,color:v<0?"#DC2626":"inherit"}}><span>{l}</span><span>{v.toLocaleString("tr-TR")} TL</span></div>)}
+          {[["Mal Hizmet Toplam",ara],...(iskontoT>0?[[T.iskontoL+" (%"+iskonto+")",-iskontoT]]:[]),["Hesaplanan KDV (%"+kdv+")",kdvT],...(tevkifatT>0?[["KDV Tevkifatı ("+tevkifat+"/10)",-tevkifatT]]:[]),["ÖDENECEK TUTAR",genel]].map(([l,v],i,arr)=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderTop:i===arr.length-1?"2px solid #111":"none",fontWeight:i===arr.length-1?800:400,fontSize:i===arr.length-1?12:10,color:v<0?"#DC2626":"inherit"}}><span>{l}</span><span>{v.toLocaleString("tr-TR")} TL</span></div>)}
         </div>
       </div>
 
@@ -1654,6 +1695,17 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
       </div>
     </div>)}
     <button onClick={()=>setKalemler(k=>[...k,{tanim:"",miktar:1,birim:0}])} style={{width:"100%",background:"none",border:`1.5px dashed ${C.border}`,borderRadius:10,padding:11,color:C.t2,fontSize:13,cursor:"pointer",marginBottom:14}}>+ Kalem Ekle</button>
+    {/* 🏷️ Müşteri İskontosu */}
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>🏷️ {T.iskontoL}</div>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        <input type="number" min="0" max="100" value={iskonto} onChange={e=>setIskonto(e.target.value)} placeholder="0"
+          style={{width:90,background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.t1,fontSize:14,fontWeight:700,outline:"none",textAlign:"center"}}/>
+        <span style={{fontSize:13,color:C.t2}}>%</span>
+        {iskontoT>0&&<span style={{fontSize:12,fontWeight:700,color:C.green,marginLeft:6}}>−{iskontoT.toLocaleString("tr-TR")} TL</span>}
+      </div>
+    </div>
+
     {/* KDV Tevkifatı */}
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>KDV Tevkifatı (kurumsal işlerde)</div>
@@ -1833,6 +1885,29 @@ function TeklifModal({onKapat,onEkle,T,kdv}){
         araToplam:araToplam*(KURLAR[AKTIF_PARA]||1),kdvOran:kdv||20,kdvTutar:kdvTutar*(KURLAR[AKTIF_PARA]||1)});
       onKapat();}}>+ {T.yeniTeklif}</BtnP></div>
   </BottomSheet>;
+}
+
+// ─── FATURA PDF ─────────────────────────────────────────────────
+function faturaPdf(f,isletme,T){
+  const w=window.open("","_blank");
+  if(!w){alert("Açılır pencere engellendi.");return;}
+  const kalemSat=(f.kalemler||[]).map((k,i)=>"<tr><td>"+(i+1)+"</td><td>"+k.tanim+"</td><td style='text-align:center'>"+k.miktar+"</td><td style='text-align:right'>"+Number(k.birim).toLocaleString("tr-TR")+" TL</td><td style='text-align:right'>"+(k.miktar*k.birim).toLocaleString("tr-TR")+" TL</td></tr>").join("");
+  const stil="body{font-family:Arial,sans-serif;padding:32px;color:#111;max-width:800px;margin:0 auto}h1{font-size:20px;color:#2563EB;margin:0}.ust{display:flex;justify-content:space-between;border-bottom:3px solid #2563EB;padding-bottom:16px;margin-bottom:18px}.firma{font-size:11px;color:#555;line-height:1.5}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}th{background:#EFF6FF;border:1px solid #cbd5e1;padding:8px;text-align:left}td{border:1px solid #cbd5e1;padding:8px}.toplam{margin-top:14px;margin-left:auto;width:300px;font-size:13px}.toplam div{display:flex;justify-content:space-between;padding:5px 10px}.toplam .g{background:#2563EB;color:#fff;font-weight:bold;font-size:15px;border-radius:6px}.ettn{font-size:9px;color:#999;font-family:monospace;margin-top:24px}";
+  const logoHtml=isletme?.logo?"<img src='"+isletme.logo+"' style='height:52px;margin-bottom:6px'/><br>":"";
+  w.document.write("<html><head><title>Fatura "+f.no+"</title><style>"+stil+"</style></head><body>"+
+    "<div class='ust'><div>"+logoHtml+"<h1>"+(isletme?.ad||"TradeFlow")+"</h1><div class='firma'>"+(isletme?.yetkili||"")+"<br>"+(isletme?.telefon||"")+"<br>"+(isletme?.adres||"")+(isletme?.vergiNo?"<br>VKN: "+isletme.vergiNo:"")+"</div></div>"+
+    "<div style='text-align:right;font-size:12px'><b style='font-size:16px;color:#2563EB'>FATURA</b><br>No: "+f.no+"<br>"+T.tarihL+": "+f.tarih+"<br>"+(f.jobRef||"")+"</div></div>"+
+    "<div style='font-size:13px;margin-bottom:4px'><b>"+T.musteri+":</b> "+(f.alici?.ad||f.musteri)+(f.alici?.vkn?" · VKN: "+f.alici.vkn:"")+"</div>"+
+    (f.alici?.adres?"<div style='font-size:12px;color:#555;margin-bottom:6px'>"+f.alici.adres+"</div>":"")+
+    "<table><tr><th style='width:30px'>#</th><th>"+T.kalemAdPh+"</th><th style='width:60px;text-align:center'>"+T.adetL+"</th><th style='width:100px;text-align:right'>"+T.birimFiyatL+"</th><th style='width:110px;text-align:right'>"+T.toplam+"</th></tr>"+kalemSat+"</table>"+
+    "<div class='toplam'><div><span>"+T.araToplamL+"</span><span>"+(f.ara||f.tutar).toLocaleString("tr-TR")+" TL</span></div>"+
+    (f.iskontoT>0?"<div style='color:#059669'><span>"+T.iskontoL+" (%"+f.iskonto+")</span><span>-"+f.iskontoT.toLocaleString("tr-TR")+" TL</span></div>":"")+
+    "<div><span>"+T.kdvL+" %"+(f.kdv||20)+"</span><span>"+(f.kdvT||0).toLocaleString("tr-TR")+" TL</span></div>"+
+    (f.tevkifatT>0?"<div style='color:#DC2626'><span>Tevkifat ("+f.tevkifat+"/10)</span><span>-"+f.tevkifatT.toLocaleString("tr-TR")+" TL</span></div>":"")+
+    "<div class='g'><span>"+T.genelToplamL+"</span><span>"+f.tutar.toLocaleString("tr-TR")+" TL</span></div></div>"+
+    "<div class='ettn'>ETTN: "+(f.ettn||"")+"</div>"+
+    "<script>window.onload=function(){window.print();}</"+"script></body></html>");
+  w.document.close();
 }
 
 // ─── PROFESYONEL TEKLİF PDF ─────────────────────────────────────
@@ -2495,7 +2570,7 @@ function IslerTab({jobs,onSelect,T,filtre}){
   </div>;
 }
 
-function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T}){
+function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T,isletme}){
   const [silOnayId,setSilOnayId]=useState(null);
   return <div style={{padding:"16px 14px"}}>
     <div style={{fontSize:18,fontWeight:700,color:C.t1,marginBottom:14}}>{T.faturalar} ({faturalar.length})</div>
@@ -2505,6 +2580,7 @@ function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T}){
         <span style={{fontSize:11,fontFamily:"monospace",color:P,fontWeight:700}}>{f.no}</span>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:11,color:C.green,background:C.greenBg,padding:"3px 9px",borderRadius:20,fontWeight:700}}>{T.kesildiL}</span>
+          <button onClick={()=>faturaPdf(f,isletme,T)} style={{background:"none",border:"none",fontSize:15,cursor:"pointer",padding:"0 2px"}}>🖨️</button>
           <button onClick={()=>setSilOnayId(silOnayId===f.no?null:f.no)} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer",padding:"0 2px"}}>🗑️</button>
         </div>
       </div>
@@ -2522,7 +2598,7 @@ function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T}){
       </div>}
     </Sh>)}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"14px 4px 8px"}}>{T.faturaKes.toUpperCase()} — {T.bekleyenIslerB}</div>
-    {jobs.filter(j=>!faturalar.some(f=>f.jobRef===j.ref)).map(j=><Sh key={j.id} s={{padding:"14px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+    {jobs.filter(j=>!j.faturalandi&&!faturalar.some(f=>f.jobRef===j.ref)).map(j=><Sh key={j.id} s={{padding:"14px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{j.baslik}</div><div style={{fontSize:11,color:C.t3}}>{j.musteri} · {fmt(j.tutar)}</div></div>
       <button onClick={()=>onFaturaKes(j)} style={{background:C.amberBg,border:"none",borderRadius:10,padding:"8px 14px",color:C.amber,fontSize:12,fontWeight:700,cursor:"pointer"}}>📄 {T.faturaKes}</button>
     </Sh>)}
@@ -2689,7 +2765,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
     {/* Hızlı iletişim */}
     <div style={{display:"flex",gap:8,marginBottom:4}}>
       {musteri.telefon&&<button onClick={()=>window.open("tel:"+musteri.telefon)} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:"12px 0",color:C.green,fontSize:13,fontWeight:700,cursor:"pointer"}}>📞 {T.araL}</button>}
-      {musteri.telefon&&<button onClick={()=>window.open("https://wa.me/9"+musteri.telefon.replace(/\D/g,"").slice(-10),"_blank")} style={{flex:1,background:"#DCF8C6",border:"none",borderRadius:12,padding:"12px 0",color:"#128C7E",fontSize:13,fontWeight:700,cursor:"pointer"}}>💬 WhatsApp</button>}
+      {musteri.telefon&&<button onClick={()=>window.open("https://wa.me/90"+musteri.telefon.replace(/\D/g,"").slice(-10),"_blank")} style={{flex:1,background:"#DCF8C6",border:"none",borderRadius:12,padding:"12px 0",color:"#128C7E",fontSize:13,fontWeight:700,cursor:"pointer"}}>💬 WhatsApp</button>}
       {musteri.email&&<button onClick={()=>window.open("mailto:"+musteri.email)} style={{flex:1,background:C.blueBg,border:"none",borderRadius:12,padding:"12px 0",color:C.blue,fontSize:13,fontWeight:700,cursor:"pointer"}}>✉️ Mail</button>}
     </div>
     {(!musteri.telefon&&!musteri.email)&&<div style={{fontSize:12,color:C.t3,textAlign:"center",padding:"8px 0 4px"}}>{T.iletisimYok}</div>}
@@ -3037,7 +3113,7 @@ function TekliflerTab({teklifler,onYeni,onDonustur,onSil,onDurumDegis,T,isletme}
             const kalMetin=kal.length>0?"\n"+kal.map((k,ki)=>(ki+1)+". "+k.ad+" — "+k.adet+" × "+k.birimFiyat.toLocaleString("tr-TR")+" TL").join("\n")+"\n":"";
             const metin=`🏷️ *${T.teklifBelgesi}*\n\nSayın ${t.musteri},\n\n📋 ${t.baslik}${kalMetin}\n${T.araToplamL}: ${(t.araToplam||t.tutar).toLocaleString("tr-TR")} TL\n${T.kdvL} %${t.kdvOran||20}: ${(t.kdvTutar||0).toLocaleString("tr-TR")} TL\n*${T.genelToplamL}: ${t.tutar.toLocaleString("tr-TR")} TL*\n\n📅 ${T.gecerlilik}: ${t.gecerlilik}\n\nOnayınızı bekliyoruz.`;
             const tel=(t.telefon||"").replace(/\D/g,"").slice(-10);
-            window.open("https://wa.me/"+(tel?"9"+tel:"")+"?text="+encodeURIComponent(metin),"_blank");
+            window.open("https://wa.me/"+(tel?"90"+tel:"")+"?text="+encodeURIComponent(metin),"_blank");
           }} style={{flex:1,background:C.greenBg,border:"none",borderRadius:10,padding:"10px 0",color:C.green,fontSize:12,fontWeight:600,cursor:"pointer"}}>💬 {T.whatsappGonder}</button>
           <button onClick={()=>teklifPdf(t,isletme,T)} style={{flex:1,background:C.blueBg,border:"none",borderRadius:10,padding:"10px 0",color:C.blue,fontSize:12,fontWeight:600,cursor:"pointer"}}>🖨️ {T.teklifPdfBtn}</button>
           <button onClick={()=>onSil(t.id)} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 0",color:C.t3,fontSize:12,fontWeight:600,cursor:"pointer"}}>{T.sil}</button>
@@ -3260,7 +3336,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,se
   const [bildirimIzin,setBildirimIzin]=useState(false);
   const [sesEfekt,setSesEfekt]=useState(true);
   const [kompaktMod,setKompaktMod]=useState(false);
-  const [logo,setLogo]=useState(null);
+  const logo=isletme?.logo||null;
   const [modal,setModal]=useState(null); // isletme|kdv|dil|para|gib
 
   // Fatura'dan yönlendirme — GİB modalını otomatik aç
@@ -3274,7 +3350,15 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,se
   const tahsilat=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
   const aktifIs=jobs.filter(j=>j.durum==="aktif").length;
   const bekleyenIs=jobs.filter(j=>j.durum==="bekliyor").length;
-  const logoYukle=(e)=>{const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=(ev)=>{setLogo(ev.target.result);goster("Logo yüklendi ✓");};r.readAsDataURL(file);};
+  const logoYukle=(e)=>{const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=(ev)=>{
+    // Küçült (max 240px) — bulut kaydını şişirmesin
+    const img=new Image();img.onload=()=>{
+      const o=Math.min(1,240/Math.max(img.width,img.height));
+      const cv=document.createElement("canvas");cv.width=img.width*o;cv.height=img.height*o;
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      setIsletme(p=>({...p,logo:cv.toDataURL("image/png")}));goster("Logo yüklendi ✓ (buluta kaydedildi)");
+    };img.src=ev.target.result;
+  };r.readAsDataURL(file);};
   const bildirimAc=(v)=>{setBildirimIzin(v);if(v&&typeof Notification!=="undefined"&&Notification.permission==="default"){Notification.requestPermission();}goster(v?"🔔 Bildirimler açık":"Bildirimler kapalı");};
   const Row=({icon,label,value,sub,onClick,toggle,tState,tSet,danger,custom,badge})=>(
     <div onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",cursor:onClick||toggle?"pointer":"default",borderBottom:`1px solid ${C.border}`}}>
@@ -3539,7 +3623,7 @@ function DesktopStats({jobs,faturalar,T,onStatClick}){
   const aktif=jobs.filter(j=>j.durum==="aktif").length;
   const tahsil=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
   const beklT=jobs.filter(j=>j.durum==="bekliyor").reduce((s,j)=>s+j.tutar,0);
-  const beklFat=jobs.filter(j=>!(faturalar||[]).some(f=>f.jobRef===j.ref)).reduce((s,j)=>s+j.tutar,0);
+  const beklFat=jobs.filter(j=>!j.faturalandi&&!(faturalar||[]).some(f=>f.jobRef===j.ref)).reduce((s,j)=>s+j.tutar,0);
   const kartlar=[
     {icon:"📈",l:T.aktifIs,sub:T.devamEden,v:aktif,c:"#2563EB",bg:C.blueBg,ic:"#2563EB",go:"stat-aktif"},
     {icon:"✅",l:T.tahsilEdildi,sub:T.buAyTahsilat,v:fmt(tahsil),c:"#059669",bg:C.greenBg,ic:"#10B981",go:"stat-tahsil"},
@@ -3704,7 +3788,18 @@ export default function TradeFlow(){
   // ── SUPABASE OTURUM + BULUT VERİ ──
   const [kullanici,setKullanici]=useState(null);
   const [oturumKontrol,setOturumKontrol]=useState(true); // ilk açılışta oturum kontrol ediliyor
+
+  // İnternet gidince/gelince yakala
+  useEffect(()=>{
+    const gel=()=>{setCevrimici(true);setSenkronTik(t=>t+1);};
+    const git=()=>setCevrimici(false);
+    window.addEventListener("online",gel);window.addEventListener("offline",git);
+    return ()=>{window.removeEventListener("online",gel);window.removeEventListener("offline",git);};
+  },[]);
   const [veriYuklendi,setVeriYuklendi]=useState(false); // bulut verisi yüklendi mi (autosave için)
+  const [cevrimici,setCevrimici]=useState(typeof navigator==="undefined"?true:navigator.onLine); // internet var mı
+  const [senkronBekliyor,setSenkronBekliyor]=useState(false); // buluta yazılamayan değişiklik var mı
+  const [senkronTik,setSenkronTik]=useState(0); // internet gelince kaydetmeyi tetikler
 
   // Uygulama açılınca mevcut oturumu kontrol et
   useEffect(()=>{
@@ -3732,11 +3827,20 @@ export default function TradeFlow(){
     if(!kullanici){setVeriYuklendi(false);return;}
     let iptal=false;
     (async()=>{
+      let v=null,kaynakYerel=false;
       try{
+        if(!navigator.onLine)throw new Error("cevrimdisi");
         const {data,error}=await supabase.from("tradeflow_veri").select("veri").eq("kullanici_id",kullanici.id).maybeSingle();
         if(iptal)return;
         if(error){console.error("Veri yükleme:",error);}
-        const v=data?.veri;
+        v=data?.veri;
+      }catch(e){
+        // Bulut erişilemedi — cihazdaki son yerel kopyadan yükle
+        const yerel=await yerelYukle(kullanici.id);
+        if(yerel&&yerel.paket){v=yerel.paket;kaynakYerel=true;setSenkronBekliyor(true);}
+      }
+      if(iptal)return;
+      try{
         if(v&&typeof v==="object"){
           if(Array.isArray(v.jobs))setJobs(v.jobs);
           if(Array.isArray(v.teklifler))setTeklifler(v.teklifler);
@@ -3762,22 +3866,29 @@ export default function TradeFlow(){
           if(maxId>=nId)nId=maxId+1;
         }
       }catch(e){console.error(e);}
-      if(!iptal)setVeriYuklendi(true);
+      if(!iptal){setVeriYuklendi(true);if(kaynakYerel)console.log("📡 Yerel kopyadan yüklendi — internet gelince senkronize edilecek");}
     })();
     return ()=>{iptal=true;};
   },[kullanici]);
 
-  // Veri değişince buluta otomatik kaydet (yüklenme bittikten sonra, 800ms gecikmeli)
+  // ── OFFLINE-FIRST KAYIT ──
+  // Her değişiklik ÖNCE cihaza (IndexedDB) yazılır — internet olmasa da veri güvende.
+  // İnternet varsa buluta da gider; yoksa "senkron bekliyor" işaretlenir,
+  // internet gelince (senkronTik) otomatik buluta akar.
   useEffect(()=>{
     if(!kullanici||!veriYuklendi)return;
     const zaman=setTimeout(async()=>{
       const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
+      await yerelKaydet(kullanici.id,paket); // 1) cihaza — her zaman
+      if(!navigator.onLine){setSenkronBekliyor(true);return;} // internet yok: kuyrukta
       try{
         await supabase.from("tradeflow_veri").upsert({kullanici_id:kullanici.id,veri:paket,guncelleme:new Date().toISOString()},{onConflict:"kullanici_id"});
-      }catch(e){console.error("Kaydetme:",e);}
+        if(senkronBekliyor)goster(T.senkronOk);
+        setSenkronBekliyor(false); // 2) buluta yazıldı
+      }catch(e){console.error("Kaydetme:",e);setSenkronBekliyor(true);}
     },800);
     return ()=>clearTimeout(zaman);
-  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,moduller,kullanici,veriYuklendi]);
+  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,moduller,kullanici,veriYuklendi,senkronTik]);
 
   const cikisYap=async()=>{
     await supabase.auth.signOut();
@@ -3887,7 +3998,11 @@ export default function TradeFlow(){
     }
   };
   const geriAl=()=>{if(sonSilinen){setJobs(p=>[sonSilinen,...p]);goster("↩️ Geri alındı ✓");setSonSilinen(null);}};
-  const faturaKesildi=(f)=>{setFaturalar(p=>[f,...p]);bildirimEkle("🧾 Fatura kesildi",f.no+" · "+f.musteri,"fatura");goster("Fatura kesildi ✓ "+f.no);};
+  const faturaKesildi=(f)=>{
+    setFaturalar(p=>[f,...p]);
+    setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j)); // iş artık "kesilmedi" listesinde görünmez
+    bildirimEkle("🧾 Fatura kesildi",f.no+" · "+f.musteri,"fatura");goster("Fatura kesildi ✓ "+f.no);
+  };
   const teklifDonustur=(t)=>{const cid=nId;nId++;setJobs(p=>[{id:cid,ref:"IS-"+String(cid).padStart(4,"0"),baslik:t.baslik,musteri:t.musteri,tarih:new Date().toISOString().slice(0,10),durum:"bekliyor",tutar:t.tutar,icon:"🏷️",iconBg:"#FEE2E2",hatirlatma:null,hatirlatildi:false,odemeler:[]},...p]);setTeklifler(p=>p.filter(x=>x.id!==t.id));goster("Teklif işe dönüştürüldü ✓");bildirimEkle("🏷️ Teklif kabul edildi",t.baslik,"is");};
   const verileriSifirla=()=>{if(window.confirm("Tüm veriler silinecek. Emin misiniz?")){setJobs([]);setTeklifler([]);setGiderler([]);setFaturalar([]);setBildirimler([]);goster("Veriler sıfırlandı");}};
   const disaAktar=()=>{const data=JSON.stringify({jobs,teklifler,giderler,faturalar,isletme,gibAyar,musteriKayitlari,tarih:new Date().toISOString()},null,2);const blob=new Blob([data],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="tradeflow-yedek.json";a.click();URL.revokeObjectURL(url);goster("📤 Veriler indirildi");};
@@ -3960,7 +4075,7 @@ export default function TradeFlow(){
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
           {sekme==="anasayfa"&&<>{MASAUSTU?<DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/>:<><div style={{height:14}}/><HeroCard jobs={jobs} faturalar={faturalar} yetkili={isletme.yetkili} onYeniIs={()=>setYeniAc(true)} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} isKoluAc={isKoluAc} setIsKoluAc={setIsKoluAc} T={T} onStatClick={statClick} isletmeAd={isletme.ad} onOzellestir={()=>setOzellestirAc(true)}/></>}<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/><Charts jobs={jobs} giderler={giderler} T={T} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}}/><Sh s={{margin:"0 14px 14px",padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}><div style={{width:46,height:46,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚙️</div><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:2}}><span style={{color:P}}>{T.duzenleBaslik1}</span> {T.duzenleBaslik2}</div><div style={{fontSize:11,color:C.t2}}>{T.duzenleAlt}</div></div><button onClick={()=>setOzellestirAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>{T.duzenle} →</button></Sh><JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
-          {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} onFaturaKes={setFatJob} onFaturaSil={(no)=>{setFaturalar(p=>p.filter(f=>f.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
+          {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} filtre={tahsilatFiltre} T={T}/>}
           {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} giderler={giderler}
           onYeniIsIcin={(ad)=>{setYeniIsMusteri(ad);setYeniAc(true);}}
@@ -3987,6 +4102,9 @@ export default function TradeFlow(){
           {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
         </div>
 
+        {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#2563EB",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
+          {!cevrimici?T.cevrimdisiB:T.senkronB}
+        </div>}
         {!MASAUSTU&&<div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:APP_W,background:"#0F1E3D",display:"flex",alignItems:"center",padding:"10px 6px 26px",boxShadow:"0 -6px 24px rgba(15,30,61,0.35)",zIndex:100}}>
           {NAV.map(n=>{
             if(n.id==="fab") return <div key="fab" style={{flex:1,display:"flex",justifyContent:"center"}}><button onClick={()=>setYeniAc(true)} style={{width:56,height:56,borderRadius:18,background:P,border:"none",color:"#fff",fontSize:30,cursor:"pointer",boxShadow:`0 6px 18px ${P}77`,marginBottom:6}}>+</button></div>;
