@@ -1,4 +1,3 @@
-i
 
 // ─── ÇEVRİMDIŞI YEREL DEPO (IndexedDB) ──────────────────────────
 const IDB_AD="tradeflow-yerel",IDB_STORE="paketler";
@@ -20,7 +19,7 @@ async function yerelYukle(kullaniciId){
       rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>res(null);});
   }catch(e){return null;}
 }
-if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260710-faturaplus","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
+if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260711-acilfix","background:#2563EB;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
