@@ -614,6 +614,18 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,gide
       </div>}
     </div>
 
+    {/* 🧰 Kullanılan malzemeler */}
+    {job.malzemeler&&<div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>🧰 Kullanılan Malzemeler</div>
+      <Sh s={{padding:"12px 14px"}}><div style={{fontSize:13,color:C.t1,whiteSpace:"pre-wrap",lineHeight:1.6}}>{job.malzemeler}</div></Sh>
+    </div>}
+
+    {/* 📝 Not */}
+    {job.not&&<div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📝 Not</div>
+      <Sh s={{padding:"12px 14px",borderLeft:`3px solid ${GOLD}`}}><div style={{fontSize:13,color:C.t1,whiteSpace:"pre-wrap",lineHeight:1.6}}>{job.not}</div></Sh>
+    </div>}
+
     {/* İşe bağlı giderler */}
     {isGiderleri.length>0&&<div style={{marginBottom:14}}>
       <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>💸 {T.giderlerB} ({isGiderleri.length})</div>
@@ -845,8 +857,8 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
   const [icon,setIcon]=useState(edit?{e:duzenlenecek.icon,bg:duzenlenecek.iconBg}:icons[0]);
   const [oneriGoster,setOneriGoster]=useState(false);
   const [form,setForm]=useState(edit
-    ?{baslik:duzenlenecek.baslik,musteri:duzenlenecek.musteri,tarih:duzenlenecek.tarih,tutar:String(Math.round(duzenlenecek.tutar/(KURLAR[AKTIF_PARA]||1))),durum:duzenlenecek.durum,hatirlatma:duzenlenecek.hatirlatma||"",isAdresi:duzenlenecek.isAdresi||"",musteriTelefon:duzenlenecek.musteriTelefon||"",musteriEmail:duzenlenecek.musteriEmail||"",tekrar:duzenlenecek.tekrar||"yok",atanan:duzenlenecek.atanan||"",maliyet:duzenlenecek.maliyet?String(Math.round(duzenlenecek.maliyet/(KURLAR[AKTIF_PARA]||1))):""}
-    :{baslik:"",musteri:varsayilanMusteri||"",tarih:new Date().toISOString().slice(0,10),tutar:"",durum:"bekliyor",hatirlatma:"",isAdresi:"",musteriTelefon:"",musteriEmail:"",tekrar:"yok",atanan:"",maliyet:""});
+    ?{baslik:duzenlenecek.baslik,musteri:duzenlenecek.musteri,tarih:duzenlenecek.tarih,tutar:String(Math.round(duzenlenecek.tutar/(KURLAR[AKTIF_PARA]||1))),durum:duzenlenecek.durum,hatirlatma:duzenlenecek.hatirlatma||"",isAdresi:duzenlenecek.isAdresi||"",musteriTelefon:duzenlenecek.musteriTelefon||"",musteriEmail:duzenlenecek.musteriEmail||"",tekrar:duzenlenecek.tekrar||"yok",atanan:duzenlenecek.atanan||"",maliyet:duzenlenecek.maliyet?String(Math.round(duzenlenecek.maliyet/(KURLAR[AKTIF_PARA]||1))):"",not:duzenlenecek.not||"",malzemeler:duzenlenecek.malzemeler||""}
+    :{baslik:"",musteri:varsayilanMusteri||"",tarih:new Date().toISOString().slice(0,10),tutar:"",durum:"bekliyor",hatirlatma:"",isAdresi:"",musteriTelefon:"",musteriEmail:"",tekrar:"yok",atanan:"",maliyet:"",not:"",malzemeler:""});
   const [fotolar,setFotolar]=useState(edit?(duzenlenecek.fotolar||[]):[]);
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
   const fotoEkle=(e)=>{const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=(ev)=>setFotolar(p=>[...p,ev.target.result]);r.readAsDataURL(file);};
@@ -911,6 +923,18 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
           style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none"}}/>
         {form.isAdresi&&<button onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.isAdresi)}&travelmode=driving`,"_blank")} style={{background:C.blue,border:"none",borderRadius:12,padding:"12px 14px",color:"#fff",fontSize:13,cursor:"pointer",flexShrink:0}}>🗺️</button>}
       </div>
+    </div>
+    {/* 🧰 Kullanılan malzemeler */}
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>🧰 Kullanılan Malzemeler (opsiyonel)</div>
+      <textarea value={form.malzemeler} onChange={e=>set("malzemeler",e.target.value)} placeholder={"Örn:\n2x PPR boru 25mm\n1x Kombi contası\n3m kablo"} rows={3}
+        style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none",resize:"vertical",fontFamily:"inherit"}}/>
+    </div>
+    {/* 📝 Not */}
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>📝 Not (opsiyonel)</div>
+      <textarea value={form.not} onChange={e=>set("not",e.target.value)} placeholder="İşle ilgili özel notlar, müşteri istekleri, dikkat edilecekler..." rows={3}
+        style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none",resize:"vertical",fontFamily:"inherit"}}/>
     </div>
     <div style={{display:"flex",gap:10}}>
       <div style={{flex:1}}><Inp label={T.musteriTel} value={form.musteriTelefon} onChange={e=>set("musteriTelefon",e.target.value)} placeholder="0532..."/></div>
@@ -1666,7 +1690,7 @@ function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T,isletme}){
   </div>;
 }
 
-function TahsilatlarTab({jobs,onTahsil,filtre,T}){
+function TahsilatlarTab({jobs,onTahsil,onSil,filtre,T}){
   const tahsilE=jobs.filter(j=>j.durum==="tamamlandi");
   const bekleyen=jobs.filter(j=>j.durum!=="tamamlandi");
   const goster=filtre==="tahsil"?["t"]:filtre==="bekleyen"?["b"]:["b","t"];
@@ -1698,7 +1722,10 @@ function TahsilatlarTab({jobs,onTahsil,filtre,T}){
     {goster.includes("t")&&<><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"14px 4px 8px"}}>{T.tahsilEdilen.toUpperCase()}</div>
       {tahsilE.map(j=><Sh key={j.id} s={{padding:"14px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{j.musteri}</div><div style={{fontSize:11,color:C.t3}}>{j.baslik} · {j.tarih}</div></div>
-        <span style={{fontSize:14,fontWeight:800,color:C.green}}>✓ {fmt(j.tutar)}</span>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:14,fontWeight:800,color:C.green}}>✓ {fmt(j.tutar)}</span>
+          <button onClick={()=>{if(window.confirm(j.musteri+" — "+fmt(j.tutar)+"\nBu tahsilat kaydı silinsin mi? Bu işlem geri alınamaz."))onSil&&onSil(j.id);}} title="Sil" style={{background:C.redBg,border:"none",borderRadius:9,width:30,height:30,color:C.red,fontSize:14,fontWeight:700,cursor:"pointer",flexShrink:0}}>🗑</button>
+        </div>
       </Sh>)}</>}
   </div>;
 }
@@ -2363,11 +2390,10 @@ function BildirimlerTab({bildirimler,onOkundu,T}){
 function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider,onExcelFatura,onPdf,onExcelMuhasebe}){
   const items=[
     {icon:"🤖",label:T.asistan,alt:T.asistanSub,act:()=>onAc("asistan")},
-    {icon:"📈",label:"Muhasebe Raporu (Excel)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
-    {icon:"📊",label:T.excelIslerL,alt:T.muhasebeyeGonder,act:onExcelIs},
-    {icon:"💸",label:T.excelGiderlerL,alt:T.muhasebeyeGonder,act:onExcelGider},
-    {icon:"🧾",label:T.excelFaturalarL,alt:T.muhasebeyeGonder,act:onExcelFatura},
-    {icon:"🖨️",label:T.pdfRaporL,alt:T.yazdirKaydet,act:onPdf},
+    {icon:"📈",label:"Muhasebe Raporu (PDF)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
+    {icon:"📊",label:(T.excelIslerL||"İşler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelIs},
+    {icon:"💸",label:(T.excelGiderlerL||"Giderler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelGider},
+    {icon:"🧾",label:(T.excelFaturalarL||"Faturalar").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelFatura},
     {icon:"📤",label:T.disaAktar,alt:"JSON",act:onExport},
     {icon:"📥",label:T.yedekGeriYukle,alt:T.jsonIceAktar,file:true},
     {icon:"❓",label:T.yardimMerkezi,alt:"SSS",act:()=>onAc("yardim")},
@@ -3140,7 +3166,7 @@ export default function TradeFlow(){
           {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<><div style={{height:14}}/><HeroCard jobs={jobs} faturalar={faturalar} yetkili={isletme.yetkili} onYeniIs={()=>setYeniAc(true)} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} isKoluAc={isKoluAc} setIsKoluAc={setIsKoluAc} T={T} onStatClick={statClick} isletmeAd={isletme.ad} onOzellestir={()=>setOzellestirAc(true)}/></>}<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/>{!MASAUSTU&&<Charts jobs={jobs} giderler={giderler} T={T} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}}/>}<Sh s={{margin:"0 14px 14px",padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}><div style={{width:46,height:46,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚙️</div><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:2}}><span style={{color:P}}>{T.duzenleBaslik1}</span> {T.duzenleBaslik2}</div><div style={{fontSize:11,color:C.t2}}>{T.duzenleAlt}</div></div><button onClick={()=>setOzellestirAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>{T.duzenle} →</button></Sh><JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
-          {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} filtre={tahsilatFiltre} T={T}/>}
+          {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
           {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} giderler={giderler}
           onYeniIsIcin={(ad)=>{setYeniIsMusteri(ad);setYeniAc(true);}}
           onGiderIcin={(ad)=>{setGiderMusteri(ad);setGiderAc(true);}}
@@ -3157,10 +3183,10 @@ export default function TradeFlow(){
           {sekme==="raporlar"&&<RaporlarTab jobs={jobs} giderler={giderler} T={T} ekip={ekip}/>}
           {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
           {sekme==="daha"&&<DahaFazlaTab
-          onExcelMuhasebe={()=>{excelMuhasebe(jobs,giderler,faturalar,isletme);goster("📈 Muhasebe raporu hazır");}}
-          onExcelIs={()=>{excelIsler(jobs);goster("📊 Excel indirildi");}}
-          onExcelGider={()=>{excelGiderler(giderler,jobs);goster("📊 Excel indirildi");}}
-          onExcelFatura={()=>{excelFaturalar(faturalar);goster("📊 Excel indirildi");}}
+          onExcelMuhasebe={()=>{pdfMuhasebeRaporu(jobs,giderler,isletme);goster("📈 PDF raporu hazır");}}
+          onExcelIs={()=>{excelIsler(jobs,isletme);goster("📊 PDF hazır");}}
+          onExcelGider={()=>{excelGiderler(giderler,jobs,isletme);goster("📊 PDF hazır");}}
+          onExcelFatura={()=>{excelFaturalar(faturalar,isletme);goster("📊 PDF hazır");}}
           onPdf={()=>pdfMuhasebeRaporu(jobs,giderler,isletme)}
           onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
