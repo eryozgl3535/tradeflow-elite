@@ -1,4 +1,5 @@
-// ═══ YARDIMCILAR — para/kur, Excel(CSV), PDF üreticileri ═══
+// ═══ YARDIMCILAR — para/kur, Excel(XLSX), PDF üreticileri ═══
+import * as XLSX from "xlsx";
 
 let KURLAR = {TL:1,USD:46.80,EUR:53.61};
 let KUR_KAYNAK = "sabit"; // "tcmb" | "canli" | "sabit"
@@ -63,14 +64,11 @@ export function teklifPdf(t,isletme,T){
   w.document.close();
 }
 
-// ─── MUHASEBE EXPORT: EXCEL (CSV) + PDF ────────────────────────
-export async function csvIndir(satirlar,dosyaAdi){
-  const bom="\uFEFF"; // Türkçe karakterler Excel'de doğru açılsın
-  const csv=bom+satirlar.map(r=>r.map(h=>'"'+String(h??"").replace(/"/g,'""')+'"').join(";")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+// ─── MUHASEBE EXPORT: GERÇEK EXCEL (.xlsx) + PDF ───────────────
+async function dosyaVer(blob,dosyaAdi,mime){
   // Mobil/PWA: paylaşım menüsü (WhatsApp, e-posta, Dosyalar...) — daha kolay
   try{
-    const file=new File([blob],dosyaAdi,{type:"text/csv"});
+    const file=new File([blob],dosyaAdi,{type:mime});
     if(navigator.canShare&&navigator.canShare({files:[file]})&&/Android|iPhone|iPad/i.test(navigator.userAgent)){
       await navigator.share({files:[file],title:dosyaAdi});
       return;
@@ -80,54 +78,81 @@ export async function csvIndir(satirlar,dosyaAdi){
   const a=document.createElement("a");a.href=url;a.download=dosyaAdi;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
-export function excelMuhasebe(jobs,giderler,faturalar,isletme){
-  const tamam=jobs.filter(j=>j.durum==="tamamlandi");
-  const gelir=tamam.reduce((s,j)=>s+j.tutar,0);
-  const giderT=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
-  const tarih=new Date().toLocaleDateString("tr-TR");
-  const satirlar=[
-    [(isletme?.ad||"TradeFlow")+" — Muhasebe Raporu","","","Rapor Tarihi: "+tarih],
-    [],
-    ["ÖZET"],
-    ["Toplam Gelir (Tamamlanan)",gelir],
-    ["Toplam Gider",giderT],
-    ["Net Kâr",gelir-giderT],
-    [],
-    ["İŞLER ("+jobs.length+")"],
-    ["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Alınan Ödeme (TL)","Kalan (TL)"],
-  ];
-  jobs.forEach(j=>{
-    const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
-    satirlar.push([j.ref,j.baslik,j.musteri,j.tarih,j.durum==="tamamlandi"?"Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede",j.tutar,j.maliyet||0,odenen,Math.max(j.tutar-odenen,0)]);
-  });
-  satirlar.push([],["GİDERLER ("+(giderler||[]).length+")"],["Gider Adı","Kategori","Tarih","Tutar (TL)"]);
-  (giderler||[]).forEach(g=>satirlar.push([g.ad,g.kategori,g.tarih,g.tutar]));
-  satirlar.push([],["FATURALAR ("+(faturalar||[]).length+")"],["Fatura No","Müşteri","Tarih","Genel Toplam (TL)"]);
-  (faturalar||[]).forEach(f=>satirlar.push([f.no||f.id,f.musteri,f.tarih,f.genelToplam||f.tutar||0]));
-  csvIndir(satirlar,"tradeflow-muhasebe-raporu-"+new Date().toISOString().slice(0,10)+".csv");
+const XLSX_MIME="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+function sayfaEkle(wb,ad,satirlar){
+  const ws=XLSX.utils.aoa_to_sheet(satirlar);
+  // Kolon genişliklerini içeriğe göre ayarla
+  const genislik=[];
+  satirlar.forEach(r=>r.forEach((h,i)=>{const l=String(h??"").length;if(!genislik[i]||l>genislik[i])genislik[i]=l;}));
+  ws["!cols"]=genislik.map(w=>({wch:Math.min(Math.max(w+2,10),40)}));
+  XLSX.utils.book_append_sheet(wb,ws,ad.slice(0,31));
 }
-export function excelIsler(jobs){
+function xlsxIndir(sayfalar,dosyaAdi){
+  const wb=XLSX.utils.book_new();
+  sayfalar.forEach(([ad,satirlar])=>sayfaEkle(wb,ad,satirlar));
+  const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+  dosyaVer(new Blob([out],{type:XLSX_MIME}),dosyaAdi,XLSX_MIME);
+}
+// Eski CSV fonksiyonu — geriye dönük uyumluluk için korunuyor
+export async function csvIndir(satirlar,dosyaAdi){
+  const bom="\uFEFF";
+  const csv=bom+satirlar.map(r=>r.map(h=>'"'+String(h??"").replace(/"/g,'""')+'"').join(";")).join("\n");
+  dosyaVer(new Blob([csv],{type:"text/csv;charset=utf-8"}),dosyaAdi,"text/csv");
+}
+function isSatirlari(jobs){
   const satirlar=[["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Alınan Ödeme (TL)","Kalan (TL)","Atanan"]];
   jobs.forEach(j=>{
     const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
     satirlar.push([j.ref,j.baslik,j.musteri,j.tarih,j.durum==="tamamlandi"?"Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede",j.tutar,j.maliyet||0,odenen,Math.max(j.tutar-odenen,0),j.atanan||""]);
   });
-  csvIndir(satirlar,"tradeflow-isler-"+new Date().toISOString().slice(0,10)+".csv");
+  return satirlar;
 }
-export function excelGiderler(giderler,jobs){
+function giderSatirlari(giderler,jobs){
   const satirlar=[["Gider Adı","Kategori","Tarih","Tutar (TL)","Bağlı İş"]];
-  giderler.forEach(g=>{
+  (giderler||[]).forEach(g=>{
     const is_=g.isId?(jobs||[]).find(j=>j.id===g.isId):null;
     satirlar.push([g.ad,g.kategori,g.tarih,g.tutar,is_?is_.baslik+" ("+is_.musteri+")":(g.isAdi||"")]);
   });
-  csvIndir(satirlar,"tradeflow-giderler-"+new Date().toISOString().slice(0,10)+".csv");
+  return satirlar;
 }
-export function excelFaturalar(faturalar){
+function faturaSatirlari(faturalar){
   const satirlar=[["Fatura No","Müşteri","Tarih","Ara Toplam (TL)","KDV (TL)","Tevkifat (TL)","Genel Toplam (TL)"]];
-  faturalar.forEach(f=>{
+  (faturalar||[]).forEach(f=>{
     satirlar.push([f.no||f.id,f.musteri,f.tarih,f.araToplam||f.tutar||0,f.kdvTutar||0,f.tevkifatTutar||0,f.genelToplam||f.tutar||0]);
   });
-  csvIndir(satirlar,"tradeflow-faturalar-"+new Date().toISOString().slice(0,10)+".csv");
+  return satirlar;
+}
+export function excelIsler(jobs){
+  xlsxIndir([["İşler",isSatirlari(jobs)]],"tradeflow-isler-"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+export function excelGiderler(giderler,jobs){
+  xlsxIndir([["Giderler",giderSatirlari(giderler,jobs)]],"tradeflow-giderler-"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+export function excelFaturalar(faturalar){
+  xlsxIndir([["Faturalar",faturaSatirlari(faturalar)]],"tradeflow-faturalar-"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+export function excelMuhasebe(jobs,giderler,faturalar,isletme){
+  const tamam=jobs.filter(j=>j.durum==="tamamlandi");
+  const gelir=tamam.reduce((s,j)=>s+j.tutar,0);
+  const giderT=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
+  const ozet=[
+    [(isletme?.ad||"TradeFlow")+" — Muhasebe Raporu"],
+    ["Rapor Tarihi",new Date().toLocaleDateString("tr-TR")],
+    ["Hazırlayan",isletme?.yetkili||""],
+    [],
+    ["ÖZET",""],
+    ["Toplam Gelir (Tamamlanan)",gelir],
+    ["Toplam Gider",giderT],
+    ["Net Kâr",gelir-giderT],
+    ["Toplam İş",jobs.length],
+    ["Toplam Fatura",(faturalar||[]).length],
+  ];
+  xlsxIndir([
+    ["Özet",ozet],
+    ["İşler",isSatirlari(jobs)],
+    ["Giderler",giderSatirlari(giderler,jobs)],
+    ["Faturalar",faturaSatirlari(faturalar)],
+  ],"tradeflow-muhasebe-raporu-"+new Date().toISOString().slice(0,10)+".xlsx");
 }
 export function pdfMuhasebeRaporu(jobs,giderler,isletme){
   const tamam=jobs.filter(j=>j.durum==="tamamlandi");
