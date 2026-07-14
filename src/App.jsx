@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, BarChart, Bar, X
 import { supabase, yerelKaydet, yerelYukle } from "./veri.js";
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
-import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, pdfMuhasebeRaporu, teklifPdf, faturaPdf } from "./utils.js";
+import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, teklifPdf, faturaPdf } from "./utils.js";
 
 
 const LIGHT = {
@@ -1942,14 +1942,16 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
       <div style={{fontSize:11,color:C.t3,marginTop:4}}>{T.kayitYokSub}</div>
     </Sh>}
     {kayitListe.map(m=>{
-      const isSayi=jobs.filter(j=>j.musteri===m.ad).length;
+      const musteriIsleri=jobs.filter(j=>j.musteri===m.ad);
+      const isSayi=musteriIsleri.length;
+      const ciro=musteriIsleri.reduce((s,j)=>s+j.tutar,0);
       return <Sh key={m.ad} s={{padding:"13px 16px",marginBottom:8}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{width:42,height:42,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:P,flexShrink:0}}>{(m.ad&&m.ad[0])||"?"}</div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.ad}</div>
             <div style={{fontSize:11,color:C.t3}}>{m.telefon||T.telYok} {m.email?"· "+m.email:""}</div>
-            {isSayi>0&&<div style={{fontSize:10,color:P,fontWeight:600,marginTop:2}}>📋 {isSayi} {T.isKaydiVar}</div>}
+            {isSayi>0&&<div style={{fontSize:10,color:P,fontWeight:600,marginTop:2}}>📋 {isSayi} {T.isKaydiVar} · <span style={{color:C.green}}>{fmt(ciro)}</span></div>}
           </div>
           <button onClick={()=>onYeniIsIcin&&onYeniIsIcin(m.ad)} title="Bu müşteriye iş aç" style={{background:C.greenBg,border:"none",borderRadius:9,padding:"8px 11px",color:C.green,fontSize:11,fontWeight:700,cursor:"pointer"}}>+ İş</button>
           <button onClick={()=>onKayitSil&&onKayitSil(m.ad)} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer"}}>×</button>
@@ -2358,9 +2360,10 @@ function BildirimlerTab({bildirimler,onOkundu,T}){
   </div>;
 }
 
-function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider,onExcelFatura,onPdf}){
+function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider,onExcelFatura,onPdf,onExcelMuhasebe}){
   const items=[
     {icon:"🤖",label:T.asistan,alt:T.asistanSub,act:()=>onAc("asistan")},
+    {icon:"📈",label:"Muhasebe Raporu (Excel)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
     {icon:"📊",label:T.excelIslerL,alt:T.muhasebeyeGonder,act:onExcelIs},
     {icon:"💸",label:T.excelGiderlerL,alt:T.muhasebeyeGonder,act:onExcelGider},
     {icon:"🧾",label:T.excelFaturalarL,alt:T.muhasebeyeGonder,act:onExcelFatura},
@@ -3127,9 +3130,9 @@ export default function TradeFlow(){
         </div>}
 
         {!MASAUSTU&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 14px 12px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:50}}>
-          <div style={{width:42,height:42,background:C.bg,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",border:`1px solid ${C.border}`,color:C.t1}}>☰</div>
+          <div onClick={()=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme("daha");}} style={{width:42,height:42,background:C.bg,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",border:`1px solid ${C.border}`,color:C.t1}}>☰</div>
           <TFLogo/>
-          <div style={{position:"relative"}}><div style={{width:42,height:42,background:"#1F2937",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"#fff"}}>EO</div><div style={{position:"absolute",bottom:1,right:1,width:11,height:11,borderRadius:"50%",background:C.green,border:"2px solid "+C.card}}/></div>
+          <div onClick={()=>setSekme("profil")} style={{position:"relative",cursor:"pointer"}}><div style={{width:42,height:42,background:"#1F2937",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"#fff"}}>{((isletme?.yetkili||kullanici?.email||"?").split(" ").map(w=>w[0]).join("").slice(0,2)).toUpperCase()}</div><div style={{position:"absolute",bottom:1,right:1,width:11,height:11,borderRadius:"50%",background:C.green,border:"2px solid "+C.card}}/></div>
         </div>}
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>setYeniAc(true)} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
@@ -3154,6 +3157,7 @@ export default function TradeFlow(){
           {sekme==="raporlar"&&<RaporlarTab jobs={jobs} giderler={giderler} T={T} ekip={ekip}/>}
           {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
           {sekme==="daha"&&<DahaFazlaTab
+          onExcelMuhasebe={()=>{excelMuhasebe(jobs,giderler,faturalar,isletme);goster("📈 Muhasebe raporu hazır");}}
           onExcelIs={()=>{excelIsler(jobs);goster("📊 Excel indirildi");}}
           onExcelGider={()=>{excelGiderler(giderler,jobs);goster("📊 Excel indirildi");}}
           onExcelFatura={()=>{excelFaturalar(faturalar);goster("📊 Excel indirildi");}}
