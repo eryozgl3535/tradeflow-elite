@@ -1812,24 +1812,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider,is
       <button onClick={()=>onYeniIs&&onYeniIs(musteri.ad)} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:"12px 0",color:C.green,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.yeniIsAc}</button>
       <button onClick={()=>onGider&&onGider(musteri.ad)} style={{flex:1,background:C.redBg,border:"none",borderRadius:12,padding:"12px 0",color:C.red,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.giderEkleBtn}</button>
     </div>
-    <div style={{display:"flex",gap:8,marginBottom:14}}>
-      <button onClick={()=>musteriPdf(musteri,giderler,isletme)} style={{flex:1.4,background:P,border:"none",borderRadius:12,padding:"13px 0",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>📄 Rapor (PDF)</button>
-      <button onClick={()=>{
-        const isler=musteri.isler||[];
-        const ciro=isler.reduce((s,j)=>s+j.tutar,0);
-        const tahsilE2=isler.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
-        let metin="📋 *"+(isletme?.ad||"TradeFlow")+" — İş Özeti*\n👤 "+musteri.ad+"\n📅 "+new Date().toLocaleDateString("tr-TR")+"\n\n";
-        isler.forEach(j=>{
-          metin+="▪️ "+j.baslik+" ("+j.tarih+")\n   "+(j.durum==="tamamlandi"?"✅ Tamamlandı":j.durum==="aktif"?"🔵 Devam ediyor":"🟡 Beklemede")+" · "+j.tutar.toLocaleString("tr-TR")+" TL\n";
-          if(j.malzemeler)metin+="   🧰 "+j.malzemeler.split("\n").join(", ")+"\n";
-        });
-        metin+="\n💼 Toplam: "+ciro.toLocaleString("tr-TR")+" TL\n✅ Tahsil: "+tahsilE2.toLocaleString("tr-TR")+" TL";
-        if(ciro-tahsilE2>0)metin+="\n⏳ Kalan: "+(ciro-tahsilE2).toLocaleString("tr-TR")+" TL";
-        metin+="\n\n📎 Detaylı PDF raporu ektedir/ayrıca iletilecektir.";
-        const tel=musteri.telefon?("90"+musteri.telefon.replace(/\D/g,"").slice(-10)):"";
-        window.open("https://wa.me/"+tel+"?text="+encodeURIComponent(metin),"_blank");
-      }} style={{flex:1,background:"#DCF8C6",border:"none",borderRadius:12,padding:"13px 0",color:"#128C7E",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>💬 WhatsApp</button>
-    </div>
+    <button onClick={()=>musteriPdf(musteri,giderler,isletme)} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:"14px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",marginBottom:14}}>📄 PDF Raporu — WhatsApp'ta Paylaş / İndir</button>
 
     {/* 🧰 Kullanılan Malzemeler (tüm işlerden — tamamlananlar dahil) */}
     {musteri.isler.some(j=>j.malzemeler)&&<div style={{marginBottom:14}}>
