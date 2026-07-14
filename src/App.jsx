@@ -868,7 +868,7 @@ function TeklifMarjRozeti({tutar,maliyet}){
 function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMusteri,ekip}){
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   // Sektöre özel iş türü ikonları + birkaç genel ikon
-  const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg})),{e:"📦",bg:"#FEF3C7"},{e:"🛠️",bg:"#EDE9FE"},{e:"💼",bg:"#EDE9FE"},{e:"📋",bg:"#DBEAFE"}]
+  const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg,ad:t.ad,isler:t.isler})),{e:"📦",bg:"#FEF3C7"},{e:"🛠️",bg:"#EDE9FE"},{e:"💼",bg:"#EDE9FE"},{e:"📋",bg:"#DBEAFE"}]
     .filter((v,i,a)=>a.findIndex(x=>x.e===v.e)===i); // tekrarları temizle
   const edit=!!duzenlenecek;
   const [icon,setIcon]=useState(edit?{e:duzenlenecek.icon,bg:duzenlenecek.iconBg}:icons[0]);
@@ -894,14 +894,15 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     {!edit&&<div style={{fontSize:11,color:P,fontWeight:600,marginBottom:14,display:"flex",alignItems:"center",gap:5}}>{sektor.icon} {isKolu} akışı</div>}
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>{T.ikon}</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{icons.map(ic=><button key={ic.e} onClick={()=>setIcon(ic)} style={{width:46,height:46,borderRadius:12,background:ic.bg,border:`2px solid ${icon.e===ic.e?P:"transparent"}`,fontSize:20,cursor:"pointer"}}>{ic.e}</button>)}</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{icons.map(ic=><button key={ic.e} onClick={()=>{setIcon(ic);if(!edit&&ic.isler)setOneriGoster(true);}} title={ic.ad||""} style={{width:46,height:46,borderRadius:12,background:ic.bg,border:`2px solid ${icon.e===ic.e?P:"transparent"}`,fontSize:20,cursor:"pointer"}}>{ic.e}</button>)}</div>
+      {icon.ad&&<div style={{fontSize:10,color:P,fontWeight:700,marginTop:6}}>{icon.e} {icon.ad} işleri seçildi</div>}
     </div>
     <div style={{position:"relative"}}>
       <Inp label={T.isBasligi} value={form.baslik} onChange={e=>set("baslik",e.target.value)} onFocus={()=>!edit&&setOneriGoster(true)} placeholder={sektor.isOrnekPh}/>
       {/* Sektöre özel iş önerileri */}
       {oneriGoster&&!edit&&<div style={{marginTop:-6,marginBottom:14,background:C.bg,borderRadius:12,padding:"6px",border:`1px solid ${C.border}`}}>
-        <div style={{fontSize:10,color:C.t3,padding:"4px 8px",fontWeight:600}}>💡 {T.hazirIslerOn}{isKolu}{T.hazirIslerSon}</div>
-        {sektor.ornekIsler.map(is=><div key={is} onClick={()=>{set("baslik",is);setOneriGoster(false);}} style={{padding:"9px 10px",borderRadius:8,cursor:"pointer",fontSize:13,color:C.t1,display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>e.currentTarget.style.background=C.card} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+        <div style={{fontSize:10,color:C.t3,padding:"4px 8px",fontWeight:600}}>💡 {icon.isler?icon.e+" "+icon.ad+" iş önerileri":T.hazirIslerOn+isKolu+T.hazirIslerSon}</div>
+        {(icon.isler||sektor.ornekIsler).map(is=><div key={is} onClick={()=>{set("baslik",is);setOneriGoster(false);}} style={{padding:"9px 10px",borderRadius:8,cursor:"pointer",fontSize:13,color:C.t1,display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>e.currentTarget.style.background=C.card} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           <span style={{color:P}}>+</span> {is}
         </div>)}
       </div>}
