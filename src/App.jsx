@@ -28,6 +28,23 @@ const DARK = {
   sh2:"0 8px 24px rgba(0,0,0,0.6)",
 };
 let C = LIGHT;
+// 🎨 Renk temaları — LIGHT tabanlı, zemin/kart tonları değişir
+const TEMALAR = {
+  acik: LIGHT,
+  okyanus: {...LIGHT, bg:"#E8F1F7", card:"#FFFFFF", border:"#D3E2EC", purpleBg:"#D9EAF5", blueBg:"#CFE5F5", inputBg:"#FBFDFF"},
+  orman: {...LIGHT, bg:"#EBF2EA", card:"#FFFFFF", border:"#D6E3D3", purpleBg:"#DDEBD9", greenBg:"#D3EFDF", inputBg:"#FBFDFA"},
+  gunbatimi: {...LIGHT, bg:"#F7EFE5", card:"#FFFFFF", border:"#EBDCC8", purpleBg:"#F5E5CE", amberBg:"#FBEBC8", inputBg:"#FFFDF9"},
+  lavanta: {...LIGHT, bg:"#F0EEF8", card:"#FFFFFF", border:"#DFDAEE", purpleBg:"#E6E0F5", blueBg:"#E0DEF5", inputBg:"#FCFBFF"},
+  gul: {...LIGHT, bg:"#F7EDF0", card:"#FFFFFF", border:"#ECDAE0", purpleBg:"#F5DEE6", redBg:"#FADCE3", inputBg:"#FFFBFC"},
+};
+const TEMA_LISTE = [
+  ["acik","☀️","Açık","#F2F2F7"],
+  ["okyanus","🌊","Okyanus","#BBD9EE"],
+  ["orman","🌿","Orman","#BFDDB9"],
+  ["gunbatimi","🌅","Günbatımı","#F2D9AE"],
+  ["lavanta","💜","Lavanta","#CFC5EC"],
+  ["gul","🌸","Gül","#EDC3D1"],
+];
 const P = "#1B2A4A";
 const P2 = "#0F1B33";
 const GOLD = "#C9A24B";
@@ -2436,7 +2453,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
 }
 
 // ─── PROFİL ─────────────────────────────────────────────────────
-function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
+function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
   const [bildirimIzin,setBildirimIzin]=useState(false);
   const [sesEfekt,setSesEfekt]=useState(true);
   const [kompaktMod,setKompaktMod]=useState(false);
@@ -2548,6 +2565,18 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,para,setPara,kdv,se
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
       <Row icon="🔔" label={T.bildirimlerL} sub={T.bildirimSub} toggle tState={bildirimIzin} tSet={bildirimAc}/>
       <Row icon="🌙" label={T.karanlikMod} sub={T.karanlikSub} toggle tState={karanlik} tSet={setKaranlik}/>
+      {/* 🎨 Renk temaları */}
+      {!karanlik&&<div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
+        <div style={{fontSize:13,fontWeight:600,color:C.t1,marginBottom:2}}>🎨 Tema Rengi</div>
+        <div style={{fontSize:11,color:C.t3,marginBottom:10}}>Uygulamanın zemin rengini seç</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {TEMA_LISTE.map(([id,ikon,ad,renk])=><button key={id} onClick={()=>{setTema(id);goster(ikon+" "+ad+" teması")}} title={ad}
+            style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"transparent",border:"none",cursor:"pointer",padding:0}}>
+            <span style={{width:38,height:38,borderRadius:"50%",background:renk,border:`3px solid ${tema===id?P:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,boxShadow:tema===id?`0 0 0 2px ${C.card}, 0 0 0 4px ${P}33`:"none"}}>{ikon}</span>
+            <span style={{fontSize:9,fontWeight:tema===id?700:500,color:tema===id?P:C.t3}}>{ad}</span>
+          </button>)}
+        </div>
+      </div>}
       <Row icon="🔊" label={T.sesEfektleri} sub={T.sesEfektSub} toggle tState={sesEfekt} tSet={setSesEfekt}/>
       <Row icon="📱" label={T.kompaktGorunum} sub={T.kompaktSub} toggle tState={kompaktMod} tSet={setKompaktMod}/>
       <Row icon="🌐" label={T.dil} sub={dilAd?.bolge||""} value={dilAd?dilAd.bayrak+" "+dilAd.ad:dil} onClick={()=>setModal("dil")}/>
@@ -2871,6 +2900,7 @@ export default function TradeFlow(){
   const [isKoluAc,setIsKoluAc]=useState(false);
   const [dil,setDil]=useState("tr");
   const [karanlik,setKaranlik]=useState(false);
+  const [tema,setTema]=useState("acik");
   const [para,setPara]=useState("TL");
   const [kdv,setKdv]=useState(20);
   const [isletme,setIsletme]=useState({ad:"",yetkili:"",telefon:"",email:"",vergiNo:"",vergiDairesi:"",adres:""});
@@ -2958,6 +2988,7 @@ export default function TradeFlow(){
           if(typeof v.kdv==="number")setKdv(v.kdv);
           if(v.para)setPara(v.para);
           if(typeof v.karanlik==="boolean")setKaranlik(v.karanlik);
+          if(typeof v.tema==="string"&&TEMALAR[v.tema])setTema(v.tema);
           if(Array.isArray(v.modulAktif)){
             // Sadece açık/kapalı durumunu uygula, fonksiyonlu yapıyı koru
             setModuller(MODUL_VARSAYILAN.map(md=>{
@@ -2982,7 +3013,7 @@ export default function TradeFlow(){
   useEffect(()=>{
     if(!kullanici||!veriYuklendi)return;
     const zaman=setTimeout(async()=>{
-      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
+      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,tema,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
       await yerelKaydet(kullanici.id,paket); // 1) cihaza — her zaman
       if(!navigator.onLine){setSenkronBekliyor(true);return;} // internet yok: kuyrukta
       try{
@@ -2992,7 +3023,7 @@ export default function TradeFlow(){
       }catch(e){console.error("Kaydetme:",e);setSenkronBekliyor(true);}
     },800);
     return ()=>clearTimeout(zaman);
-  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,moduller,kullanici,veriYuklendi,senkronTik]);
+  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,tema,moduller,kullanici,veriYuklendi,senkronTik]);
 
   const cikisYap=async()=>{
     await supabase.auth.signOut();
@@ -3001,7 +3032,7 @@ export default function TradeFlow(){
     setJobs(initJobs);setTeklifler([]);setGiderler([]);setFaturalar([]);setMusteriKayitlari([]);
   };
 
-  C=karanlik?DARK:LIGHT;
+  C=karanlik?DARK:(TEMALAR[tema]||LIGHT);
   const T=getT(dil);
   paraAyarla(para);
   updateDurum(T);
@@ -3204,7 +3235,7 @@ export default function TradeFlow(){
           onPdf={()=>pdfMuhasebeRaporu(jobs,giderler,isletme)}
           onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
-          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
+          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
         </div>
 
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1B2A4A",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
