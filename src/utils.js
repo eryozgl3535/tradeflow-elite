@@ -1,5 +1,4 @@
-// ═══ YARDIMCILAR — para/kur, Excel(XLSX), PDF üreticileri ═══
-import * as XLSX from "xlsx";
+// ═══ YARDIMCILAR — para/kur, PDF rapor üreticileri ═══
 
 let KURLAR = {TL:1,USD:46.80,EUR:53.61};
 let KUR_KAYNAK = "sabit"; // "tcmb" | "canli" | "sabit"
@@ -64,7 +63,7 @@ export function teklifPdf(t,isletme,T){
   w.document.close();
 }
 
-// ─── MUHASEBE EXPORT: GERÇEK EXCEL (.xlsx) + PDF ───────────────
+// ─── MUHASEBE EXPORT: PDF RAPORLAR ─────────────────────────────
 async function dosyaVer(blob,dosyaAdi,mime){
   // Mobil/PWA: paylaşım menüsü (WhatsApp, e-posta, Dosyalar...) — daha kolay
   try{
@@ -78,81 +77,105 @@ async function dosyaVer(blob,dosyaAdi,mime){
   const a=document.createElement("a");a.href=url;a.download=dosyaAdi;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
-const XLSX_MIME="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-function sayfaEkle(wb,ad,satirlar){
-  const ws=XLSX.utils.aoa_to_sheet(satirlar);
-  // Kolon genişliklerini içeriğe göre ayarla
-  const genislik=[];
-  satirlar.forEach(r=>r.forEach((h,i)=>{const l=String(h??"").length;if(!genislik[i]||l>genislik[i])genislik[i]=l;}));
-  ws["!cols"]=genislik.map(w=>({wch:Math.min(Math.max(w+2,10),40)}));
-  XLSX.utils.book_append_sheet(wb,ws,ad.slice(0,31));
-}
-function xlsxIndir(sayfalar,dosyaAdi){
-  const wb=XLSX.utils.book_new();
-  sayfalar.forEach(([ad,satirlar])=>sayfaEkle(wb,ad,satirlar));
-  const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});
-  dosyaVer(new Blob([out],{type:XLSX_MIME}),dosyaAdi,XLSX_MIME);
-}
 // Eski CSV fonksiyonu — geriye dönük uyumluluk için korunuyor
 export async function csvIndir(satirlar,dosyaAdi){
   const bom="\uFEFF";
   const csv=bom+satirlar.map(r=>r.map(h=>'"'+String(h??"").replace(/"/g,'""')+'"').join(";")).join("\n");
   dosyaVer(new Blob([csv],{type:"text/csv;charset=utf-8"}),dosyaAdi,"text/csv");
 }
-function isSatirlari(jobs){
-  const satirlar=[["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Alınan Ödeme (TL)","Kalan (TL)","Atanan"]];
-  jobs.forEach(j=>{
+// Ortak PDF rapor üretici: şık tablo + yazdır penceresi ("PDF olarak kaydet")
+function raporPdf(baslik,kolonlar,satirlar,isletme,ozet){
+  const tarih=new Date().toLocaleDateString("tr-TR");
+  const w=window.open("","_blank");
+  if(!w){alert("Açılır pencere engellendi. Tarayıcı izinlerini kontrol edin.");return;}
+  const stil="body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:19px;color:#1B2A4A;margin:0 0 2px}"+
+    ".alt{color:#666;font-size:11px;margin-bottom:14px}"+
+    "table{width:100%;border-collapse:collapse;margin-top:10px;font-size:11px}"+
+    "th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#1B2A4A;color:#fff}"+
+    "tr:nth-child(even) td{background:#F5F5F2}"+
+    ".ozet{display:flex;gap:12px;margin:12px 0}.kart{border:1px solid #ddd;border-left:3px solid #C9A24B;border-radius:6px;padding:10px 14px;flex:1;font-size:11px}.kart b{font-size:15px;display:block;margin-top:3px}";
+  const th="<tr>"+kolonlar.map(k=>"<th>"+k+"</th>").join("")+"</tr>";
+  const tr=satirlar.map(r=>"<tr>"+r.map((h,i)=>"<td"+(typeof h==="number"?" style='text-align:right'":"")+">"+(typeof h==="number"?h.toLocaleString("tr-TR"):String(h??""))+"</td>").join("")+"</tr>").join("");
+  const ozetHtml=ozet?"<div class='ozet'>"+ozet.map(o=>"<div class='kart'>"+o[0]+"<b style='color:"+(o[2]||"#1B2A4A")+"'>"+o[1]+"</b></div>").join("")+"</div>":"";
+  w.document.write("<html><head><title>"+baslik+"</title><style>"+stil+"</style></head><body>"+
+    "<h1>"+(isletme?.ad||"TradeFlow")+" — "+baslik+"</h1>"+
+    "<div class='alt'>Rapor Tarihi: "+tarih+(isletme?.yetkili?" · "+isletme.yetkili:"")+" · TradeFlow Elite</div>"+
+    ozetHtml+
+    "<table>"+th+tr+"</table>"+
+    "<script>window.onload=function(){window.print();}</"+"script></body></html>");
+  w.document.close();
+}
+function durumAd(d){return d==="tamamlandi"?"Tamamlandı":d==="aktif"?"Aktif":"Beklemede";}
+// 👤 Müşteri Raporu PDF — bilgiler + işler + malzemeler + notlar + finans özeti
+export function musteriPdf(musteri,giderler,isletme){
+  const w=window.open("","_blank");
+  if(!w){alert("Açılır pencere engellendi. Tarayıcı izinlerini kontrol edin.");return;}
+  const tarih=new Date().toLocaleDateString("tr-TR");
+  const isler=musteri.isler||[];
+  const toplamCiro=isler.reduce((s,j)=>s+j.tutar,0);
+  const tahsil=isler.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
+  const isIdleri=isler.map(j=>j.id);
+  const musGider=(giderler||[]).filter(g=>isIdleri.includes(g.isId));
+  const giderT=musGider.reduce((s,g)=>s+g.tutar,0);
+  const stil="body{font-family:Arial,sans-serif;padding:28px;color:#111;max-width:800px;margin:0 auto}"+
+    "h1{font-size:20px;color:#1B2A4A;margin:0}.alt{color:#666;font-size:11px;margin-bottom:4px}"+
+    ".ust{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1B2A4A;padding-bottom:14px;margin-bottom:16px}"+
+    ".logo{font-size:13px;font-weight:bold;color:#1B2A4A;letter-spacing:2px}"+
+    ".bilgi{font-size:12px;line-height:1.7;color:#333}"+
+    ".ozet{display:flex;gap:10px;margin:14px 0}.kart{border:1px solid #ddd;border-left:3px solid #C9A24B;border-radius:6px;padding:9px 13px;flex:1;font-size:10.5px;color:#555}.kart b{font-size:14px;display:block;margin-top:2px;color:#111}"+
+    "h2{font-size:13px;color:#1B2A4A;border-bottom:1px solid #C9A24B;padding-bottom:4px;margin:20px 0 8px}"+
+    "table{width:100%;border-collapse:collapse;font-size:11px}th{background:#1B2A4A;color:#fff;padding:6px 8px;text-align:left;border:1px solid #1B2A4A}td{border:1px solid #ccc;padding:6px 8px;vertical-align:top}"+
+    "tr:nth-child(even) td{background:#F7F7F4}"+
+    ".malz{white-space:pre-wrap;font-size:10.5px;color:#444;line-height:1.5}"+
+    ".notk{background:#FBF6EA;border-left:3px solid #C9A24B;padding:8px 10px;font-size:10.5px;color:#444;margin-top:4px;white-space:pre-wrap}";
+  const isSat=isler.map(j=>{
+    const malz=j.malzemeler?"<div class='malz'><b style='font-size:10px;color:#1B2A4A'>🧰 Malzemeler:</b><br>"+j.malzemeler+"</div>":"";
+    const notu=j.not?"<div class='notk'><b>📝 Not:</b> "+j.not+"</div>":"";
+    return "<tr><td>"+(j.ref||"")+"</td><td><b>"+j.baslik+"</b>"+(j.isAdresi?"<div style='font-size:10px;color:#666'>📍 "+j.isAdresi+"</div>":"")+malz+notu+"</td><td>"+j.tarih+"</td><td>"+durumAd(j.durum)+"</td><td style='text-align:right'>"+j.tutar.toLocaleString("tr-TR")+" TL</td></tr>";
+  }).join("");
+  const adresler=(musteri.adresler||[]).map(a=>(a.etiket?a.etiket+": ":"")+a.adres).join("<br>");
+  w.document.write("<html><head><title>Müşteri Raporu - "+musteri.ad+"</title><style>"+stil+"</style></head><body>"+
+    "<div class='ust'><div><h1>👤 "+musteri.ad+"</h1><div class='alt'>Müşteri Raporu · "+tarih+"</div>"+
+    "<div class='bilgi'>"+(musteri.telefon?"📞 "+musteri.telefon+"<br>":"")+(musteri.email?"✉️ "+musteri.email+"<br>":"")+(adresler?"📍 "+adresler:"")+"</div></div>"+
+    "<div style='text-align:right'><div class='logo'>T/F TRADEFLOW</div><div class='alt'>"+(isletme?.ad||"")+"<br>"+(isletme?.yetkili||"")+"</div></div></div>"+
+    "<div class='ozet'>"+
+    "<div class='kart'>Toplam Ciro<b>"+toplamCiro.toLocaleString("tr-TR")+" TL</b></div>"+
+    "<div class='kart'>Tahsil Edilen<b style='color:#059669'>"+tahsil.toLocaleString("tr-TR")+" TL</b></div>"+
+    "<div class='kart'>Toplam Gider<b style='color:#DC2626'>"+giderT.toLocaleString("tr-TR")+" TL</b></div>"+
+    "<div class='kart'>Net Kâr<b style='color:"+(toplamCiro-giderT>=0?"#059669":"#DC2626")+"'>"+(toplamCiro-giderT).toLocaleString("tr-TR")+" TL</b></div>"+
+    "</div>"+
+    "<h2>📋 İşler ("+isler.length+")</h2><table><tr><th>Ref</th><th>İş / Malzeme / Not</th><th>Tarih</th><th>Durum</th><th>Tutar</th></tr>"+isSat+"</table>"+
+    (musGider.length>0?"<h2>💸 Giderler ("+musGider.length+")</h2><table><tr><th>Ad</th><th>Kategori</th><th>Tarih</th><th>Tutar</th></tr>"+musGider.map(g=>"<tr><td>"+g.ad+"</td><td>"+g.kategori+"</td><td>"+g.tarih+"</td><td style='text-align:right'>"+g.tutar.toLocaleString("tr-TR")+" TL</td></tr>").join("")+"</table>":"")+
+    "<div style='margin-top:24px;font-size:10px;color:#999;text-align:center'>TradeFlow Elite ile hazırlanmıştır · "+tarih+"</div>"+
+    "<script>window.onload=function(){window.print();}</"+"script></body></html>");
+  w.document.close();
+}
+export function excelIsler(jobs,isletme){
+  const satirlar=jobs.map(j=>{
     const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
-    satirlar.push([j.ref,j.baslik,j.musteri,j.tarih,j.durum==="tamamlandi"?"Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede",j.tutar,j.maliyet||0,odenen,Math.max(j.tutar-odenen,0),j.atanan||""]);
+    return [j.ref,j.baslik,j.musteri,j.tarih,durumAd(j.durum),j.tutar,j.maliyet||0,odenen,Math.max(j.tutar-odenen,0)];
   });
-  return satirlar;
+  const toplam=jobs.reduce((s,j)=>s+j.tutar,0);
+  raporPdf("İşler Raporu",["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Ödenen (TL)","Kalan (TL)"],satirlar,isletme,
+    [["Toplam İş",jobs.length],["Toplam Tutar",toplam.toLocaleString("tr-TR")+" TL","#059669"]]);
 }
-function giderSatirlari(giderler,jobs){
-  const satirlar=[["Gider Adı","Kategori","Tarih","Tutar (TL)","Bağlı İş"]];
-  (giderler||[]).forEach(g=>{
+export function excelGiderler(giderler,jobs,isletme){
+  const satirlar=(giderler||[]).map(g=>{
     const is_=g.isId?(jobs||[]).find(j=>j.id===g.isId):null;
-    satirlar.push([g.ad,g.kategori,g.tarih,g.tutar,is_?is_.baslik+" ("+is_.musteri+")":(g.isAdi||"")]);
+    return [g.ad,g.kategori,g.tarih,g.tutar,is_?is_.baslik+" ("+is_.musteri+")":(g.isAdi||"")];
   });
-  return satirlar;
+  const toplam=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
+  raporPdf("Giderler Raporu",["Gider Adı","Kategori","Tarih","Tutar (TL)","Bağlı İş"],satirlar,isletme,
+    [["Toplam Gider",(giderler||[]).length],["Toplam Tutar",toplam.toLocaleString("tr-TR")+" TL","#DC2626"]]);
 }
-function faturaSatirlari(faturalar){
-  const satirlar=[["Fatura No","Müşteri","Tarih","Ara Toplam (TL)","KDV (TL)","Tevkifat (TL)","Genel Toplam (TL)"]];
-  (faturalar||[]).forEach(f=>{
-    satirlar.push([f.no||f.id,f.musteri,f.tarih,f.araToplam||f.tutar||0,f.kdvTutar||0,f.tevkifatTutar||0,f.genelToplam||f.tutar||0]);
-  });
-  return satirlar;
-}
-export function excelIsler(jobs){
-  xlsxIndir([["İşler",isSatirlari(jobs)]],"tradeflow-isler-"+new Date().toISOString().slice(0,10)+".xlsx");
-}
-export function excelGiderler(giderler,jobs){
-  xlsxIndir([["Giderler",giderSatirlari(giderler,jobs)]],"tradeflow-giderler-"+new Date().toISOString().slice(0,10)+".xlsx");
-}
-export function excelFaturalar(faturalar){
-  xlsxIndir([["Faturalar",faturaSatirlari(faturalar)]],"tradeflow-faturalar-"+new Date().toISOString().slice(0,10)+".xlsx");
+export function excelFaturalar(faturalar,isletme){
+  const satirlar=(faturalar||[]).map(f=>[f.no||f.id,f.musteri,f.tarih,f.araToplam||f.tutar||0,f.kdvTutar||0,f.tevkifatTutar||0,f.genelToplam||f.tutar||0]);
+  const toplam=(faturalar||[]).reduce((s,f)=>s+(f.genelToplam||f.tutar||0),0);
+  raporPdf("Faturalar Raporu",["Fatura No","Müşteri","Tarih","Ara Toplam (TL)","KDV (TL)","Tevkifat (TL)","Genel Toplam (TL)"],satirlar,isletme,
+    [["Toplam Fatura",(faturalar||[]).length],["Genel Toplam",toplam.toLocaleString("tr-TR")+" TL","#059669"]]);
 }
 export function excelMuhasebe(jobs,giderler,faturalar,isletme){
-  const tamam=jobs.filter(j=>j.durum==="tamamlandi");
-  const gelir=tamam.reduce((s,j)=>s+j.tutar,0);
-  const giderT=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
-  const ozet=[
-    [(isletme?.ad||"TradeFlow")+" — Muhasebe Raporu"],
-    ["Rapor Tarihi",new Date().toLocaleDateString("tr-TR")],
-    ["Hazırlayan",isletme?.yetkili||""],
-    [],
-    ["ÖZET",""],
-    ["Toplam Gelir (Tamamlanan)",gelir],
-    ["Toplam Gider",giderT],
-    ["Net Kâr",gelir-giderT],
-    ["Toplam İş",jobs.length],
-    ["Toplam Fatura",(faturalar||[]).length],
-  ];
-  xlsxIndir([
-    ["Özet",ozet],
-    ["İşler",isSatirlari(jobs)],
-    ["Giderler",giderSatirlari(giderler,jobs)],
-    ["Faturalar",faturaSatirlari(faturalar)],
-  ],"tradeflow-muhasebe-raporu-"+new Date().toISOString().slice(0,10)+".xlsx");
+  pdfMuhasebeRaporu(jobs,giderler,isletme);
 }
 export function pdfMuhasebeRaporu(jobs,giderler,isletme){
   const tamam=jobs.filter(j=>j.durum==="tamamlandi");
