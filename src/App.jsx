@@ -2641,14 +2641,14 @@ function DesktopCharts({jobs,giderler,T,onDetayGelir,onDetayTahsilat}){
   const toplamGider=giderler.reduce((s,g)=>s+g.tutar,0);
   const netKar=toplamGelir-toplamGider;
   const toplamTahsilat=tahsilE+beklT;
-  const pie=[{name:T.tahsilEdilen,val:tahsilE||1,color:P},{name:T.bekleyen,val:beklT||1,color:"#B4B2A9"}];
+  const pie=[{name:T.tahsilEdilen,gercek:tahsilE,val:tahsilE||(beklT?0:1),color:P},{name:T.bekleyen,gercek:beklT,val:beklT||(tahsilE?0:1),color:"#B4B2A9"}];
   return <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,padding:"0 28px 20px"}}>
     <Sh s={{padding:"20px 22px"}}>
       <div style={{fontSize:15,fontWeight:700,color:C.t1,marginBottom:14}}>{T.gelirGider}</div>
       <div style={{display:"flex",gap:28,marginBottom:14}}>
-        <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}><span style={{width:8,height:8,borderRadius:"50%",background:C.green,display:"inline-block"}}/><span style={{fontSize:12,color:C.t2}}>{T.toplamGelir}</span></div><div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(toplamGelir)} <span style={{fontSize:11,fontWeight:600,color:C.t3}}>TL</span></div></div>
-        <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}><span style={{width:8,height:8,borderRadius:"50%",background:C.red,display:"inline-block"}}/><span style={{fontSize:12,color:C.t2}}>{T.toplamGider}</span></div><div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(toplamGider)} <span style={{fontSize:11,fontWeight:600,color:C.t3}}>TL</span></div></div>
-        <div><div style={{fontSize:12,color:C.t2,marginBottom:3}}>{T.netKar}</div><div style={{fontSize:17,fontWeight:800,color:netKar>=0?C.t1:C.red}}>{fmt(netKar)} <span style={{fontSize:11,fontWeight:600,color:C.t3}}>TL</span></div></div>
+        <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}><span style={{width:8,height:8,borderRadius:"50%",background:C.green,display:"inline-block"}}/><span style={{fontSize:12,color:C.t2}}>{T.toplamGelir}</span></div><div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(toplamGelir)}</div></div>
+        <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}><span style={{width:8,height:8,borderRadius:"50%",background:C.red,display:"inline-block"}}/><span style={{fontSize:12,color:C.t2}}>{T.toplamGider}</span></div><div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(toplamGider)}</div></div>
+        <div><div style={{fontSize:12,color:C.t2,marginBottom:3}}>{T.netKar}</div><div style={{fontSize:17,fontWeight:800,color:netKar>=0?C.t1:C.red}}>{fmt(netKar)}</div></div>
       </div>
       <ResponsiveContainer width="100%" height={170}>
         <AreaChart data={gelirData} margin={{top:4,right:4,left:-24,bottom:0}}>
@@ -2667,13 +2667,13 @@ function DesktopCharts({jobs,giderler,T,onDetayGelir,onDetayTahsilat}){
           <PieChart width={160} height={160}><Pie data={pie} cx={80} cy={80} innerRadius={54} outerRadius={78} dataKey="val" startAngle={90} endAngle={-270} strokeWidth={0}>{pie.map((d,i)=><Cell key={i} fill={d.color}/>)}</Pie></PieChart>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center"}}>
             <div style={{fontSize:11,color:C.t3}}>{T.toplam}</div>
-            <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{fmt(toplamTahsilat)} TL</div>
+            <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{fmt(toplamTahsilat)}</div>
           </div>
         </div>
         <div style={{flex:1}}>
           {pie.map(d=><div key={d.name} style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
             <span style={{width:10,height:10,borderRadius:"50%",background:d.color,flexShrink:0}}/>
-            <div><div style={{fontSize:12,color:C.t2}}>{d.name}</div><div style={{fontSize:15,fontWeight:800,color:C.t1}}>{fmt(d.val)} <span style={{fontSize:10,fontWeight:600,color:C.t3}}>TL</span></div></div>
+            <div><div style={{fontSize:12,color:C.t2}}>{d.name}</div><div style={{fontSize:15,fontWeight:800,color:C.t1}}>{fmt(d.gercek)}</div></div>
           </div>)}
         </div>
       </div>
