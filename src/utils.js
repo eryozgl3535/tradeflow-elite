@@ -64,13 +64,47 @@ export function teklifPdf(t,isletme,T){
 }
 
 // ─── MUHASEBE EXPORT: EXCEL (CSV) + PDF ────────────────────────
-export function csvIndir(satirlar,dosyaAdi){
+export async function csvIndir(satirlar,dosyaAdi){
   const bom="\uFEFF"; // Türkçe karakterler Excel'de doğru açılsın
   const csv=bom+satirlar.map(r=>r.map(h=>'"'+String(h??"").replace(/"/g,'""')+'"').join(";")).join("\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  // Mobil/PWA: paylaşım menüsü (WhatsApp, e-posta, Dosyalar...) — daha kolay
+  try{
+    const file=new File([blob],dosyaAdi,{type:"text/csv"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&/Android|iPhone|iPad/i.test(navigator.userAgent)){
+      await navigator.share({files:[file],title:dosyaAdi});
+      return;
+    }
+  }catch(e){/* paylaşım iptal/desteklenmiyor → indirmeye düş */}
   const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;a.download=dosyaAdi;a.click();
-  URL.revokeObjectURL(url);
+  const a=document.createElement("a");a.href=url;a.download=dosyaAdi;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+export function excelMuhasebe(jobs,giderler,faturalar,isletme){
+  const tamam=jobs.filter(j=>j.durum==="tamamlandi");
+  const gelir=tamam.reduce((s,j)=>s+j.tutar,0);
+  const giderT=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
+  const tarih=new Date().toLocaleDateString("tr-TR");
+  const satirlar=[
+    [(isletme?.ad||"TradeFlow")+" — Muhasebe Raporu","","","Rapor Tarihi: "+tarih],
+    [],
+    ["ÖZET"],
+    ["Toplam Gelir (Tamamlanan)",gelir],
+    ["Toplam Gider",giderT],
+    ["Net Kâr",gelir-giderT],
+    [],
+    ["İŞLER ("+jobs.length+")"],
+    ["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Alınan Ödeme (TL)","Kalan (TL)"],
+  ];
+  jobs.forEach(j=>{
+    const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
+    satirlar.push([j.ref,j.baslik,j.musteri,j.tarih,j.durum==="tamamlandi"?"Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede",j.tutar,j.maliyet||0,odenen,Math.max(j.tutar-odenen,0)]);
+  });
+  satirlar.push([],["GİDERLER ("+(giderler||[]).length+")"],["Gider Adı","Kategori","Tarih","Tutar (TL)"]);
+  (giderler||[]).forEach(g=>satirlar.push([g.ad,g.kategori,g.tarih,g.tutar]));
+  satirlar.push([],["FATURALAR ("+(faturalar||[]).length+")"],["Fatura No","Müşteri","Tarih","Genel Toplam (TL)"]);
+  (faturalar||[]).forEach(f=>satirlar.push([f.no||f.id,f.musteri,f.tarih,f.genelToplam||f.tutar||0]));
+  csvIndir(satirlar,"tradeflow-muhasebe-raporu-"+new Date().toISOString().slice(0,10)+".csv");
 }
 export function excelIsler(jobs){
   const satirlar=[["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Alınan Ödeme (TL)","Kalan (TL)","Atanan"]];
