@@ -1796,6 +1796,20 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider}){
       <button onClick={()=>onGider&&onGider(musteri.ad)} style={{flex:1,background:C.redBg,border:"none",borderRadius:12,padding:"12px 0",color:C.red,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.giderEkleBtn}</button>
     </div>
 
+    {/* 🧰 Kullanılan Malzemeler (tüm işlerden — tamamlananlar dahil) */}
+    {musteri.isler.some(j=>j.malzemeler)&&<div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>🧰 Kullanılan Malzemeler</div>
+      <Sh s={{padding:"4px 14px"}}>
+        {musteri.isler.filter(j=>j.malzemeler).map(j=><div key={j.id} style={{padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <span style={{fontSize:12,fontWeight:700,color:C.t1}}>{j.icon} {j.baslik}</span>
+            <span style={{fontSize:10,fontWeight:700,color:j.durum==="tamamlandi"?C.green:j.durum==="aktif"?C.blue:C.amber}}>{j.durum==="tamamlandi"?"✓ Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede"} · {j.tarih}</span>
+          </div>
+          <div style={{fontSize:12,color:C.t2,whiteSpace:"pre-wrap",lineHeight:1.6}}>{j.malzemeler}</div>
+        </div>)}
+      </Sh>
+    </div>}
+
     {/* Kâr / Zarar Analizi */}
     {toplamGider>0&&<div style={{marginBottom:14}}>
       <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 {T.karZararAnalizi}</div>
