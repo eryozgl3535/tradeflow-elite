@@ -1,4 +1,61 @@
 // ═══ YARDIMCILAR — para/kur, PDF rapor üreticileri ═══
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FONT_TR, FONT_TR_BOLD } from "./fontTR.js";
+
+const NAVY="#1B2A4A", GOLDX="#C9A24B";
+function yeniPdf(){
+  const doc=new jsPDF({unit:"mm",format:"a4"});
+  doc.addFileToVFS("TR.ttf",FONT_TR);doc.addFont("TR.ttf","TR","normal");
+  doc.addFileToVFS("TRB.ttf",FONT_TR_BOLD);doc.addFont("TRB.ttf","TR","bold");
+  doc.setFont("TR","normal");
+  return doc;
+}
+async function pdfVer(doc,dosyaAdi){
+  const blob=doc.output("blob");
+  try{
+    const file=new File([blob],dosyaAdi,{type:"application/pdf"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&/Android|iPhone|iPad/i.test(navigator.userAgent)){
+      await navigator.share({files:[file],title:dosyaAdi});
+      return;
+    }
+  }catch(e){if(e&&e.name==="AbortError")return;}
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=dosyaAdi;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+function pdfBaslik(doc,baslik,isletme){
+  doc.setFillColor(27,42,74);doc.rect(0,0,210,26,"F");
+  doc.setFont("TR","bold");doc.setFontSize(15);doc.setTextColor(255,255,255);
+  doc.text(baslik,14,12);
+  doc.setFont("TR","normal");doc.setFontSize(9);doc.setTextColor(200,205,215);
+  doc.text((isletme?.ad||"TradeFlow")+(isletme?.yetkili?" · "+isletme.yetkili:"")+" · "+new Date().toLocaleDateString("tr-TR"),14,19);
+  doc.setFontSize(10);doc.setTextColor(201,162,75);doc.setFont("TR","bold");
+  doc.text("T/F TRADEFLOW ELITE",196,12,{align:"right"});
+  doc.setTextColor(0,0,0);
+}
+function ozetKutulari(doc,y,kutular){
+  const gen=(182-(kutular.length-1)*4)/kutular.length;
+  kutular.forEach((k,i)=>{
+    const x=14+i*(gen+4);
+    doc.setDrawColor(220,218,210);doc.setFillColor(250,250,248);
+    doc.roundedRect(x,y,gen,16,2,2,"FD");
+    doc.setFillColor(201,162,75);doc.rect(x,y,1.2,16,"F");
+    doc.setFont("TR","normal");doc.setFontSize(7.5);doc.setTextColor(110,110,105);
+    doc.text(k[0],x+4,y+6);
+    doc.setFont("TR","bold");doc.setFontSize(10.5);
+    const rgb=k[2]||[17,17,17];doc.setTextColor(rgb[0],rgb[1],rgb[2]);
+    doc.text(String(k[1]),x+4,y+12.5);
+  });
+  doc.setTextColor(0,0,0);
+  return y+22;
+}
+const TABLO_STIL={styles:{font:"TR",fontSize:8,cellPadding:2.2},headStyles:{fillColor:[27,42,74],textColor:[255,255,255],font:"TR",fontStyle:"bold",fontSize:8},alternateRowStyles:{fillColor:[247,247,244]},margin:{left:14,right:14}};
+function altBilgi(doc){
+  const s=doc.internal.getNumberOfPages();
+  for(let i=1;i<=s;i++){doc.setPage(i);doc.setFont("TR","normal");doc.setFontSize(7);doc.setTextColor(160,160,155);
+    doc.text("TradeFlow Elite ile hazırlanmıştır · "+new Date().toLocaleDateString("tr-TR")+" · Sayfa "+i+"/"+s,105,290,{align:"center"});}
+}
 
 let KURLAR = {TL:1,USD:46.80,EUR:53.61};
 let KUR_KAYNAK = "sabit"; // "tcmb" | "canli" | "sabit"
@@ -84,119 +141,108 @@ export async function csvIndir(satirlar,dosyaAdi){
   dosyaVer(new Blob([csv],{type:"text/csv;charset=utf-8"}),dosyaAdi,"text/csv");
 }
 // Ortak PDF rapor üretici: şık tablo + yazdır penceresi ("PDF olarak kaydet")
-function raporPdf(baslik,kolonlar,satirlar,isletme,ozet){
-  const tarih=new Date().toLocaleDateString("tr-TR");
-  const w=window.open("","_blank");
-  if(!w){alert("Açılır pencere engellendi. Tarayıcı izinlerini kontrol edin.");return;}
-  const stil="body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:19px;color:#1B2A4A;margin:0 0 2px}"+
-    ".alt{color:#666;font-size:11px;margin-bottom:14px}"+
-    "table{width:100%;border-collapse:collapse;margin-top:10px;font-size:11px}"+
-    "th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#1B2A4A;color:#fff}"+
-    "tr:nth-child(even) td{background:#F5F5F2}"+
-    ".ozet{display:flex;gap:12px;margin:12px 0}.kart{border:1px solid #ddd;border-left:3px solid #C9A24B;border-radius:6px;padding:10px 14px;flex:1;font-size:11px}.kart b{font-size:15px;display:block;margin-top:3px}";
-  const th="<tr>"+kolonlar.map(k=>"<th>"+k+"</th>").join("")+"</tr>";
-  const tr=satirlar.map(r=>"<tr>"+r.map((h,i)=>"<td"+(typeof h==="number"?" style='text-align:right'":"")+">"+(typeof h==="number"?h.toLocaleString("tr-TR"):String(h??""))+"</td>").join("")+"</tr>").join("");
-  const ozetHtml=ozet?"<div class='ozet'>"+ozet.map(o=>"<div class='kart'>"+o[0]+"<b style='color:"+(o[2]||"#1B2A4A")+"'>"+o[1]+"</b></div>").join("")+"</div>":"";
-  w.document.write("<html><head><title>"+baslik+"</title><style>"+stil+"</style></head><body>"+
-    "<h1>"+(isletme?.ad||"TradeFlow")+" — "+baslik+"</h1>"+
-    "<div class='alt'>Rapor Tarihi: "+tarih+(isletme?.yetkili?" · "+isletme.yetkili:"")+" · TradeFlow Elite</div>"+
-    ozetHtml+
-    "<table>"+th+tr+"</table>"+
-    "<script>window.onload=function(){window.print();}</"+"script></body></html>");
-  w.document.close();
-}
 function durumAd(d){return d==="tamamlandi"?"Tamamlandı":d==="aktif"?"Aktif":"Beklemede";}
-// 👤 Müşteri Raporu PDF — bilgiler + işler + malzemeler + notlar + finans özeti
+const fTL=(n)=>Number(n||0).toLocaleString("tr-TR")+" TL";
+
+// 👤 Müşteri Raporu — gerçek PDF (indir/paylaş)
 export function musteriPdf(musteri,giderler,isletme){
-  const w=window.open("","_blank");
-  if(!w){alert("Açılır pencere engellendi. Tarayıcı izinlerini kontrol edin.");return;}
-  const tarih=new Date().toLocaleDateString("tr-TR");
+  const doc=yeniPdf();
+  pdfBaslik(doc,"Müşteri Raporu — "+musteri.ad,isletme);
+  let y=34;
+  doc.setFont("TR","normal");doc.setFontSize(9);doc.setTextColor(70,70,70);
+  const bilgi=[musteri.telefon?"Tel: "+musteri.telefon:"",musteri.email?"E-posta: "+musteri.email:""].filter(Boolean).join("   ·   ");
+  if(bilgi){doc.text(bilgi,14,y);y+=6;}
+  (musteri.adresler||[]).forEach(a=>{doc.text("Adres: "+(a.etiket?a.etiket+" — ":"")+a.adres,14,y);y+=5;});
+  y+=2;
   const isler=musteri.isler||[];
-  const toplamCiro=isler.reduce((s,j)=>s+j.tutar,0);
+  const ciro=isler.reduce((s,j)=>s+j.tutar,0);
   const tahsil=isler.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
   const isIdleri=isler.map(j=>j.id);
   const musGider=(giderler||[]).filter(g=>isIdleri.includes(g.isId));
   const giderT=musGider.reduce((s,g)=>s+g.tutar,0);
-  const stil="body{font-family:Arial,sans-serif;padding:28px;color:#111;max-width:800px;margin:0 auto}"+
-    "h1{font-size:20px;color:#1B2A4A;margin:0}.alt{color:#666;font-size:11px;margin-bottom:4px}"+
-    ".ust{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1B2A4A;padding-bottom:14px;margin-bottom:16px}"+
-    ".logo{font-size:13px;font-weight:bold;color:#1B2A4A;letter-spacing:2px}"+
-    ".bilgi{font-size:12px;line-height:1.7;color:#333}"+
-    ".ozet{display:flex;gap:10px;margin:14px 0}.kart{border:1px solid #ddd;border-left:3px solid #C9A24B;border-radius:6px;padding:9px 13px;flex:1;font-size:10.5px;color:#555}.kart b{font-size:14px;display:block;margin-top:2px;color:#111}"+
-    "h2{font-size:13px;color:#1B2A4A;border-bottom:1px solid #C9A24B;padding-bottom:4px;margin:20px 0 8px}"+
-    "table{width:100%;border-collapse:collapse;font-size:11px}th{background:#1B2A4A;color:#fff;padding:6px 8px;text-align:left;border:1px solid #1B2A4A}td{border:1px solid #ccc;padding:6px 8px;vertical-align:top}"+
-    "tr:nth-child(even) td{background:#F7F7F4}"+
-    ".malz{white-space:pre-wrap;font-size:10.5px;color:#444;line-height:1.5}"+
-    ".notk{background:#FBF6EA;border-left:3px solid #C9A24B;padding:8px 10px;font-size:10.5px;color:#444;margin-top:4px;white-space:pre-wrap}";
-  const isSat=isler.map(j=>{
-    const malz=j.malzemeler?"<div class='malz'><b style='font-size:10px;color:#1B2A4A'>🧰 Malzemeler:</b><br>"+j.malzemeler+"</div>":"";
-    const notu=j.not?"<div class='notk'><b>📝 Not:</b> "+j.not+"</div>":"";
-    return "<tr><td>"+(j.ref||"")+"</td><td><b>"+j.baslik+"</b>"+(j.isAdresi?"<div style='font-size:10px;color:#666'>📍 "+j.isAdresi+"</div>":"")+malz+notu+"</td><td>"+j.tarih+"</td><td>"+durumAd(j.durum)+"</td><td style='text-align:right'>"+j.tutar.toLocaleString("tr-TR")+" TL</td></tr>";
-  }).join("");
-  const adresler=(musteri.adresler||[]).map(a=>(a.etiket?a.etiket+": ":"")+a.adres).join("<br>");
-  w.document.write("<html><head><title>Müşteri Raporu - "+musteri.ad+"</title><style>"+stil+"</style></head><body>"+
-    "<div class='ust'><div><h1>👤 "+musteri.ad+"</h1><div class='alt'>Müşteri Raporu · "+tarih+"</div>"+
-    "<div class='bilgi'>"+(musteri.telefon?"📞 "+musteri.telefon+"<br>":"")+(musteri.email?"✉️ "+musteri.email+"<br>":"")+(adresler?"📍 "+adresler:"")+"</div></div>"+
-    "<div style='text-align:right'><div class='logo'>T/F TRADEFLOW</div><div class='alt'>"+(isletme?.ad||"")+"<br>"+(isletme?.yetkili||"")+"</div></div></div>"+
-    "<div class='ozet'>"+
-    "<div class='kart'>Toplam Ciro<b>"+toplamCiro.toLocaleString("tr-TR")+" TL</b></div>"+
-    "<div class='kart'>Tahsil Edilen<b style='color:#059669'>"+tahsil.toLocaleString("tr-TR")+" TL</b></div>"+
-    "<div class='kart'>Toplam Gider<b style='color:#DC2626'>"+giderT.toLocaleString("tr-TR")+" TL</b></div>"+
-    "<div class='kart'>Net Kâr<b style='color:"+(toplamCiro-giderT>=0?"#059669":"#DC2626")+"'>"+(toplamCiro-giderT).toLocaleString("tr-TR")+" TL</b></div>"+
-    "</div>"+
-    "<h2>📋 İşler ("+isler.length+")</h2><table><tr><th>Ref</th><th>İş / Malzeme / Not</th><th>Tarih</th><th>Durum</th><th>Tutar</th></tr>"+isSat+"</table>"+
-    (musGider.length>0?"<h2>💸 Giderler ("+musGider.length+")</h2><table><tr><th>Ad</th><th>Kategori</th><th>Tarih</th><th>Tutar</th></tr>"+musGider.map(g=>"<tr><td>"+g.ad+"</td><td>"+g.kategori+"</td><td>"+g.tarih+"</td><td style='text-align:right'>"+g.tutar.toLocaleString("tr-TR")+" TL</td></tr>").join("")+"</table>":"")+
-    "<div style='margin-top:24px;font-size:10px;color:#999;text-align:center'>TradeFlow Elite ile hazırlanmıştır · "+tarih+"</div>"+
-    "<script>window.onload=function(){window.print();}</"+"script></body></html>");
-  w.document.close();
+  y=ozetKutulari(doc,y,[["Toplam Ciro",fTL(ciro)],["Tahsil Edilen",fTL(tahsil),[5,150,105]],["Toplam Gider",fTL(giderT),[220,38,38]],["Net Kâr",fTL(ciro-giderT),ciro-giderT>=0?[5,150,105]:[220,38,38]]]);
+  const govde=isler.map(j=>{
+    let detay=j.baslik;
+    if(j.isAdresi)detay+="\nAdres: "+j.isAdresi;
+    if(j.malzemeler)detay+="\nMalzemeler: "+j.malzemeler.split("\n").join(", ");
+    if(j.not)detay+="\nNot: "+j.not;
+    return [j.ref||"",detay,j.tarih,durumAd(j.durum),fTL(j.tutar)];
+  });
+  autoTable(doc,{...TABLO_STIL,startY:y,head:[["Ref","İş / Malzeme / Not","Tarih","Durum","Tutar"]],body:govde,columnStyles:{1:{cellWidth:82},4:{halign:"right"}}});
+  if(musGider.length>0){
+    autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+8,head:[["Gider","Kategori","Tarih","Tutar"]],body:musGider.map(g=>[g.ad,g.kategori,g.tarih,fTL(g.tutar)]),columnStyles:{3:{halign:"right"}}});
+  }
+  altBilgi(doc);
+  pdfVer(doc,"musteri-raporu-"+musteri.ad.replace(/[^a-zA-Z0-9ğüşöçıİĞÜŞÖÇ ]/g,"").replace(/ /g,"-")+".pdf");
 }
 export function excelIsler(jobs,isletme){
-  const satirlar=jobs.map(j=>{
-    const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
-    return [j.ref,j.baslik,j.musteri,j.tarih,durumAd(j.durum),j.tutar,j.maliyet||0,odenen,Math.max(j.tutar-odenen,0)];
-  });
+  const doc=yeniPdf();
+  pdfBaslik(doc,"İşler Raporu",isletme);
   const toplam=jobs.reduce((s,j)=>s+j.tutar,0);
-  raporPdf("İşler Raporu",["Ref","İş Başlığı","Müşteri","Tarih","Durum","Tutar (TL)","Maliyet (TL)","Ödenen (TL)","Kalan (TL)"],satirlar,isletme,
-    [["Toplam İş",jobs.length],["Toplam Tutar",toplam.toLocaleString("tr-TR")+" TL","#059669"]]);
+  let y=ozetKutulari(doc,34,[["Toplam İş",jobs.length],["Toplam Tutar",fTL(toplam),[5,150,105]]]);
+  const govde=jobs.map(j=>{
+    const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);
+    return [j.ref||"",j.baslik,j.musteri,j.tarih,durumAd(j.durum),fTL(j.tutar),fTL(odenen),fTL(Math.max(j.tutar-odenen,0))];
+  });
+  autoTable(doc,{...TABLO_STIL,startY:y,head:[["Ref","İş","Müşteri","Tarih","Durum","Tutar","Ödenen","Kalan"]],body:govde,columnStyles:{5:{halign:"right"},6:{halign:"right"},7:{halign:"right"}}});
+  altBilgi(doc);
+  pdfVer(doc,"tradeflow-isler-"+new Date().toISOString().slice(0,10)+".pdf");
 }
 export function excelGiderler(giderler,jobs,isletme){
-  const satirlar=(giderler||[]).map(g=>{
-    const is_=g.isId?(jobs||[]).find(j=>j.id===g.isId):null;
-    return [g.ad,g.kategori,g.tarih,g.tutar,is_?is_.baslik+" ("+is_.musteri+")":(g.isAdi||"")];
-  });
+  const doc=yeniPdf();
+  pdfBaslik(doc,"Giderler Raporu",isletme);
   const toplam=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
-  raporPdf("Giderler Raporu",["Gider Adı","Kategori","Tarih","Tutar (TL)","Bağlı İş"],satirlar,isletme,
-    [["Toplam Gider",(giderler||[]).length],["Toplam Tutar",toplam.toLocaleString("tr-TR")+" TL","#DC2626"]]);
+  let y=ozetKutulari(doc,34,[["Toplam Gider",(giderler||[]).length],["Toplam Tutar",fTL(toplam),[220,38,38]]]);
+  const govde=(giderler||[]).map(g=>{
+    const is_=g.isId?(jobs||[]).find(j=>j.id===g.isId):null;
+    return [g.ad,g.kategori,g.tarih,fTL(g.tutar),is_?is_.baslik+" ("+is_.musteri+")":(g.isAdi||"")];
+  });
+  autoTable(doc,{...TABLO_STIL,startY:y,head:[["Gider","Kategori","Tarih","Tutar","Bağlı İş"]],body:govde,columnStyles:{3:{halign:"right"}}});
+  altBilgi(doc);
+  pdfVer(doc,"tradeflow-giderler-"+new Date().toISOString().slice(0,10)+".pdf");
 }
 export function excelFaturalar(faturalar,isletme){
-  const satirlar=(faturalar||[]).map(f=>[f.no||f.id,f.musteri,f.tarih,f.araToplam||f.tutar||0,f.kdvTutar||0,f.tevkifatTutar||0,f.genelToplam||f.tutar||0]);
+  const doc=yeniPdf();
+  pdfBaslik(doc,"Faturalar Raporu",isletme);
   const toplam=(faturalar||[]).reduce((s,f)=>s+(f.genelToplam||f.tutar||0),0);
-  raporPdf("Faturalar Raporu",["Fatura No","Müşteri","Tarih","Ara Toplam (TL)","KDV (TL)","Tevkifat (TL)","Genel Toplam (TL)"],satirlar,isletme,
-    [["Toplam Fatura",(faturalar||[]).length],["Genel Toplam",toplam.toLocaleString("tr-TR")+" TL","#059669"]]);
+  let y=ozetKutulari(doc,34,[["Toplam Fatura",(faturalar||[]).length],["Genel Toplam",fTL(toplam),[5,150,105]]]);
+  const govde=(faturalar||[]).map(f=>[f.no||f.id,f.musteri,f.tarih,fTL(f.araToplam||f.tutar||0),fTL(f.kdvTutar||0),fTL(f.genelToplam||f.tutar||0)]);
+  autoTable(doc,{...TABLO_STIL,startY:y,head:[["Fatura No","Müşteri","Tarih","Ara Toplam","KDV","Genel Toplam"]],body:govde,columnStyles:{3:{halign:"right"},4:{halign:"right"},5:{halign:"right"}}});
+  altBilgi(doc);
+  pdfVer(doc,"tradeflow-faturalar-"+new Date().toISOString().slice(0,10)+".pdf");
+}
+export function pdfMuhasebeRaporu(jobs,giderler,isletme){
+  const doc=yeniPdf();
+  pdfBaslik(doc,"Muhasebe Raporu",isletme);
+  const tamam=jobs.filter(j=>j.durum==="tamamlandi");
+  const gelir=tamam.reduce((s,j)=>s+j.tutar,0);
+  const giderT=(giderler||[]).reduce((s,g)=>s+g.tutar,0);
+  let y=ozetKutulari(doc,34,[["Toplam Gelir",fTL(gelir),[5,150,105]],["Toplam Gider",fTL(giderT),[220,38,38]],["Net Kâr",fTL(gelir-giderT),gelir-giderT>=0?[5,150,105]:[220,38,38]]]);
+  // Müşteri bazlı tahsilat özeti
+  const musteriler={};
+  jobs.forEach(j=>{
+    if(!musteriler[j.musteri])musteriler[j.musteri]={toplam:0,tahsil:0,adet:0};
+    musteriler[j.musteri].toplam+=j.tutar;musteriler[j.musteri].adet++;
+    if(j.durum==="tamamlandi")musteriler[j.musteri].tahsil+=j.tutar;
+  });
+  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(27,42,74);
+  doc.text("Müşteri Bazlı Tahsilat",14,y+3);
+  autoTable(doc,{...TABLO_STIL,startY:y+6,head:[["Müşteri","İş Adedi","Toplam","Tahsil Edilen","Bekleyen"]],
+    body:Object.entries(musteriler).map(([ad,m])=>[ad,m.adet,fTL(m.toplam),fTL(m.tahsil),fTL(m.toplam-m.tahsil)]),
+    columnStyles:{2:{halign:"right"},3:{halign:"right"},4:{halign:"right"}}});
+  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(27,42,74);
+  doc.text("İşler ("+jobs.length+")",14,doc.lastAutoTable.finalY+10);
+  autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+13,head:[["Ref","İş","Müşteri","Tarih","Durum","Tutar"]],
+    body:jobs.map(j=>[j.ref||"",j.baslik,j.musteri,j.tarih,durumAd(j.durum),fTL(j.tutar)]),columnStyles:{5:{halign:"right"}}});
+  if((giderler||[]).length>0){
+    doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(27,42,74);
+    doc.text("Giderler ("+giderler.length+")",14,doc.lastAutoTable.finalY+10);
+    autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+13,head:[["Gider","Kategori","Tarih","Tutar"]],
+      body:giderler.map(g=>[g.ad,g.kategori,g.tarih,fTL(g.tutar)]),columnStyles:{3:{halign:"right"}}});
+  }
+  altBilgi(doc);
+  pdfVer(doc,"tradeflow-muhasebe-"+new Date().toISOString().slice(0,10)+".pdf");
 }
 export function excelMuhasebe(jobs,giderler,faturalar,isletme){
   pdfMuhasebeRaporu(jobs,giderler,isletme);
-}
-export function pdfMuhasebeRaporu(jobs,giderler,isletme){
-  const tamam=jobs.filter(j=>j.durum==="tamamlandi");
-  const gelir=tamam.reduce((s,j)=>s+j.tutar,0);
-  const giderT=giderler.reduce((s,g)=>s+g.tutar,0);
-  const tarih=new Date().toLocaleDateString("tr-TR");
-  const w=window.open("","_blank");
-  if(!w){alert("Açılır pencere engellendi. Tarayıcı izinlerini kontrol edin.");return;}
-  const stil="body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px}h2{font-size:14px;margin-top:24px;border-bottom:2px solid #2563EB;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#EFF6FF}.ozet{display:flex;gap:16px;margin-top:12px}.kart{border:1px solid #ddd;border-radius:8px;padding:12px 16px;flex:1}.kart b{font-size:16px}";
-  const isSat=jobs.map(j=>"<tr><td>"+j.ref+"</td><td>"+j.baslik+"</td><td>"+j.musteri+"</td><td>"+j.tarih+"</td><td>"+(j.durum==="tamamlandi"?"Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede")+"</td><td style='text-align:right'>"+j.tutar.toLocaleString("tr-TR")+" TL</td></tr>").join("");
-  const giSat=giderler.map(g=>"<tr><td>"+g.ad+"</td><td>"+g.kategori+"</td><td>"+g.tarih+"</td><td style='text-align:right'>"+g.tutar.toLocaleString("tr-TR")+" TL</td></tr>").join("");
-  w.document.write("<html><head><title>Muhasebe Raporu</title><style>"+stil+"</style></head><body>"+
-    "<h1>📊 "+(isletme?.ad||"TradeFlow")+" — Muhasebe Raporu</h1>"+
-    "<div style='color:#666;font-size:12px'>Rapor Tarihi: "+tarih+" · "+(isletme?.yetkili||"")+"</div>"+
-    "<div class='ozet'>"+
-    "<div class='kart'>Toplam Gelir (Tamamlanan)<br><b style='color:#059669'>"+gelir.toLocaleString("tr-TR")+" TL</b></div>"+
-    "<div class='kart'>Toplam Gider<br><b style='color:#DC2626'>"+giderT.toLocaleString("tr-TR")+" TL</b></div>"+
-    "<div class='kart'>Net Kâr<br><b style='color:"+(gelir-giderT>=0?"#059669":"#DC2626")+"'>"+(gelir-giderT).toLocaleString("tr-TR")+" TL</b></div>"+
-    "</div>"+
-    "<h2>İşler ("+jobs.length+")</h2><table><tr><th>Ref</th><th>Başlık</th><th>Müşteri</th><th>Tarih</th><th>Durum</th><th>Tutar</th></tr>"+isSat+"</table>"+
-    "<h2>Giderler ("+giderler.length+")</h2><table><tr><th>Ad</th><th>Kategori</th><th>Tarih</th><th>Tutar</th></tr>"+giSat+"</table>"+
-    "<script>window.onload=function(){window.print();}</"+"script></body></html>");
-  w.document.close();
 }
