@@ -54,7 +54,9 @@ const PLAN_BILGI = [
   {id:"pro",ad:"Pro",fiyat:"₺399/ay",etiket:"EN POPÜLER",renk:"#1B2A4A",ozellik:["Sınırsız iş & müşteri","PDF teklif & fatura","WhatsApp'tan gönderim","Gelişmiş PDF raporlar","Tahsilat takibi & hatırlatma","Tema renkleri","Bulut yedekleme"]},
   {id:"elite",ad:"Elite",fiyat:"₺799/ay",renk:"#C9A24B",ozellik:["Pro'daki her şey","Ekip & personel yönetimi","İş atama","Kâr analizi","Doğrulanmış Usta rozeti ✓","Öncelikli destek"]},
 ];
-function PlanModal({onKapat,sebep,plan,denemeKalan}){
+function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
+  const [kod,setKod]=useState("");
+  const [promoSonuc,setPromoSonuc]=useState(null); // "ok" | "hata"
   return <BottomSheet onKapat={onKapat} maxH="92vh">
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:4}}>👑 Planını Yükselt</div>
     {sebep&&<div style={{fontSize:12,color:C.red,fontWeight:600,marginBottom:6}}>⚠️ {sebep}</div>}
@@ -68,6 +70,19 @@ function PlanModal({onKapat,sebep,plan,denemeKalan}){
       </div>
       {p.ozellik.map(o=><div key={o} style={{fontSize:12,color:C.t2,padding:"2px 0"}}>✓ {o}</div>)}
     </div>)}
+    {/* 🎟️ Promosyon kodu */}
+    <div style={{border:`1px dashed ${GOLD}`,borderRadius:14,padding:"14px",marginBottom:14,background:C.bg}}>
+      <div style={{fontSize:12,fontWeight:700,color:C.t1,marginBottom:8}}>🎟️ Promosyon Kodu</div>
+      {(omurBoyu||promoSonuc==="ok")?
+        <div style={{fontSize:13,fontWeight:700,color:C.green,textAlign:"center",padding:"6px 0"}}>🎉 Tebrikler! Ömür boyu ücretsiz Elite hizmetiniz tanımlandı. Tüm özellikler sınırsız ve süresiz açık.</div>
+        :<>
+        <div style={{display:"flex",gap:8}}>
+          <input value={kod} onChange={e=>{setKod(e.target.value.toUpperCase());setPromoSonuc(null);}} placeholder="Kodunuzu girin" style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 12px",color:C.t1,fontSize:13,outline:"none",letterSpacing:"0.1em",fontWeight:700}}/>
+          <button onClick={()=>{if(onPromo&&onPromo(kod.trim())){setPromoSonuc("ok");}else{setPromoSonuc("hata");}}} style={{background:GOLD,border:"none",borderRadius:10,padding:"0 18px",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>Uygula</button>
+        </div>
+        {promoSonuc==="hata"&&<div style={{fontSize:11,color:C.red,fontWeight:600,marginTop:6}}>❌ Geçersiz kod. Kontrol edip tekrar deneyin.</div>}
+        </>}
+    </div>
     <div style={{fontSize:11,color:C.t3,textAlign:"center",marginBottom:12}}>💳 Online ödeme çok yakında! Şimdi yükseltmek için bize ulaşın.</div>
     <button onClick={onKapat} style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:14,fontWeight:600,cursor:"pointer"}}>Kapat</button>
   </BottomSheet>;
@@ -2599,7 +2614,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
         <span style={{fontSize:20}}>👑</span>
         <div style={{flex:1}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t1}}>Plan: {plan==="elite"?"Elite":plan==="pro"?"Pro":"Başlangıç"}{plan==="elite"&&<span style={{color:GOLD}}> ✓</span>}</div>
-          <div style={{fontSize:11,color:C.t3}}>{denemeKalan>0?"🎁 Pro deneme — "+denemeKalan+" gün kaldı":plan==="starter"?"Yükseltmek için dokun":"Tüm özellikler açık"}</div>
+          <div style={{fontSize:11,color:C.t3}}>{isletme?.omurBoyu?"🎉 Ömür boyu ücretsiz — tüm özellikler açık":denemeKalan>0?"🎁 Pro deneme — "+denemeKalan+" gün kaldı":plan==="starter"?"Yükseltmek için dokun":"Tüm özellikler açık"}</div>
         </div>
         <span style={{color:C.t3}}>›</span>
       </div>
@@ -3319,7 +3334,10 @@ export default function TradeFlow(){
           })}
         </div>}
 
-        {planAc&&<PlanModal onKapat={()=>setPlanAc(null)} sebep={typeof planAc==="string"?planAc:null} plan={plan} denemeKalan={denemeKalan}/>}
+        {planAc&&<PlanModal onKapat={()=>setPlanAc(null)} sebep={typeof planAc==="string"?planAc:null} plan={plan} denemeKalan={denemeKalan} omurBoyu={isletme.omurBoyu} onPromo={(kod)=>{
+          if(kod==="VGTDMS"){setIsletme(i=>({...i,plan:"elite",omurBoyu:true}));goster("🎉 Ömür boyu Elite tanımlandı!");return true;}
+          return false;
+        }}/>}
         {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T} giderler={giderler}/>}
         {fatJob&&<FaturaModal job={fatJob} isletme={isletme} kdv={kdv} T={T} onKapat={()=>setFatJob(null)} onKesildi={faturaKesildi} gibAyar={gibAyar} onGibAc={(sekme)=>{setFatJob(null);setSekme("profil");setTimeout(()=>setGibAcSekme(sekme),100);}}/>}
         {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip}/>}
