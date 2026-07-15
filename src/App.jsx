@@ -87,6 +87,49 @@ function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
     <button onClick={onKapat} style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:14,fontWeight:600,cursor:"pointer"}}>Kapat</button>
   </BottomSheet>;
 }
+
+// ═══ KURUCU PANELİ ═══
+const KURUCU_EMAIL = "eryozgl3535@gmail.com";
+let KURUCU_MU = false;
+function KurucuPanel({onKapat}){
+  const [veri,setVeri]=useState(null);
+  const [hata,setHata]=useState(null);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data,error}=await supabase.rpc("kurucu_istatistik");
+        if(error){setHata("Supabase fonksiyonu bulunamadı. SQL kurulumunu yapın.");return;}
+        if(data&&data.hata){setHata("Bu panele yalnızca kurucu erişebilir.");return;}
+        setVeri(data);
+      }catch(e){setHata("Bağlantı hatası — internet kontrolü yapın.");}
+    })();
+  },[]);
+  const K=({l,v,renk})=><div style={{flex:1,minWidth:130,border:`1px solid ${C.border}`,borderLeft:`3px solid ${renk||P}`,borderRadius:12,padding:"13px 14px",background:C.card}}>
+    <div style={{fontSize:11,color:C.t3,marginBottom:4}}>{l}</div>
+    <div style={{fontSize:22,fontWeight:800,color:renk||C.t1}}>{v??"—"}</div>
+  </div>;
+  return <BottomSheet onKapat={onKapat} maxH="92vh">
+    <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:2}}>👑 Kurucu Paneli</div>
+    <div style={{fontSize:11,color:GOLD,fontWeight:700,marginBottom:16}}>TradeFlow Elite — Yalnızca kurucu görebilir</div>
+    {hata&&<div style={{background:C.amberBg,borderRadius:12,padding:"12px 14px",fontSize:12,color:"#92600A",marginBottom:14}}>⚠️ {hata}</div>}
+    {!veri&&!hata&&<div style={{textAlign:"center",padding:"30px 0",color:C.t3,fontSize:13}}>Yükleniyor...</div>}
+    {veri&&<>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:12}}>
+        <K l="Toplam Üye" v={veri.toplam_uye}/>
+        <K l="Bugün Katılan" v={veri.bugun} renk={C.green}/>
+        <K l="Bu Hafta" v={veri.bu_hafta} renk={C.blue}/>
+      </div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",margin:"6px 0 8px"}}>Plan Dağılımı</div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:16}}>
+        <K l="Elite" v={veri.elite} renk={GOLD}/>
+        <K l="Pro" v={veri.pro} renk={P}/>
+        <K l="Ömür Boyu 🎟️" v={veri.omur_boyu} renk={C.green}/>
+        <K l="Veri Kaydı Olan" v={veri.aktif_veri}/>
+      </div>
+    </>}
+    <button onClick={onKapat} style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:14,fontWeight:600,cursor:"pointer"}}>Kapat</button>
+  </BottomSheet>;
+}
 const P = "#1B2A4A";
 const P2 = "#0F1B33";
 const GOLD = "#C9A24B";
@@ -2651,6 +2694,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     {/* Destek */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.destek}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
+      {kullaniciEmail&&kullaniciEmail.toLowerCase()===KURUCU_EMAIL&&<Row icon="👑" label="Kurucu Paneli" sub="Üye sayısı ve plan istatistikleri" onClick={()=>onAc("kurucu")}/>}
       <Row icon="👷" label={T.ekipYonetimi} sub={plan==="elite"?T.ekipSub:"👑 Elite özelliği"} onClick={()=>{if(plan!=="elite"){onPlanAc();return;}onAc("ekip");}}/>
       <Row icon="🤖" label={T.asistan} sub={T.asistanSub} onClick={()=>onAc("asistan")}/>
       <Row icon="💬" label={T.whatsappDestek} sub="0532 111 22 33 — 7/24" onClick={()=>window.open("https://wa.me/905321112233","_blank")}/>
@@ -2719,7 +2763,7 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme}){
     <div onClick={()=>setSekme("profil")} style={{display:"flex",alignItems:"center",gap:11,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"11px 13px",cursor:"pointer"}}>
       <div style={{width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${P},#0F1B33)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>{(isletme.yetkili||"EO").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}</div>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isletme.yetkili||"Kullanıcı"}</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isletme.yetkili||"Kullanıcı"}{KURUCU_MU?" 👑":""}</div>
         <div style={{fontSize:11,color:PLAN_AKTIF==="elite"?GOLD:P,fontWeight:600}}>{PLAN_AKTIF==="elite"?"Elite ✓":PLAN_AKTIF==="pro"?"Pro":"Başlangıç"}</div>
       </div>
       <span style={{color:C.t3,fontSize:13}}>⌄</span>
@@ -2994,6 +3038,7 @@ export default function TradeFlow(){
   const [,force]=useState(0);
   // ── SUPABASE OTURUM + BULUT VERİ ──
   const [kullanici,setKullanici]=useState(null);
+  KURUCU_MU=((kullanici&&kullanici.email)||"").toLowerCase()===KURUCU_EMAIL;
   const [oturumKontrol,setOturumKontrol]=useState(true); // ilk açılışta oturum kontrol ediliyor
 
   // İnternet gidince/gelince yakala
@@ -3350,6 +3395,7 @@ export default function TradeFlow(){
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T}/>}
+        {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
         {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
         {ekran==="degerlendir"&&<DegerlendirModal onKapat={()=>setEkran(null)} onGonder={(y,o)=>{goster("⭐".repeat(y)+" "+T.tesekkurler);bildirimEkle("⭐ Değerlendirme gönderildi",y+" yıldız"+(o?" + öneri":""),"is");}} T={T}/>}
