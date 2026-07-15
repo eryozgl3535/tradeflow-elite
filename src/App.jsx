@@ -2636,7 +2636,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     {/* Destek */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.destek}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
-      <Row icon="👷" label={T.ekipYonetimi} sub={T.ekipSub} onClick={()=>onAc("ekip")}/>
+      <Row icon="👷" label={T.ekipYonetimi} sub={plan==="elite"?T.ekipSub:"👑 Elite özelliği"} onClick={()=>{if(plan!=="elite"){onPlanAc();return;}onAc("ekip");}}/>
       <Row icon="🤖" label={T.asistan} sub={T.asistanSub} onClick={()=>onAc("asistan")}/>
       <Row icon="💬" label={T.whatsappDestek} sub="0532 111 22 33 — 7/24" onClick={()=>window.open("https://wa.me/905321112233","_blank")}/>
       <Row icon="✉️" label={T.epostaDestek} sub="destek@tradeflow.app" onClick={()=>window.open("mailto:destek@tradeflow.app","_blank")}/>
@@ -2950,12 +2950,6 @@ export default function TradeFlow(){
   const plan=isletme.plan||(denemeAktif?"pro":"starter");
   const denemeKalan=denemeAktif?Math.ceil((new Date(isletme.denemeBitis).getTime()-_simdi)/86400000):0;
   PLAN_AKTIF=plan;
-  // Yeni kullanıcıya 14 gün Pro denemesi başlat
-  useEffect(()=>{
-    if(veriYuklendi&&!isletme.plan&&!isletme.denemeBitis){
-      setIsletme(i=>({...i,denemeBitis:new Date(Date.now()+14*86400000).toISOString()}));
-    }
-  },[veriYuklendi]);
   // Plan kilidi yardımcıları
   const yeniIsKilit=()=>{
     if(plan==="starter"){
@@ -2995,6 +2989,12 @@ export default function TradeFlow(){
     return ()=>{window.removeEventListener("online",gel);window.removeEventListener("offline",git);};
   },[]);
   const [veriYuklendi,setVeriYuklendi]=useState(false); // bulut verisi yüklendi mi (autosave için)
+  // Yeni kullanıcıya 14 gün Pro denemesi başlat
+  useEffect(()=>{
+    if(veriYuklendi&&!isletme.plan&&!isletme.denemeBitis){
+      setIsletme(i=>({...i,denemeBitis:new Date(Date.now()+14*86400000).toISOString()}));
+    }
+  },[veriYuklendi]);
   const [cevrimici,setCevrimici]=useState(typeof navigator==="undefined"?true:navigator.onLine); // internet var mı
   const [senkronBekliyor,setSenkronBekliyor]=useState(false); // buluta yazılamayan değişiklik var mı
   const [senkronTik,setSenkronTik]=useState(0); // internet gelince kaydetmeyi tetikler
@@ -3332,7 +3332,7 @@ export default function TradeFlow(){
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T}/>}
-        {ekran==="ekip"&&(plan==="elite"?<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T}/>:(()=>{setEkran(null);setPlanAc("Ekip yönetimi Elite pakette 👑");return null;})())}
+        {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
         {ekran==="degerlendir"&&<DegerlendirModal onKapat={()=>setEkran(null)} onGonder={(y,o)=>{goster("⭐".repeat(y)+" "+T.tesekkurler);bildirimEkle("⭐ Değerlendirme gönderildi",y+" yıldız"+(o?" + öneri":""),"is");}} T={T}/>}
         {ozellestirAc&&<OzellestirModal moduller={moduller} setModuller={setModuller} onKapat={()=>setOzellestirAc(false)} T={T}/>}
