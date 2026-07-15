@@ -955,7 +955,11 @@ function TeklifMarjRozeti({tutar,maliyet}){
 function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMusteri,ekip}){
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   // Sektöre özel iş türü ikonları + birkaç genel ikon
-  const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg,ad:t.ad,isler:t.isler})),{e:"📦",bg:"#FEF3C7"},{e:"🛠️",bg:"#EDE9FE"},{e:"💼",bg:"#EDE9FE"},{e:"📋",bg:"#DBEAFE"}]
+  const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg,ad:t.ad,isler:t.isler})),
+    {e:"📦",bg:"#FEF3C7",ad:"Malzeme & Teslimat",isler:["Malzeme Temini","Yedek Parça Siparişi","Ürün Teslimatı","Malzeme Keşfi & Ölçü Alma"]},
+    {e:"🛠️",bg:"#EDE9FE",ad:"Genel Servis",isler:["Arıza Tespiti","Genel Bakım","Acil Servis Çağrısı","Garanti Kapsamında Onarım"]},
+    {e:"💼",bg:"#EDE9FE",ad:"Ticari & İdari",isler:["Fiyat Teklifi Hazırlama","Keşif & Proje Görüşmesi","Sözleşme Görüşmesi","Danışmanlık Hizmeti"]},
+    {e:"📋",bg:"#DBEAFE",ad:"Kontrol & Rapor",isler:["Periyodik Kontrol","Keşif Raporu Hazırlama","İş Teslim Tutanağı","Yıllık Bakım Kontrolü"]}]
     .filter((v,i,a)=>a.findIndex(x=>x.e===v.e)===i); // tekrarları temizle
   const edit=!!duzenlenecek;
   const [icon,setIcon]=useState(edit?{e:duzenlenecek.icon,bg:duzenlenecek.iconBg}:icons[0]);
