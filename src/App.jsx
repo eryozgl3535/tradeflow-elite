@@ -159,7 +159,7 @@ const GIDER_KAT=["Malzeme","Yakıt","Personel","Kira","Diğer"];
 const Sh=({children,s,onClick})=><div onClick={onClick} style={{background:C.card,borderRadius:16,boxShadow:C.sh,...s}}>{children}</div>;
 const Badge=({durum})=>{const d=DURUM[durum]||{label:durum,color:C.t3,bg:C.bg};return <span style={{fontSize:11,fontWeight:600,color:d.color,background:d.bg,borderRadius:20,padding:"4px 10px",whiteSpace:"nowrap"}}>{d.label}</span>;};
 const Toggle=({on,set})=><div onClick={()=>set(!on)} style={{width:46,height:26,borderRadius:13,background:on?P:"#9CA3AF",position:"relative",cursor:"pointer",transition:"background 0.2s",flexShrink:0}}><div style={{width:22,height:22,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:on?22:2,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/></div>;
-function TFLogo(){return <div style={{display:"flex",alignItems:"baseline",gap:1}}><span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:20,fontWeight:700,color:P,lineHeight:1}}>T</span><span style={{fontSize:15,color:GOLD,fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -2px"}}>/</span><span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:20,fontWeight:700,color:C.t2,lineHeight:1}}>F</span><span style={{fontSize:13,fontWeight:600,color:C.t1,letterSpacing:"0.06em",marginLeft:6}}>TRADEFLOW <span style={{color:C.t2,fontSize:10,letterSpacing:"0.2em"}}>ELITE</span></span></div>;}
+function TFLogo(){return <div style={{display:"flex",alignItems:"baseline",gap:1}}><span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:20,fontWeight:700,color:P,lineHeight:1}}>T</span><span style={{fontSize:15,color:GOLD,fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -2px"}}>/</span><span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:20,fontWeight:700,color:C.t2,lineHeight:1}}>F</span><span style={{fontSize:13,fontWeight:600,color:C.t1,letterSpacing:"0.06em",marginLeft:6}}>TRADEFLOW <span style={{color:GOLD,fontSize:10,letterSpacing:"0.2em"}}>ELITE</span></span></div>;}
 function GeriBaslik({baslik,onKapat}){return <div style={{display:"flex",alignItems:"center",gap:12,padding:"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:60}}><button onClick={onKapat} style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",color:C.t1}}>←</button><div style={{fontSize:18,fontWeight:800,color:C.t1}}>{baslik}</div></div>;}
 function BottomSheet({children,onKapat,maxH}){return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.42)",display:"flex",alignItems:MASAUSTU?"center":"flex-end",zIndex:1000}} onClick={onKapat}><div onClick={e=>e.stopPropagation()} style={{background:C.card,borderRadius:MASAUSTU?24:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:MASAUSTU?560:APP_W,margin:"0 auto",maxHeight:maxH||"88vh",overflowY:"auto",boxShadow:MASAUSTU?C.sh2:"none"}}><div style={{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 20px"}}/>{children}</div></div>;}
 // Maliyet Bekçisi: tutar + maliyet girilince anlık kâr/zarar analizi
@@ -202,6 +202,100 @@ const BtnP=({children,onClick})=><button onClick={onClick} style={{flex:2,backgr
 const BtnS=({children,onClick})=><button onClick={onClick} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:13,cursor:"pointer"}}>{children}</button>;
 
 // ─── HERO ────────────────────────────────────────────────────────
+
+// 📱 Yeni mobil ana sayfa — referans tasarıma birebir
+const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme}){
+  const ad=(yetkili||"").split(" ")[0]||"";
+  const buAy=new Date().toISOString().slice(0,7);
+  const aktif=jobs.filter(j=>j.durum==="aktif").length;
+  const tahsil=jobs.filter(j=>j.durum==="tamamlandi"&&(j.tarih||"").startsWith(buAy)).reduce((s,j)=>s+j.tutar,0);
+  const beklT=jobs.filter(j=>j.durum!=="tamamlandi").reduce((s,j)=>s+j.tutar,0);
+  const beklFat=(faturalar||[]).filter(f=>!f.odendi).reduce((s,f)=>s+(f.genelToplam||f.tutar||0),0);
+  const gider=(giderler||[]).filter(g=>(g.tarih||"").startsWith(buAy)).reduce((s,g)=>s+g.tutar,0);
+  const kartlar=[
+    {ic:"ti-trending-up",l:T.aktifIs,sub:T.devamEden,v:aktif,c:"#2B4ACB",bg:"#EEF1FB",ibg:"#DDE4F8",go:"stat-aktif"},
+    {ic:"ti-circle-check",l:T.tahsilEdildi,sub:T.buAyTahsilat,v:fmt(tahsil),c:"#0E8A5F",bg:"#ECF7F1",ibg:"#D7EFE3",go:"stat-tahsil"},
+    {ic:"ti-hourglass",l:T.bekleyenTahsilat,sub:T.toplam,v:fmt(beklT),c:"#B4690E",bg:"#FBF3E7",ibg:"#F6E5C8",go:"stat-btahsilat"},
+    {ic:"ti-file-invoice",l:T.faturalar,sub:T.beklemede,v:fmt(beklFat),c:"#C0392B",bg:"#FBEEEE",ibg:"#F6D9D9",go:"stat-bekleyen"},
+  ];
+  const menu=[
+    {id:"isler",ic:"ti-clipboard-list",c:"#2B4ACB",bg:"#EEF1FB",l:T.isAkislari},
+    {id:"faturalar",ic:"ti-file-invoice",c:"#0D9488",bg:"#E9F6F4",l:T.faturalar},
+    {id:"tahsilatlar",ic:"ti-wallet",c:"#4C9A2A",bg:"#EFF7EA",l:T.tahsilatlar},
+    {id:"musteriler",ic:"ti-users-group",c:"#8E44AD",bg:"#F5EEF9",l:T.musteriler},
+    {id:"teklifler",ic:"ti-tag",c:"#E67E22",bg:"#FDF2E7",l:T.teklifler},
+    {id:"raporlar",ic:"ti-chart-bar",c:"#2B6CB0",bg:"#EBF3FB",l:T.raporlar},
+    {id:"giderler",ic:"ti-moneybag",c:"#C89B2A",bg:"#FBF6E7",l:T.giderler},
+    {id:"daha",ic:"ti-layout-grid",c:"#4B5563",bg:"#F0F1F3",l:T.dahaFazla},
+  ];
+  return <div style={{padding:"16px 14px 0"}}>
+    {/* Hoş geldin + Yeni İş */}
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+      <div>
+        <div style={{fontSize:23,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>{T.hosGeldin||"Hoş geldin"}{ad?", "+ad:""}! 👋</div>
+        <div style={{fontSize:13,color:C.t3,marginTop:3}}>{T.hizliGozAt||"Bugün işlerinize hızlıca göz atın."}</div>
+      </div>
+      <button onClick={onYeniIs} style={{background:"#16233F",border:"none",borderRadius:16,padding:"14px 18px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,boxShadow:"0 8px 20px rgba(22,35,63,0.35)",whiteSpace:"nowrap",flexShrink:0,marginLeft:10}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/>{T.yeniIs}</button>
+    </div>
+    {/* Sektör seçici + ayar */}
+    <div style={{display:"flex",gap:10,marginBottom:16}}>
+      <div style={{flex:1,position:"relative",background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:C.sh}}>
+        <i className="ti ti-briefcase" style={{fontSize:19,color:C.t1}} aria-hidden="true"/>
+        <span style={{flex:1,fontSize:15,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</span>
+        <i className="ti ti-chevron-down" style={{fontSize:15,color:C.t3}} aria-hidden="true"/>
+        <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>
+          {IS_KOLLARI.map(k=><option key={k} value={k}>{k}</option>)}
+        </select>
+      </div>
+      <button onClick={onOzellestir} style={{width:52,background:C.card,border:`1px solid ${C.border}`,borderRadius:16,cursor:"pointer",boxShadow:C.sh,color:C.t1,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-settings" style={{fontSize:20}} aria-hidden="true"/></button>
+    </div>
+    {/* 2x2 istatistik kartları */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+      {kartlar.map(k=><div key={k.l} onClick={()=>onStatClick(k.go)} style={{background:k.bg,borderRadius:18,padding:"16px 14px",cursor:"pointer"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+          <div style={{width:42,height:42,borderRadius:13,background:k.ibg,display:"flex",alignItems:"center",justifyContent:"center"}}><i className={`ti ${k.ic}`} style={{fontSize:20,color:k.c}} aria-hidden="true"/></div>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:k.c,lineHeight:1.2}}>{k.l}</div>
+            <div style={{fontSize:11,color:C.t3}}>{k.sub}</div>
+          </div>
+        </div>
+        <div style={{fontSize:24,fontWeight:800,color:k.c}}>{k.v}</div>
+      </div>)}
+    </div>
+    {/* Ana Menü */}
+    <Sh s={{padding:"16px 12px",marginBottom:16}}>
+      <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 4px 14px"}}>{T.anaMenu||"Ana Menü"}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+        {menu.map(m=><div key={m.id} onClick={()=>setSekme(m.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7,cursor:"pointer"}}>
+          <div style={{width:"100%",aspectRatio:"1.15",borderRadius:14,background:m.bg,display:"flex",alignItems:"center",justifyContent:"center"}}><i className={`ti ${m.ic}`} style={{fontSize:26,color:m.c}} aria-hidden="true"/></div>
+          <div style={{fontSize:11,fontWeight:600,color:C.t1,textAlign:"center"}}>{m.l}</div>
+        </div>)}
+      </div>
+    </Sh>
+    {/* Gelirler / Giderler mini kartları */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+      <Sh s={{padding:"13px 12px",display:"flex",alignItems:"center",gap:9}}>
+        <div style={{width:38,height:38,borderRadius:"50%",background:"#D7EFE3",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-trending-up" style={{fontSize:18,color:"#0E8A5F"}} aria-hidden="true"/></div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.t1}}>{T.gelirlerL||"Gelirler"}</div>
+          <div style={{fontSize:10,color:C.t3}}>{T.buAy||"Bu ay"}</div>
+          <div style={{fontSize:12,fontWeight:800,color:C.t1}}>{fmt(tahsil)}</div>
+        </div>
+        <button onClick={()=>setSekme("raporlar")} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:11,padding:"8px 9px",fontSize:11,fontWeight:700,color:C.t1,cursor:"pointer",whiteSpace:"nowrap"}}>{T.detayL} ›</button>
+      </Sh>
+      <Sh s={{padding:"13px 12px",display:"flex",alignItems:"center",gap:9}}>
+        <div style={{width:38,height:38,borderRadius:"50%",background:"#F6D9D9",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-chart-pie" style={{fontSize:18,color:"#C0392B"}} aria-hidden="true"/></div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.t1}}>{T.giderler}</div>
+          <div style={{fontSize:10,color:C.t3}}>{T.buAy||"Bu ay"}</div>
+          <div style={{fontSize:12,fontWeight:800,color:C.t1}}>{fmt(gider)}</div>
+        </div>
+        <button onClick={()=>setSekme("giderler")} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:11,padding:"8px 9px",fontSize:11,fontWeight:700,color:C.t1,cursor:"pointer",whiteSpace:"nowrap"}}>{T.detayL} ›</button>
+      </Sh>
+    </div>
+  </div>;
+});
+
 const HeroCard=memo(function HeroCard({jobs,faturalar,onYeniIs,isKolu,setIsKolu,isKoluAc,setIsKoluAc,T,onStatClick,isletmeAd,yetkili,onOzellestir}){
   const aktif=jobs.filter(j=>j.durum==="aktif").length;
   const tahsil=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
@@ -3292,7 +3386,7 @@ export default function TradeFlow(){
   const statClick=(go)=>{if(go==="stat-aktif"){setIslerFiltre("aktif");setSekme("isler");}else if(go==="stat-bekleyen"){setIslerFiltre("bekliyor");setSekme("isler");}else if(go==="stat-tamamlandi"){setIslerFiltre("tamamlandi");setSekme("isler");}else if(go==="stat-tahsil"){setTahsilatFiltre("tahsil");setSekme("tahsilatlar");}else if(go==="stat-btahsilat"){setTahsilatFiltre("bekleyen");setSekme("tahsilatlar");}};
   const okunmamis=bildirimler.filter(b=>!b.okundu).length;
 
-  const NAV=[{id:"anasayfa",icon:"🏠",label:T.anaSayfa},{id:"isler",icon:"📋",label:T.isAkislari},{id:"fab",icon:"+",label:""},{id:"bildiri",icon:"🔔",label:T.bildirimlerT},{id:"profil",icon:"👤",label:T.profil}];
+  const NAV=[{id:"anasayfa",icon:"ti-home",label:T.anaSayfa},{id:"isler",icon:"ti-clipboard-text",label:T.isAkislari},{id:"fab",icon:"+",label:""},{id:"bildiri",icon:"ti-bell",label:T.bildirimlerT},{id:"profil",icon:"ti-user",label:T.profil}];
 
   // ── OTURUM KAPISI ──
   if(oturumKontrol){
@@ -3336,7 +3430,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<><div style={{height:14}}/><HeroCard jobs={jobs} faturalar={faturalar} yetkili={isletme.yetkili} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} isKoluAc={isKoluAc} setIsKoluAc={setIsKoluAc} T={T} onStatClick={statClick} isletmeAd={isletme.ad} onOzellestir={()=>setOzellestirAc(true)}/></>}<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/>{!MASAUSTU&&<Charts jobs={jobs} giderler={giderler} T={T} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}}/>}<Sh s={{margin:"0 14px 14px",padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}><div style={{width:46,height:46,borderRadius:12,background:C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚙️</div><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:2}}><span style={{color:P}}>{T.duzenleBaslik1}</span> {T.duzenleBaslik2}</div><div style={{fontSize:11,color:C.t2}}>{T.duzenleAlt}</div></div><button onClick={()=>setOzellestirAc(true)} style={{background:P,border:"none",borderRadius:10,padding:"10px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>{T.duzenle} →</button></Sh><JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onOzellestir={()=>setOzellestirAc(true)} onStatClick={statClick} setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}}/>}{MASAUSTU&&<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/>}<JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
@@ -3369,16 +3463,16 @@ export default function TradeFlow(){
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1B2A4A",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
           {!cevrimici?T.cevrimdisiB:T.senkronB}
         </div>}
-        {!MASAUSTU&&<div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:APP_W,background:"#0F1E3D",display:"flex",alignItems:"center",padding:"10px 6px 26px",boxShadow:"0 -6px 24px rgba(15,30,61,0.35)",zIndex:100}}>
+        {!MASAUSTU&&<div style={{position:"fixed",bottom:10,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 24px)",maxWidth:APP_W-24,background:"#101D3A",display:"flex",alignItems:"center",padding:"10px 8px",borderRadius:28,boxShadow:"0 10px 30px rgba(16,29,58,0.45)",zIndex:100}}>
           {NAV.map(n=>{
-            if(n.id==="fab") return <div key="fab" style={{flex:1,display:"flex",justifyContent:"center"}}><button onClick={()=>{if(!yeniIsKilit())setYeniAc(true);}} style={{width:56,height:56,borderRadius:18,background:P,border:"none",color:"#fff",fontSize:30,cursor:"pointer",boxShadow:`0 6px 18px ${P}77`,marginBottom:6}}>+</button></div>;
+            if(n.id==="fab") return <div key="fab" style={{flex:1,display:"flex",justifyContent:"center"}}><button onClick={()=>{if(!yeniIsKilit())setYeniAc(true);}} style={{width:58,height:58,borderRadius:"50%",background:"radial-gradient(circle at 30% 30%, #4E6BE0, #3550C8)",border:"none",color:"#fff",fontSize:30,cursor:"pointer",boxShadow:"0 0 0 6px rgba(78,107,224,0.22), 0 8px 20px rgba(53,80,200,0.5)",marginTop:-26,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-plus" style={{fontSize:26}} aria-hidden="true"/></button></div>;
             const active=sekme===n.id;
-            return <div key={n.id} onClick={()=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(n.id);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:active?"6px 0 4px":"6px 0 4px",background:active?"rgba(27,42,74,0.28)":"transparent",borderRadius:13,margin:"0 3px",transition:"background 0.15s"}}>
-              <div style={{fontSize:21,filter:active?"none":"grayscale(1) opacity(0.55)",position:"relative"}}>
-                {n.icon}
-                {n.id==="bildiri"&&okunmamis>0&&<div style={{position:"absolute",top:-4,right:-8,minWidth:16,height:16,borderRadius:8,background:C.red,color:"#fff",fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px",border:"2px solid #0F1E3D"}}>{okunmamis}</div>}
+            return <div key={n.id} onClick={()=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(n.id);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"7px 0 5px",background:active?"rgba(255,255,255,0.10)":"transparent",borderRadius:16,margin:"0 3px",transition:"background 0.15s"}}>
+              <div style={{position:"relative",lineHeight:1}}>
+                <i className={`ti ${n.icon}`} style={{fontSize:22,color:active?"#fff":"rgba(255,255,255,0.5)"}} aria-hidden="true"/>
+                {n.id==="bildiri"&&okunmamis>0&&<div style={{position:"absolute",top:-5,right:-9,minWidth:15,height:15,borderRadius:8,background:"#E5484D",color:"#fff",fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{okunmamis}</div>}
               </div>
-              <div style={{fontSize:10,fontWeight:700,color:active?"#fff":"rgba(255,255,255,0.45)"}}>{n.label}</div>
+              <div style={{fontSize:10.5,fontWeight:700,color:active?"#fff":"rgba(255,255,255,0.5)"}}>{n.label}</div>
             </div>;
           })}
         </div>}
