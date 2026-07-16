@@ -244,7 +244,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         <span style={{flex:1,fontSize:15,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</span>
         <i className="ti ti-chevron-down" style={{fontSize:15,color:C.t3}} aria-hidden="true"/>
         <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>
-          {IS_KOLLARI.map(k=><option key={k} value={k}>{k}</option>)}
+          {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
         </select>
       </div>
       <button onClick={onOzellestir} style={{width:52,background:C.card,border:`1px solid ${C.border}`,borderRadius:16,cursor:"pointer",boxShadow:C.sh,color:C.t1,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-settings" style={{fontSize:20}} aria-hidden="true"/></button>
