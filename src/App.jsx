@@ -1440,45 +1440,121 @@ const ASISTAN_BILGI_EN=[
   {k:["price","pro","subscription"],c:"⚡ Pro plan (₺199/mo) is planned: unlimited jobs, PDF invoices, integrations. Everything is free for now."},
   {k:["help","support","problem","error","broken"],c:"🆘 Trouble? Describe your problem here and I will guide you. White screen? Refresh with Ctrl+Shift+R or sign out and back in."},
 ];
-function AsistanEkrani({onKapat,T}){
-  const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:T.asistanHosgeldin}]);
-  const [giris,setGiris]=useState("");
+function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitlari=[],isletme={}}){
   const TR_Mi=(T.anaSayfa==="Ana Sayfa");
+  const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:TR_Mi?"👋 Merhaba! Ben TradeFlow asistanın. İşletmenle ilgili her şeyi sorabilirsin: \"Bu ay ne kazandım?\", \"Kim borçlu?\", \"Ahmet Bey'in durumu ne?\" ya da uygulama kullanımı hakkında soru sor.":T.asistanHosgeldin}]);
+  const [giris,setGiris]=useState("");
+  const [yaziyor,setYaziyor]=useState(false);
   const HIZLI=TR_Mi?[
-    "Yeni iş nasıl eklenir?","Kaparo nasıl alınır?","Fatura nasıl kesilir?","Müşteri nasıl silinir?","Maliyet Bekçisi nedir?","Teklif nasıl verilir?","Periyodik iş nedir?","Raporlar nasıl kullanılır?","GİB nasıl kurulur?","Veri kayboldu ne yapayım?",
+    "Bu ay ne kazandım?","Kim borçlu?","Problemli müşterilerim kimler?","En iyi müşterim kim?","Net kârım ne?","Yeni iş nasıl eklenir?","Fatura nasıl kesilir?","Teklif nasıl verilir?",
   ]:[
-    "How do I add a job?","How do I take a deposit?","How do I create an invoice?","How do I delete a customer?","What is Cost Guard?","How do I send a quote?","What are recurring jobs?","How do reports work?","How do I export to Excel?","My data is missing",
+    "How do I add a job?","How do I create an invoice?","What is Cost Guard?","How do I send a quote?","How do reports work?","My data is missing",
   ];
-  const cevapla=(soru)=>{
-    const s=soru.toLowerCase();
+
+  // ── İşletme özeti (hem yerel motor hem AI için) ──
+  const ozetYap=()=>{
+    const buAy=new Date().toISOString().slice(0,7);
+    const toplamCiro=jobs.reduce((s,j)=>s+j.tutar,0);
+    const tahsil=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
+    const buAyGelir=jobs.filter(j=>j.durum==="tamamlandi"&&(j.tarih||"").startsWith(buAy)).reduce((s,j)=>s+j.tutar,0);
+    const giderT=giderler.reduce((s,g)=>s+g.tutar,0);
+    const buAyGider=giderler.filter(g=>(g.tarih||"").startsWith(buAy)).reduce((s,g)=>s+g.tutar,0);
+    const acik=jobs.filter(j=>j.durum!=="tamamlandi");
+    const borclular={};
+    acik.forEach(j=>{const odenen=(j.odemeler||[]).reduce((s,o)=>s+o.tutar,0);const kalan=Math.max(j.tutar-odenen,0);if(kalan>0)borclular[j.musteri]=(borclular[j.musteri]||0)+kalan;});
+    const borcListe=Object.entries(borclular).sort((a,b)=>b[1]-a[1]);
+    const musCiro={};jobs.forEach(j=>{musCiro[j.musteri]=(musCiro[j.musteri]||0)+j.tutar;});
+    const enIyi=Object.entries(musCiro).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    return {buAyGelir,tahsil,toplamCiro,giderT,buAyGider,netKar:tahsil-giderT,aktifIs:jobs.filter(j=>j.durum==="aktif").length,bekleyenIs:jobs.filter(j=>j.durum==="bekliyor").length,toplamIs:jobs.length,borcListe,borcToplam:borcListe.reduce((s,[,v])=>s+v,0),enIyi,musteriSay:new Set(jobs.map(j=>j.musteri)).size};
+  };
+
+  // ── Yerel akıllı motor: kullanıcının gerçek verisiyle cevaplar ──
+  const akilliCevap=(s)=>{
+    if(!TR_Mi)return null;
+    const o=ozetYap();
+    if(/(merhaba|selam|günaydın|iyi akşam)/.test(s))return "👋 Merhaba"+(isletme.yetkili?" "+isletme.yetkili.split(" ")[0]:"")+"! Sana nasıl yardımcı olabilirim? İşlerini, tahsilatlarını, müşterilerini sorabilirsin.";
+    if(/(teşekkür|sağol|sağ ol|eyvallah)/.test(s))return "Rica ederim! 😊 Başka bir sorun olursa buradayım.";
+    // Müşteri adı sorgusu
+    const adlar=[...new Set([...jobs.map(j=>j.musteri),...musteriKayitlari.map(m=>m.ad)])].filter(Boolean);
+    const bulunanAd=adlar.find(ad=>ad&&s.includes(ad.toLowerCase().split(" ")[0])&&ad.length>2);
+    if(bulunanAd&&/(durum|borç|borc|ne kadar|öde|skor|nasıl|bilgi)/.test(s)){
+      const isler=jobs.filter(j=>j.musteri===bulunanAd);
+      const sk=musteriSkor(isler);
+      const ciro=isler.reduce((sm,j)=>sm+j.tutar,0);
+      const acikT=isler.filter(j=>j.durum!=="tamamlandi").reduce((sm,j)=>sm+j.tutar-((j.odemeler||[]).reduce((ss,od)=>ss+od.tutar,0)),0);
+      return "👤 **"+bulunanAd+"**\n"+sk.emoji+" Ödeme skoru: "+sk.ad+(sk.puan!==null?" (%"+sk.puan+")":"")+"\n💼 Toplam iş: "+isler.length+" — "+fmt(ciro)+(acikT>0?"\n⏳ Bekleyen alacak: "+fmt(acikT):"\n✅ Bekleyen borcu yok")+"\n\nDetay için Müşteriler sekmesinden kartına dokunabilirsin.";
+    }
+    if(/(problemli|riskli|kötü müşteri|ödemeyen)/.test(s)){
+      const prob=adlar.map(ad=>({ad,sk:musteriSkor(jobs.filter(j=>j.musteri===ad))})).filter(x=>x.sk.emoji==="🔴");
+      return prob.length?"🔴 Problemli görünen müşteriler:\n"+prob.map(p=>"• "+p.ad+" — "+p.sk.aciklama).join("\n")+"\n\nBunlarla yeni işe başlamadan önce kaparo almanı öneririm.":"🎉 Harika haber — şu an problemli görünen müşterin yok!";
+    }
+    if(/(kim borçlu|borçlu|alacak|bekleyen tahsilat|kimden.*alacağ)/.test(s)){
+      if(o.borcListe.length===0)return "✅ Şu an bekleyen alacağın yok, tüm ödemeler alınmış görünüyor!";
+      return "💰 Toplam bekleyen alacağın: **"+fmt(o.borcToplam)+"**\n\nEn yüksek borçlular:\n"+o.borcListe.slice(0,5).map(([ad,t])=>"• "+ad+": "+fmt(t)).join("\n")+"\n\nTahsilatlar sekmesinden takip edebilirsin.";
+    }
+    if(/(en iyi|en çok kazandıran|favori müşteri|en karlı müşteri|en kârlı müşteri)/.test(s)){
+      if(o.enIyi.length===0)return "Henüz iş kaydın yok — ilk işini ekleyince analiz başlar!";
+      return "🏆 En çok kazandıran müşterilerin:\n"+o.enIyi.map(([ad,t],i)=>(i+1)+". "+ad+" — "+fmt(t)).join("\n");
+    }
+    if(/(bu ay.*(kazan|gelir|ciro)|kazanc|ne kazandım)/.test(s))return "📊 Bu ay tahsil edilen gelir: **"+fmt(o.buAyGelir)+"**\nBu ay gider: "+fmt(o.buAyGider)+"\nBu ay net: **"+fmt(o.buAyGelir-o.buAyGider)+"**\n\nDönem seçimiyle detay için Raporlar sekmesine bak.";
+    if(/(net kâr|net kar|kâr|kar durumu|karlılık)/.test(s))return "💼 Genel durum:\n• Toplam tahsil edilen: "+fmt(o.tahsil)+"\n• Toplam gider: "+fmt(o.giderT)+"\n• **Net kâr: "+fmt(o.netKar)+"**"+(o.netKar<0?"\n\n⚠️ Giderler geliri aşmış — gider kalemlerini Raporlar'dan incelemeni öneririm.":"");
+    if(/(gider|masraf|harcama)/.test(s))return "💸 Toplam gider: "+fmt(o.giderT)+" (bu ay: "+fmt(o.buAyGider)+")\nDetaylı döküm Giderler sekmesinde, PDF raporu Daha Fazla menüsünde.";
+    if(/(kaç iş|iş sayısı|aktif iş|işlerim)/.test(s))return "📋 İş durumun:\n• Aktif: "+o.aktifIs+"\n• Bekleyen: "+o.bekleyenIs+"\n• Toplam kayıt: "+o.toplamIs+"\n• Müşteri sayısı: "+o.musteriSay;
+    if(/(fatura.*(toplam|bekleyen|kaç))/.test(s)){const bekl=faturalar.filter(f=>!f.odendi);return "🧾 Fatura durumu: toplam "+faturalar.length+" fatura, "+bekl.length+" tanesi beklemede ("+fmt(bekl.reduce((sm,f)=>sm+(f.genelToplam||f.tutar||0),0))+").";}
+    return null;
+  };
+
+  const kuralCevap=(s)=>{
     const taban=TR_Mi?ASISTAN_BILGI:ASISTAN_BILGI_EN;
     const bulunanlar=taban.filter(b=>b.k.some(k=>s.includes(k)));
-    const cevap=bulunanlar.length>0
-      ?bulunanlar.map(b=>b.c).join("\n\n")
-      :(TR_Mi
-        ?"🤔 Bunu henüz bilmiyorum ama şunları deneyebilirsin:\n• Konuyu farklı kelimelerle yaz\n• Profil → Yardım Merkezi'ne bak\n• Yardımcı Asistan'a sorununu yaz"
-        :"🤔 I don't know that one yet. Try:\n• Rephrasing your question\n• Profile → Help Center\n• Ask the in-app assistant");
-    setMesajlar(p=>[...p,{rol:"user",metin:soru},{rol:"bot",metin:cevap}]);
-    setGiris("");
+    if(bulunanlar.length>0)return bulunanlar.map(b=>b.c).join("\n\n");
+    return null;
   };
+
+  const cevapla=async(soru)=>{
+    const s=soru.toLowerCase();
+    setMesajlar(p=>[...p,{rol:"user",metin:soru}]);
+    setGiris("");
+    // 1) Önce buluttaki gerçek yapay zekâyı dene
+    setYaziyor(true);
+    try{
+      const gecmis=[...mesajlar.filter(m=>m.rol!=="bot"||mesajlar.indexOf(m)>0),{rol:"user",metin:soru}].slice(-12).map(m=>({rol:m.rol==="user"?"user":"asistan",metin:m.metin}));
+      const o=ozetYap();
+      const ozet="İşletme: "+(isletme.ad||"-")+" | Yetkili: "+(isletme.yetkili||"-")+"\nBu ay gelir: "+fmt(o.buAyGelir)+" | Bu ay gider: "+fmt(o.buAyGider)+"\nToplam tahsil: "+fmt(o.tahsil)+" | Toplam gider: "+fmt(o.giderT)+" | Net kâr: "+fmt(o.netKar)+"\nAktif iş: "+o.aktifIs+" | Bekleyen iş: "+o.bekleyenIs+" | Toplam iş: "+o.toplamIs+" | Müşteri: "+o.musteriSay+"\nBekleyen alacak toplamı: "+fmt(o.borcToplam)+"\nBorçlular: "+o.borcListe.slice(0,8).map(([a,t])=>a+"="+fmt(t)).join(", ")+"\nEn iyi müşteriler: "+o.enIyi.map(([a,t])=>a+"="+fmt(t)).join(", ")+"\nSon işler: "+jobs.slice(-6).map(j=>j.baslik+"/"+j.musteri+"/"+j.durum+"/"+fmt(j.tutar)).join("; ");
+      const r=await fetch("/api/asistan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mesajlar:gecmis,ozet,dil:TR_Mi?"tr":"en"})});
+      if(r.ok){
+        const d=await r.json();
+        if(d.cevap){setYaziyor(false);setMesajlar(p=>[...p,{rol:"bot",metin:d.cevap}]);return;}
+      }
+    }catch(e){/* AI yok/erişilemedi → yerel motora düş */}
+    setYaziyor(false);
+    // 2) Yerel akıllı motor (kullanıcı verisiyle)
+    const akilli=akilliCevap(s);
+    if(akilli){setMesajlar(p=>[...p,{rol:"bot",metin:akilli}]);return;}
+    // 3) SSS motoru
+    const sss=kuralCevap(s);
+    if(sss){setMesajlar(p=>[...p,{rol:"bot",metin:sss}]);return;}
+    setMesajlar(p=>[...p,{rol:"bot",metin:TR_Mi
+      ?"🤔 Bunu tam anlayamadım. Şunları sorabilirsin:\n• \"Bu ay ne kazandım?\"\n• \"Kim borçlu?\"\n• \"[Müşteri adı] durumu ne?\"\n• \"Fatura nasıl kesilir?\""
+      :"🤔 I don't know that one yet. Try rephrasing or check Profile → Help Center."}]);
+  };
+
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:MASAUSTU?640:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik={"🤖 "+T.asistan} onKapat={onKapat}/>
-      {/* Mesajlar */}
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px",display:"flex",flexDirection:"column",gap:10}}>
         {mesajlar.map((m,i)=><div key={i} style={{alignSelf:m.rol==="bot"?"flex-start":"flex-end",maxWidth:"85%"}}>
-          <div style={{background:m.rol==="bot"?C.card:P,color:m.rol==="bot"?C.t1:"#fff",borderRadius:m.rol==="bot"?"4px 16px 16px 16px":"16px 4px 16px 16px",padding:"12px 15px",fontSize:13.5,lineHeight:1.6,boxShadow:C.sh,whiteSpace:"pre-wrap"}}>{m.metin}</div>
+          <div style={{background:m.rol==="bot"?C.card:P,color:m.rol==="bot"?C.t1:"#fff",borderRadius:m.rol==="bot"?"4px 16px 16px 16px":"16px 4px 16px 16px",padding:"12px 15px",fontSize:13.5,lineHeight:1.6,boxShadow:C.sh,whiteSpace:"pre-wrap"}}>{m.metin.split("**").map((par,ix)=>ix%2===1?<b key={ix}>{par}</b>:par)}</div>
         </div>)}
-        {/* Hızlı sorular */}
+        {yaziyor&&<div style={{alignSelf:"flex-start"}}><div style={{background:C.card,borderRadius:"4px 16px 16px 16px",padding:"12px 18px",boxShadow:C.sh,color:C.t3,fontSize:13.5}}>💭 düşünüyor<span className="nokta">...</span></div></div>}
         {mesajlar.length<=1&&<div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:6}}>
           {HIZLI.map(h=><button key={h} onClick={()=>cevapla(h)} style={{background:C.card,border:`1.5px solid ${P}44`,borderRadius:20,padding:"8px 14px",color:P,fontSize:12,fontWeight:600,cursor:"pointer"}}>{h}</button>)}
         </div>}
       </div>
-      {/* Giriş */}
       <div style={{padding:"12px 14px 28px",background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
-        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim())cevapla(giris.trim());}} placeholder={T.soruPh}
-          style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none"}}/>
-        <button onClick={()=>giris.trim()&&cevapla(giris.trim())} style={{background:P,border:"none",borderRadius:14,padding:"0 20px",color:"#fff",fontSize:17,cursor:"pointer"}}>➤</button>
+        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim()&&!yaziyor)cevapla(giris.trim());}} placeholder={T.soruPh} disabled={yaziyor}
+          style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none",opacity:yaziyor?0.6:1}}/>
+        <button onClick={()=>giris.trim()&&!yaziyor&&cevapla(giris.trim())} style={{background:P,border:"none",borderRadius:14,padding:"0 20px",color:"#fff",fontSize:17,cursor:"pointer",opacity:yaziyor?0.6:1}}>➤</button>
       </div>
     </div>
   </div>;
@@ -3550,7 +3626,7 @@ export default function TradeFlow(){
         {teklifAc&&<TeklifModal T={T} kdv={kdv} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
-        {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T}/>}
+        {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T} jobs={jobs} giderler={giderler} faturalar={faturalar} musteriKayitlari={musteriKayitlari} isletme={isletme}/>}
         {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
         {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
