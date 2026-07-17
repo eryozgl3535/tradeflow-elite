@@ -89,6 +89,10 @@ function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
 }
 
 // ═══ KURUCU PANELİ ═══
+// ═══ DESTEK İLETİŞİM — tek yerden yönetilir ═══
+const DESTEK_EMAIL = ""; // Destek adresi belirlenince buraya yazılacak — boşsa satır gizlenir
+const DESTEK_TEL = ""; // Örn: "905321234567" — boşsa WhatsApp satırı gizlenir
+const DESTEK_SAAT = "Hafta içi 09:00–18:00";
 const KURUCU_EMAIL = "eryozgl3535@gmail.com";
 let KURUCU_MU = false;
 function KurucuPanel({onKapat}){
@@ -129,6 +133,44 @@ function KurucuPanel({onKapat}){
     </>}
     <button onClick={onKapat} style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:14,fontWeight:600,cursor:"pointer"}}>Kapat</button>
   </BottomSheet>;
+}
+
+// 🏅 Müşteri ödeme skoru — tahsilat oranı + bekleyen iş yaşına göre otomatik
+function musteriSkor(isler){
+  if(!isler||isler.length===0)return{emoji:"⚪",ad:"Yeni",renk:"#9CA3AF",puan:null,aciklama:"Henüz iş kaydı yok"};
+  const toplam=isler.reduce((s,j)=>s+j.tutar,0);
+  const tahsil=isler.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0)
+    +isler.filter(j=>j.durum!=="tamamlandi").reduce((s,j)=>s+(j.odemeler||[]).reduce((ss,o)=>ss+o.tutar,0),0);
+  const oran=toplam>0?Math.min(tahsil/toplam,1):1;
+  const acik=isler.filter(j=>j.durum!=="tamamlandi");
+  const enEski=acik.length?Math.max(0,...acik.map(j=>Math.floor((Date.now()-new Date(j.tarih).getTime())/86400000))):0;
+  const puan=Math.round(oran*100);
+  const detay="Ödemelerin %"+puan+"'i alınmış"+(enEski>0?" · en eski bekleyen iş "+enEski+" gün":"")+" · "+isler.length+" iş";
+  if(oran>=0.85&&enEski<=30)return{emoji:"🟢",ad:"Sorunsuz",renk:"#0E8A5F",puan,aciklama:detay};
+  if(oran>=0.45&&enEski<=60)return{emoji:"🟡",ad:"Takip Et",renk:"#B4690E",puan,aciklama:detay};
+  return{emoji:"🔴",ad:"Problemli",renk:"#C0392B",puan,aciklama:detay};
+}
+
+// 🔊 Ses efektleri — dosya gerektirmez, Web Audio ile üretilir
+let SES_ACIK = true;
+function calSes(tip){
+  if(!SES_ACIK)return;
+  try{
+    const ctx=calSes._ctx||(calSes._ctx=new (window.AudioContext||window.webkitAudioContext)());
+    const nota=(frek,bas,sure,tur)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type=tur||"sine";o.frequency.value=frek;
+      g.gain.setValueAtTime(0.001,ctx.currentTime+bas);
+      g.gain.exponentialRampToValueAtTime(0.12,ctx.currentTime+bas+0.015);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+bas+sure);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime+bas);o.stop(ctx.currentTime+bas+sure+0.05);
+    };
+    if(tip==="para"){nota(880,0,0.09,"triangle");nota(1320,0.09,0.16,"triangle");}
+    else if(tip==="basari"){nota(523,0,0.1);nota(784,0.1,0.18);}
+    else if(tip==="sil"){nota(300,0,0.12,"square");nota(200,0.1,0.16,"square");}
+    else{nota(660,0,0.06);}
+  }catch(e){}
 }
 const P = "#1B2A4A";
 const P2 = "#0F1B33";
@@ -1302,7 +1344,7 @@ function GizlilikEkrani({onKapat}){
     {b:"3. KVKK Uyumu",m:"6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında; verilerinize erişme, düzeltme, silme ve işlemeye itiraz etme haklarınız saklı tutulur."},
     {b:"4. Veri Güvenliği",m:"Pro sürümde bulut yedekleme aktif edildiğinde verileriniz şifrelenerek saklanır. Ödeme bilgileri uygulamada tutulmaz."},
     {b:"5. Çerezler ve İzleme",m:"Uygulama içinde üçüncü taraf reklam SDK'si veya izleme çerezi bulunmaz."},
-    {b:"6. İletişim",m:"Gizlilikle ilgili sorularınız için: destek@tradeflow.app"},
+    {b:"6. İletişim",m:"Gizlilikle ilgili sorularınız için uygulama içi Yardım Merkezi'ni kullanabilirsiniz."},
   ];
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
@@ -1363,7 +1405,7 @@ const ASISTAN_BILGI=[
   {k:["giriş","şifre","hesap","kayıt","oturum"],c:"🔐 Giriş: Uygulama açılınca e-posta + şifre ile giriş ekranı gelir. 'Kayıt Ol' ile yeni hesap oluşturabilirsin. 'Beni Hatırla' işaretliyse bir daha şifre sorulmaz. Çıkış için Profil → en altta 'Çıkış Yap'."},
   // ── GENEL ──
   {k:["pro","abonelik","ücret","fiyat","premium"],c:"⚡ Pro plan (₺199/ay) planlanıyor: sınırsız iş, PDF fatura, GİB entegrasyonu, öncelikli destek. Şu an tüm özellikler ücretsiz kullanımda."},
-  {k:["destek","yardım","sorun","hata","çalışmıyor"],c:"🆘 Sorun mu var? WhatsApp destek: 0532 111 22 33 (7/24). E-posta: destek@tradeflow.app. Ya da sorununu buraya yaz, yönlendireyim. Beyaz ekran görüyorsan: Ctrl+Shift+R ile sayfayı yenile, düzelmezse çıkış yapıp tekrar giriş dene."},
+  {k:["destek","yardım","sorun","hata","çalışmıyor"],c:"🆘 Sorun mu var? Sorununu buraya yazabilirsin, yönlendireyim. Ya da sorununu buraya yaz, yönlendireyim. Beyaz ekran görüyorsan: Ctrl+Shift+R ile sayfayı yenile, düzelmezse çıkış yapıp tekrar giriş dene."},
 ];
 
 const ASISTAN_BILGI_EN=[
@@ -1396,7 +1438,7 @@ const ASISTAN_BILGI_EN=[
   {k:["login","password","account","sign"],c:"🔐 Sign in with email + password. 'Remember me' keeps you signed in. Sign out: Profile → bottom."},
   {k:["team","staff","assign","member"],c:"👷 Team: Profile → Team Management — add members with roles, assign jobs via 'Assigned To' in the job form, see performance in Reports."},
   {k:["price","pro","subscription"],c:"⚡ Pro plan (₺199/mo) is planned: unlimited jobs, PDF invoices, integrations. Everything is free for now."},
-  {k:["help","support","problem","error","broken"],c:"🆘 Trouble? WhatsApp support: 0532 111 22 33 (24/7). White screen? Refresh with Ctrl+Shift+R or sign out and back in."},
+  {k:["help","support","problem","error","broken"],c:"🆘 Trouble? Describe your problem here and I will guide you. White screen? Refresh with Ctrl+Shift+R or sign out and back in."},
 ];
 function AsistanEkrani({onKapat,T}){
   const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:T.asistanHosgeldin}]);
@@ -1414,8 +1456,8 @@ function AsistanEkrani({onKapat,T}){
     const cevap=bulunanlar.length>0
       ?bulunanlar.map(b=>b.c).join("\n\n")
       :(TR_Mi
-        ?"🤔 Bunu henüz bilmiyorum ama şunları deneyebilirsin:\n• Konuyu farklı kelimelerle yaz\n• Profil → Yardım Merkezi'ne bak\n• WhatsApp destek: 0532 111 22 33"
-        :"🤔 I don't know that one yet. Try:\n• Rephrasing your question\n• Profile → Help Center\n• WhatsApp support: 0532 111 22 33");
+        ?"🤔 Bunu henüz bilmiyorum ama şunları deneyebilirsin:\n• Konuyu farklı kelimelerle yaz\n• Profil → Yardım Merkezi'ne bak\n• Yardımcı Asistan'a sorununu yaz"
+        :"🤔 I don't know that one yet. Try:\n• Rephrasing your question\n• Profile → Help Center\n• Ask the in-app assistant");
     setMesajlar(p=>[...p,{rol:"user",metin:soru},{rol:"bot",metin:cevap}]);
     setGiris("");
   };
@@ -1525,7 +1567,7 @@ function YardimMerkezi({onKapat}){
         </div>)}
         <div style={{display:"flex",gap:10,marginTop:8}}>
           <Sh s={{flex:1,padding:16,textAlign:"center",cursor:"pointer"}} onClick={()=>window.open("https://wa.me/905321112233","_blank")}><div style={{fontSize:26,marginBottom:6}}>💬</div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>WhatsApp</div></Sh>
-          <Sh s={{flex:1,padding:16,textAlign:"center",cursor:"pointer"}} onClick={()=>window.open("mailto:destek@tradeflow.app","_blank")}><div style={{fontSize:26,marginBottom:6}}>✉️</div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>E-posta</div></Sh>
+          {DESTEK_EMAIL&&<Sh s={{flex:1,padding:16,textAlign:"center",cursor:"pointer"}} onClick={()=>window.open("mailto:"+DESTEK_EMAIL+"?subject=TradeFlow Destek","_blank")}><div style={{fontSize:26,marginBottom:6}}>✉️</div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>E-posta</div></Sh>}
         </div>
       </div>
     </div>
@@ -1993,6 +2035,14 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider,is
       </div>)}
     </div>
 
+    {/* 🏅 Ödeme Skoru */}
+    {(()=>{const sk=musteriSkor(musteri.isler);return <Sh s={{padding:"13px 15px",marginBottom:14,borderLeft:`3px solid ${sk.renk}`,display:"flex",alignItems:"center",gap:12}}>
+      <span style={{fontSize:26}}>{sk.emoji}</span>
+      <div style={{flex:1}}>
+        <div style={{fontSize:13,fontWeight:800,color:sk.renk}}>Ödeme Skoru: {sk.ad}{sk.puan!==null?" — %"+sk.puan:""}</div>
+        <div style={{fontSize:11,color:C.t2,marginTop:2}}>{sk.aciklama}</div>
+      </div>
+    </Sh>;})()}
     {/* Hızlı İşlemler */}
     <div style={{display:"flex",gap:8,marginBottom:14}}>
       <button onClick={()=>onYeniIs&&onYeniIs(musteri.ad)} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:"12px 0",color:C.green,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.yeniIsAc}</button>
@@ -2243,6 +2293,7 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
       const mKar=ciro-mGider;
       const adresVarMi=m.adresler.length>0;
       const ilkAdres=m.adresler[0];
+      const skor=musteriSkor(m.isler);
 
       return <Sh key={m.ad} onClick={()=>setSecili(m)} s={{padding:"14px 16px",marginBottom:10,cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
@@ -2255,7 +2306,7 @@ function MusterilerTab({jobs,T,musteriKayitlari,onMusteriEkle,onMusteriSil,onKay
           {/* Bilgiler */}
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{m.ad||T.isimsizK}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{m.ad||T.isimsizK} <span title={skor.aciklama} style={{fontSize:10,fontWeight:800,color:skor.renk,background:skor.renk+"18",borderRadius:8,padding:"2px 7px",marginLeft:4,whiteSpace:"nowrap"}}>{skor.emoji} {skor.ad}</span></div>
               <div style={{fontSize:15,fontWeight:800,color:C.green,flexShrink:0,marginLeft:8}}>{fmt(ciro)}</div>
             </div>
 
@@ -2640,9 +2691,8 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
 }
 
 // ─── PROFİL ─────────────────────────────────────────────────────
-function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
+function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,sesEfekt,setSesEfekt,raporDonemAd,onRaporDonem,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
   const [bildirimIzin,setBildirimIzin]=useState(false);
-  const [sesEfekt,setSesEfekt]=useState(true);
   const [kompaktMod,setKompaktMod]=useState(false);
   const logo=isletme?.logo||null;
   const [modal,setModal]=useState(null); // isletme|kdv|dil|para|gib
@@ -2743,7 +2793,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.finansB}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
       <Row icon="💰" label={T.paraBirimi} sub={kurKaynakAd()} value={para+" ("+fmt(1)+")"} onClick={()=>setModal("para")}/>
-      <Row icon="📊" label={T.raporlamaDonemi} sub={T.aylikGorunum} value="Bu Ay ›" onClick={()=>goster(T.yakinda)}/>
+      <Row icon="📊" label={T.raporlamaDonemi} sub="Raporlar bu döneme göre hesaplanır" value={raporDonemAd+" ›"} onClick={onRaporDonem}/>
       <Row icon="🏦" label={T.bankaHesabi} sub={T.ibanSub} onClick={()=>goster("Pro! ⚡")}/>
     </Sh>
 
@@ -2795,8 +2845,8 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
       {kullaniciEmail&&kullaniciEmail.toLowerCase()===KURUCU_EMAIL&&<Row icon="👑" label="Kurucu Paneli" sub="Üye sayısı ve plan istatistikleri" onClick={()=>onAc("kurucu")}/>}
       <Row icon="👷" label={T.ekipYonetimi} sub={plan==="elite"?T.ekipSub:"👑 Elite özelliği"} onClick={()=>{if(plan!=="elite"){onPlanAc();return;}onAc("ekip");}}/>
       <Row icon="🤖" label={T.asistan} sub={T.asistanSub} onClick={()=>onAc("asistan")}/>
-      <Row icon="💬" label={T.whatsappDestek} sub="0532 111 22 33 — 7/24" onClick={()=>window.open("https://wa.me/905321112233","_blank")}/>
-      <Row icon="✉️" label={T.epostaDestek} sub="destek@tradeflow.app" onClick={()=>window.open("mailto:destek@tradeflow.app","_blank")}/>
+      {DESTEK_TEL&&<Row icon="💬" label={T.whatsappDestek} sub={"0"+DESTEK_TEL.slice(2,5)+" "+DESTEK_TEL.slice(5,8)+" "+DESTEK_TEL.slice(8,10)+" "+DESTEK_TEL.slice(10)+" — "+DESTEK_SAAT} onClick={()=>window.open("https://wa.me/"+DESTEK_TEL,"_blank")}/>}
+      {DESTEK_EMAIL&&<Row icon="✉️" label={T.epostaDestek} sub={DESTEK_EMAIL} onClick={()=>window.open("mailto:"+DESTEK_EMAIL+"?subject=TradeFlow Destek","_blank")}/>}
       <Row icon="❓" label={T.yardimMerkezi} sub={T.sssSub} onClick={()=>onAc("yardim")}/>
       <Row icon="⭐" label={T.degerlendir} sub={T.degerlendirSub} onClick={()=>onAc("degerlendir")}/>
       <Row icon="📜" label={T.gizlilik} sub={T.kvkkSub} onClick={()=>onAc("gizlilik")}/>
@@ -3101,6 +3151,9 @@ export default function TradeFlow(){
   const [kdv,setKdv]=useState(20);
   const [isletme,setIsletme]=useState({ad:"",yetkili:"",telefon:"",email:"",vergiNo:"",vergiDairesi:"",adres:""});
   const [planAc,setPlanAc]=useState(null); // null | sebep metni | true
+  const [sesEfekt,setSesEfekt]=useState(true);
+  SES_ACIK=sesEfekt;
+  const [raporDonem,setRaporDonem]=useState("buAy"); // buAy | son3Ay | buYil | tumu
   // Aktif plan: satın alınan plan > deneme > starter
   const _simdi=Date.now();
   const denemeAktif=!isletme.plan&&isletme.denemeBitis&&new Date(isletme.denemeBitis).getTime()>_simdi;
@@ -3211,6 +3264,8 @@ export default function TradeFlow(){
           if(v.para)setPara(v.para);
           if(typeof v.karanlik==="boolean")setKaranlik(v.karanlik);
           if(typeof v.tema==="string"&&TEMALAR[v.tema])setTema(v.tema);
+          if(typeof v.sesEfekt==="boolean")setSesEfekt(v.sesEfekt);
+          if(typeof v.raporDonem==="string")setRaporDonem(v.raporDonem);
           if(Array.isArray(v.modulAktif)){
             // Sadece açık/kapalı durumunu uygula, fonksiyonlu yapıyı koru
             setModuller(MODUL_VARSAYILAN.map(md=>{
@@ -3235,7 +3290,7 @@ export default function TradeFlow(){
   useEffect(()=>{
     if(!kullanici||!veriYuklendi)return;
     const zaman=setTimeout(async()=>{
-      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,tema,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
+      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,tema,sesEfekt,raporDonem,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
       await yerelKaydet(kullanici.id,paket); // 1) cihaza — her zaman
       if(!navigator.onLine){setSenkronBekliyor(true);return;} // internet yok: kuyrukta
       try{
@@ -3245,7 +3300,7 @@ export default function TradeFlow(){
       }catch(e){console.error("Kaydetme:",e);setSenkronBekliyor(true);}
     },800);
     return ()=>clearTimeout(zaman);
-  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,tema,moduller,kullanici,veriYuklendi,senkronTik]);
+  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,karanlik,tema,sesEfekt,raporDonem,moduller,kullanici,veriYuklendi,senkronTik]);
 
   const cikisYap=async()=>{
     await supabase.auth.signOut();
@@ -3259,7 +3314,10 @@ export default function TradeFlow(){
   paraAyarla(para);
   updateDurum(T);
 
-  const goster=(m)=>{setToast(m);setTimeout(()=>setToast(null),2200);};
+  const DONEMLER={buAy:"Bu Ay",son3Ay:"Son 3 Ay",buYil:"Bu Yıl",tumu:"Tümü"};
+  const donemBas=(()=>{const n=new Date();if(raporDonem==="buAy")return new Date(n.getFullYear(),n.getMonth(),1);if(raporDonem==="son3Ay")return new Date(n.getFullYear(),n.getMonth()-2,1);if(raporDonem==="buYil")return new Date(n.getFullYear(),0,1);return null;})();
+  const donemFiltre=(dizi)=>donemBas?dizi.filter(x=>x.tarih&&new Date(x.tarih)>=donemBas):dizi;
+  const goster=(m)=>{setToast(m);setTimeout(()=>setToast(null),2200);const s=String(m);if(s.includes("💰")||s.includes("Tahsil"))calSes("para");else if(s.includes("🗑")||s.includes("silindi"))calSes("sil");else if(s.includes("✓")||s.includes("✅")||s.includes("🎉")||s.includes("eklendi")||s.includes("kaydedildi"))calSes("basari");else calSes("tik");};
   const bildirimEkle=(baslik,mesaj,tip)=>setBildirimler(p=>[{id:Date.now()+Math.random(),baslik,mesaj,tip,okundu:false,zaman:new Date().toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})},...p]);
   const bannerGoster=(baslik,mesaj)=>{setBanner({baslik,mesaj});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
 
@@ -3447,7 +3505,7 @@ export default function TradeFlow(){
           bildirimEkle("🗑️ Müşteri silindi",ad,"is");
         }}/>}
           {sekme==="teklifler"&&<TekliflerTab teklifler={teklifler} onYeni={()=>setTeklifAc(true)} onDonustur={teklifDonustur} onSil={(id)=>{setTeklifler(p=>p.filter(t=>t.id!==id));goster(T.sil+" ✓");}} onDurumDegis={(id,d)=>{setTeklifler(p=>p.map(t=>t.id===id?{...t,durum_t:d}:t));goster(d==="onaylandi"?"✅ "+T.tamamlandi:"❌");}} T={T} isletme={isletme}/>}
-          {sekme==="raporlar"&&<RaporlarTab jobs={jobs} giderler={giderler} T={T} ekip={ekip}/>}
+          {sekme==="raporlar"&&<><div style={{padding:"12px 14px 0",display:"flex",gap:6,flexWrap:"wrap"}}>{Object.entries(DONEMLER).map(([id,ad])=><button key={id} onClick={()=>setRaporDonem(id)} style={{background:raporDonem===id?P:C.card,color:raporDonem===id?"#fff":C.t2,border:`1px solid ${raporDonem===id?P:C.border}`,borderRadius:20,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>{ad}</button>)}</div><RaporlarTab jobs={donemFiltre(jobs)} giderler={donemFiltre(giderler)} T={T} ekip={ekip}/></>}
           {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
           {sekme==="daha"&&<DahaFazlaTab
           onExcelMuhasebe={()=>{if(proKilit("PDF raporlar"))return;pdfMuhasebeRaporu(jobs,giderler,isletme);goster("📈 PDF raporu hazır");}}
@@ -3457,7 +3515,7 @@ export default function TradeFlow(){
           onPdf={()=>pdfMuhasebeRaporu(jobs,giderler,isletme)}
           onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
-          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
+          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 Dönem: "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
         </div>
 
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1B2A4A",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
