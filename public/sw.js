@@ -1,5 +1,5 @@
-// TradeFlow Elite — Service Worker (PWA)
-const CACHE = "tradeflow-v1";
+// TradeFlow Elite — Service Worker v3 (güçlendirilmiş çevrimdışı)
+const CACHE = "tradeflow-v3";
 const CORE = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
@@ -16,17 +16,43 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
-// Ağ öncelikli: internet varsa güncel sürüm, yoksa önbellekten aç
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  if (!e.request.url.startsWith(self.location.origin)) return;
-  e.respondWith(
-    fetch(e.request)
-      .then((res) => {
-        const kopya = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, kopya));
-        return res;
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin) return; // Supabase/AI istekleri SW'ye takılmasın
+
+  // Sayfa açılışları: önbellek → ağ → ana sayfa kopyası (asla boş ekran kalmasın)
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      caches.match(e.request).then((cached) => {
+        const agdan = fetch(e.request)
+          .then((res) => {
+            if (res && res.ok) {
+              const kopya = res.clone();
+              caches.open(CACHE).then((c) => c.put(e.request, kopya));
+            }
+            return res;
+          })
+          .catch(() => cached || caches.match("/"));
+        return cached || agdan;
       })
-      .catch(() => caches.match(e.request).then((r) => r || caches.match("/")))
+    );
+    return;
+  }
+
+  // Diğer dosyalar: önbellek öncelikli + arka planda tazele
+  e.respondWith(
+    caches.match(e.request).then((cached) => {
+      const agdan = fetch(e.request)
+        .then((res) => {
+          if (res && res.ok) {
+            const kopya = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, kopya));
+          }
+          return res;
+        })
+        .catch(() => cached);
+      return cached || agdan;
+    })
   );
 });
