@@ -1,5 +1,5 @@
 if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260711-faz1","background:#1B2A4A;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, useRef, useCallback } from "react";
 import { PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase, yerelKaydet, yerelYukle } from "./veri.js";
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
@@ -3394,6 +3394,13 @@ export default function TradeFlow(){
   const donemBas=(()=>{const n=new Date();if(raporDonem==="buAy")return new Date(n.getFullYear(),n.getMonth(),1);if(raporDonem==="son3Ay")return new Date(n.getFullYear(),n.getMonth()-2,1);if(raporDonem==="buYil")return new Date(n.getFullYear(),0,1);return null;})();
   const donemFiltre=(dizi)=>donemBas?dizi.filter(x=>x.tarih&&new Date(x.tarih)>=donemBas):dizi;
   const goster=(m)=>{setToast(m);setTimeout(()=>setToast(null),2200);const s=String(m);if(s.includes("💰")||s.includes("Tahsil"))calSes("para");else if(s.includes("🗑")||s.includes("silindi"))calSes("sil");else if(s.includes("✓")||s.includes("✅")||s.includes("🎉")||s.includes("eklendi")||s.includes("kaydedildi"))calSes("basari");else calSes("tik");};
+  // 🔒 Sabit referanslı handler'lar — memo korumasının gerçekten çalışması için
+  const _h=useRef({});
+  const sekmeGecS=useCallback((s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);},[]);
+  const yeniIsAcS=useCallback(()=>{if(!_h.current.yeniIsKilit())setYeniAc(true);},[]);
+  const statClickS=useCallback((g)=>_h.current.statClick(g),[]);
+  const ozellestirAcS=useCallback(()=>setOzellestirAc(true),[]);
+  const isKoluSecS=useCallback((k)=>{_h.current.setIsKolu(k);_h.current.goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");},[]);
   const bildirimEkle=(baslik,mesaj,tip)=>setBildirimler(p=>[{id:Date.now()+Math.random(),baslik,mesaj,tip,okundu:false,zaman:new Date().toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})},...p]);
   const bannerGoster=(baslik,mesaj)=>{setBanner({baslik,mesaj});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
 
@@ -3518,6 +3525,7 @@ export default function TradeFlow(){
     r.readAsText(file);
   };
   const statClick=(go)=>{if(go==="stat-aktif"){setIslerFiltre("aktif");setSekme("isler");}else if(go==="stat-bekleyen"){setIslerFiltre("bekliyor");setSekme("isler");}else if(go==="stat-tamamlandi"){setIslerFiltre("tamamlandi");setSekme("isler");}else if(go==="stat-tahsil"){setTahsilatFiltre("tahsil");setSekme("tahsilatlar");}else if(go==="stat-btahsilat"){setTahsilatFiltre("bekleyen");setSekme("tahsilatlar");}};
+  _h.current={yeniIsKilit,statClick,goster,setIsKolu,plan};
   const okunmamis=bildirimler.filter(b=>!b.okundu).length;
 
   const NAV=[{id:"anasayfa",icon:"ti-home",label:T.anaSayfa},{id:"isler",icon:"ti-clipboard-text",label:T.isAkislari},{id:"fab",icon:"+",label:""},{id:"bildiri",icon:"ti-bell",label:T.bildirimlerT},{id:"profil",icon:"ti-user",label:T.profil}];
@@ -3547,7 +3555,7 @@ export default function TradeFlow(){
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif",display:"flex",justifyContent:MASAUSTU?"flex-start":"center"}}>
-      {MASAUSTU&&<Sidebar sekme={sekme} setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} isletme={isletme}/>}
+      {MASAUSTU&&<Sidebar sekme={sekme} setSekme={sekmeGecS} T={T} isletme={isletme}/>}
       <div style={{width:"100%",maxWidth:MASAUSTU?1180:APP_W,display:"flex",flexDirection:"column",minHeight:"100vh",margin:MASAUSTU?"0 auto":undefined}}>
 
         {banner&&<div onClick={()=>{setBanner(null);setSekme("bildiri");}} style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 28px)",maxWidth:452,background:C.card,borderRadius:16,boxShadow:C.sh2,padding:"14px 16px",zIndex:3000,display:"flex",gap:12,alignItems:"center",cursor:"pointer",border:`1px solid ${C.border}`}}>
@@ -3564,7 +3572,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClick}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onOzellestir={()=>setOzellestirAc(true)} onStatClick={statClick} setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}}/>}{MASAUSTU&&<QuickActions setSekme={(s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);}} T={T} moduller={moduller} onDuzenle={()=>setOzellestirAc(true)}/>}<JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
