@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FONT_TR, FONT_TR_BOLD } from "./fontTR.js";
 
-const NAVY="#1B2A4A", GOLDX="#C9A24B";
+const NAVY="#5B21B6", GOLDX="#C9A24B";
 function yeniPdf(){
   const doc=new jsPDF({unit:"mm",format:"a4"});
   doc.addFileToVFS("TR.ttf",FONT_TR);doc.addFont("TR.ttf","TR","normal");
@@ -25,7 +25,7 @@ async function pdfVer(doc,dosyaAdi){
   setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
 function pdfBaslik(doc,baslik,isletme){
-  doc.setFillColor(27,42,74);doc.rect(0,0,210,26,"F");
+  doc.setFillColor(91,33,182);doc.rect(0,0,210,26,"F");
   doc.setFont("TR","bold");doc.setFontSize(15);doc.setTextColor(255,255,255);
   doc.text(baslik,14,12);
   doc.setFont("TR","normal");doc.setFontSize(9);doc.setTextColor(200,205,215);
@@ -50,7 +50,7 @@ function ozetKutulari(doc,y,kutular){
   doc.setTextColor(0,0,0);
   return y+22;
 }
-const TABLO_STIL={styles:{font:"TR",fontSize:8,cellPadding:2.2},headStyles:{fillColor:[27,42,74],textColor:[255,255,255],font:"TR",fontStyle:"bold",fontSize:8},alternateRowStyles:{fillColor:[247,247,244]},margin:{left:14,right:14}};
+const TABLO_STIL={styles:{font:"TR",fontSize:8,cellPadding:2.2},headStyles:{fillColor:[91,33,182],textColor:[255,255,255],font:"TR",fontStyle:"bold",fontSize:8},alternateRowStyles:{fillColor:[247,247,244]},margin:{left:14,right:14}};
 function altBilgi(doc){
   const s=doc.internal.getNumberOfPages();
   for(let i=1;i<=s;i++){doc.setPage(i);doc.setFont("TR","normal");doc.setFontSize(7);doc.setTextColor(160,160,155);
@@ -225,17 +225,17 @@ export function pdfMuhasebeRaporu(jobs,giderler,isletme){
     musteriler[j.musteri].toplam+=j.tutar;musteriler[j.musteri].adet++;
     if(j.durum==="tamamlandi")musteriler[j.musteri].tahsil+=j.tutar;
   });
-  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(27,42,74);
+  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(91,33,182);
   doc.text("Müşteri Bazlı Tahsilat",14,y+3);
   autoTable(doc,{...TABLO_STIL,startY:y+6,head:[["Müşteri","İş Adedi","Toplam","Tahsil Edilen","Bekleyen"]],
     body:Object.entries(musteriler).map(([ad,m])=>[ad,m.adet,fTL(m.toplam),fTL(m.tahsil),fTL(m.toplam-m.tahsil)]),
     columnStyles:{2:{halign:"right"},3:{halign:"right"},4:{halign:"right"}}});
-  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(27,42,74);
+  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(91,33,182);
   doc.text("İşler ("+jobs.length+")",14,doc.lastAutoTable.finalY+10);
   autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+13,head:[["Ref","İş","Müşteri","Tarih","Durum","Tutar"]],
     body:jobs.map(j=>[j.ref||"",j.baslik,j.musteri,j.tarih,durumAd(j.durum),fTL(j.tutar)]),columnStyles:{5:{halign:"right"}}});
   if((giderler||[]).length>0){
-    doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(27,42,74);
+    doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(91,33,182);
     doc.text("Giderler ("+giderler.length+")",14,doc.lastAutoTable.finalY+10);
     autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+13,head:[["Gider","Kategori","Tarih","Tutar"]],
       body:giderler.map(g=>[g.ad,g.kategori,g.tarih,fTL(g.tutar)]),columnStyles:{3:{halign:"right"}}});
