@@ -373,7 +373,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>
     </Sh>
     {/* ERAİ imzası */}
-    <div style={{textAlign:"center",paddingBottom:8}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#5B21B6"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>
+    <div style={{textAlign:"center",paddingBottom:8}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>
   </div>;
 });
 
@@ -806,7 +806,7 @@ const Charts=memo(function Charts({jobs,giderler,T,onTahsil}){
   </>;
 })
 
-const JobList=memo(function JobList({jobs,onSelect,T}){
+const JobList=memo(function JobList({jobs,onSelect,T,onTum}){
   return <div style={{margin:"0 14px 16px"}}>
     <div style={{fontSize:16,fontWeight:700,color:C.t1,marginBottom:12}}>{T.sonIsAkislari}</div>
     {jobs.slice(0,3).map(j=><Sh key={j.id} onClick={()=>onSelect(j)} s={{padding:"14px 16px",marginBottom:10,cursor:"pointer"}}>
@@ -821,7 +821,7 @@ const JobList=memo(function JobList({jobs,onSelect,T}){
         <span style={{color:C.t3,fontSize:16}}>›</span>
       </div>
     </Sh>)}
-    <div style={{textAlign:"center",padding:"10px 0"}}><span style={{fontSize:13,color:P,fontWeight:600,cursor:"pointer"}}>{T.tumunuGoruntule} →</span></div>
+    <div onClick={onTum} style={{textAlign:"center",padding:"10px 0"}}><span style={{fontSize:13,color:P,fontWeight:600,cursor:"pointer"}}>{T.tumunuGoruntule} →</span></div>
   </div>;
 })
 
@@ -3032,7 +3032,7 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme}){
       <span style={{color:C.t3,fontSize:13}}>⌄</span>
     </div>
     <div style={{textAlign:"left",padding:"14px 8px 0"}}>
-      <span style={{fontSize:14,fontWeight:600,letterSpacing:"0.45em",color:P}}>ERA</span><span style={{fontSize:14,fontWeight:600,color:"#E4335A"}}>İ</span>
+      <span style={{fontSize:14,fontWeight:600,letterSpacing:"0.45em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:14,fontWeight:600,color:"#E4335A"}}>İ</span>
     </div>
   </aside>;
 })
@@ -3607,7 +3607,7 @@ export default function TradeFlow(){
         {!MASAUSTU&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 16px 12px",background:C.bg,position:"sticky",top:0,zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{display:"flex",alignItems:"baseline"}}><span style={{fontFamily:"Georgia,serif",fontSize:26,fontWeight:800,color:"#7C3AED",lineHeight:1}}>T</span><span style={{fontSize:20,color:"#A78BFA",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -2px"}}>/</span><span style={{fontFamily:"Georgia,serif",fontSize:26,fontWeight:800,color:"#4C1D95",lineHeight:1}}>F</span></div>
-            <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,color:"#7C3AED",letterSpacing:"0.3em"}}>ELITE <span style={{color:"#5B21B6",letterSpacing:"0.15em"}}>· ERA</span><span style={{color:"#E4335A",letterSpacing:"0.05em"}}>İ</span></div></div>
+            <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,color:"#7C3AED",letterSpacing:"0.3em"}}>ELITE <span style={{color:"#1B2A4A",letterSpacing:"0.15em"}}>· ERA</span><span style={{color:"#E4335A",letterSpacing:"0.05em"}}>İ</span></div></div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div onClick={()=>setSekme("bildiri")} style={{position:"relative",cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-bell" style={{fontSize:22,color:C.t1}} aria-hidden="true"/>{okunmamis>0&&<span style={{position:"absolute",top:5,right:5,width:9,height:9,borderRadius:"50%",background:"#7C3AED",border:"2px solid "+C.bg}}/>}</div>
@@ -3617,7 +3617,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T}/></>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/></>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
