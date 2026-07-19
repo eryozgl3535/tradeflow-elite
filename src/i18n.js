@@ -71,6 +71,25 @@ const TR = {
   excelIslerL:"Excel — İşler",excelGiderlerL:"Excel — Giderler",excelFaturalarL:"Excel — Faturalar",pdfRaporL:"PDF Muhasebe Raporu",muhasebeyeGonder:"Muhasebeciye gönder",yazdirKaydet:"Yazdır / PDF kaydet",
   asistanHosgeldin:"Merhaba! 👋 Ben TradeFlow asistanıyım. Fatura, tahsilat, GİB, maliyet... ne sormak istersen yaz ya da aşağıdaki hızlı sorulardan seç.",soruPh:"Sorunu yaz...",
   asistan:"Yardımcı Asistan",asistanSub:"Sorularını anında yanıtlar",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Hoş geldin",hizliGozAt:"Bugün işlerinize hızlıca göz atın.",anaMenu:"Ana Menü",gelirlerL:"Gelirler",
+  planYukselt:"👑 Planını Yükselt",planSlogan:"İşin büyüdükçe TradeFlow da seninle büyüsün",mevcutPlan:"✓ Mevcut planın",planBaslangic:"Başlangıç",
+  enPopuler:"EN POPÜLER",ucretsiz:"Ücretsiz",odemeYakinda:"💳 Online ödeme çok yakında! Şimdi yükseltmek için bize ulaşın.",promosyonKodu:"🎟️ Promosyon Kodu",
+  kodGir:"Kodunuzu girin",uygulaL:"Uygula",gecersizKod:"❌ Geçersiz kod. Kontrol edip tekrar deneyin.",promoTebrik:"🎉 Tebrikler! Ömür boyu ücretsiz Elite hizmetiniz tanımlandı. Tüm özellikler sınırsız ve süresiz açık.",
+  denemeOn:"🎁 Pro denemen",gunKaldi:"gün kaldı",planL:"Plan",yukseltDokun:"Yükseltmek için dokun",
+  tumOzellikler:"Tüm özellikler açık",omurBoyuMsg:"🎉 Ömür boyu ücretsiz — tüm özellikler açık",eliteOzelligi:"👑 Elite özelliği",proPakette:"Pro pakette 👑",
+  limitIs:"Başlangıç planında en fazla {n} aktif iş olabilir",limitMusteri:"Başlangıç planında en fazla {n} müşteri kaydedilebilir",pdfRaporlarL:"PDF raporlar",ekipEliteMsg:"Ekip yönetimi Elite pakette 👑",
+  skorSorunsuz:"Sorunsuz",skorTakip:"Takip Et",skorProblemli:"Problemli",skorYeni:"Yeni",
+  skorYeniAcik:"Henüz iş kaydı yok",odemeSkoru:"Ödeme Skoru",skorOdenmis:"Ödemelerin %{p}'i alınmış",skorEnEski:"en eski bekleyen iş {g} gün",
+  isBirim:"iş",donemSon3Ay:"Son 3 Ay",donemBuYil:"Bu Yıl",donemTumu:"Tümü",
+  donemSub:"Raporlar bu döneme göre hesaplanır",donemL:"Dönem",temaRengi:"🎨 Tema Rengi",temaSub:"Uygulamanın zemin rengini seç",
+  temaProNotu:" · 👑 Pro özelliği",temaAcik:"Açık",temaOkyanus:"Okyanus",temaOrman:"Orman",
+  temaGunbatimi:"Günbatımı",temaLavanta:"Lavanta",temaGul:"Gül",temasiEk:"teması",
+  malzemelerL:"🧰 Kullanılan Malzemeler",opsiyonelEk:"(opsiyonel)",notBaslik:"📝 Not",malzemePh:"Örn:\\n2x PPR boru 25mm\\n1x Kombi contası\\n3m kablo",
+  notPh:"İşle ilgili özel notlar, müşteri istekleri, dikkat edilecekler...",musteriPdfBtn:"📄 PDF Raporu — WhatsApp'ta Paylaş / İndir",tahsilatSilOnay:"Bu tahsilat kaydı silinsin mi? Bu işlem geri alınamaz.",isSecildi:"işleri seçildi",
+  isOnerileri:"iş önerileri",ikonMalzeme:"Malzeme & Teslimat",ikonServis:"Genel Servis",ikonTicari:"Ticari & İdari",
+  ikonKontrol:"Kontrol & Rapor",planOzStarter:["10 aktif iş", "20 müşteri", "Temel gelir-gider", "Fotoğraf ekleme", "Temel raporlar"],planOzPro:["Sınırsız iş & müşteri", "PDF teklif & fatura", "WhatsApp'tan gönderim", "Gelişmiş PDF raporlar", "Tahsilat takibi & hatırlatma", "Tema renkleri", "Bulut yedekleme"],planOzElite:["Pro'daki her şey", "Ekip & personel yönetimi", "İş atama", "Kâr analizi", "Doğrulanmış Usta rozeti ✓", "Öncelikli destek"],
+
 };
 const EN = {
   iskontoL:"Discount",
@@ -143,6 +162,25 @@ const EN = {
   excelIslerL:"Excel — Jobs",excelGiderlerL:"Excel — Expenses",excelFaturalarL:"Excel — Invoices",pdfRaporL:"PDF Accounting Report",muhasebeyeGonder:"Send to accountant",yazdirKaydet:"Print / Save as PDF",
   asistanHosgeldin:"Hello! 👋 I'm the TradeFlow assistant. Ask me anything about invoices, payments, costs... or pick a quick question below.",soruPh:"Type your question...",
   asistan:"Assistant",asistanSub:"Instant answers to your questions",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Welcome",hizliGozAt:"Take a quick look at your jobs today.",anaMenu:"Main Menu",gelirlerL:"Income",
+  planYukselt:"👑 Upgrade Your Plan",planSlogan:"As your business grows, TradeFlow grows with you",mevcutPlan:"✓ Current plan",planBaslangic:"Starter",
+  enPopuler:"MOST POPULAR",ucretsiz:"Free",odemeYakinda:"💳 Online payment coming soon! Contact us to upgrade now.",promosyonKodu:"🎟️ Promo Code",
+  kodGir:"Enter your code",uygulaL:"Apply",gecersizKod:"❌ Invalid code. Please check and try again.",promoTebrik:"🎉 Congratulations! Lifetime free Elite access activated. All features unlocked forever.",
+  denemeOn:"🎁 Pro trial",gunKaldi:"days left",planL:"Plan",yukseltDokun:"Tap to upgrade",
+  tumOzellikler:"All features unlocked",omurBoyuMsg:"🎉 Free for life — all features unlocked",eliteOzelligi:"👑 Elite feature",proPakette:"is a Pro feature 👑",
+  limitIs:"Starter plan allows up to {n} active jobs",limitMusteri:"Starter plan allows up to {n} customers",pdfRaporlarL:"PDF reports",ekipEliteMsg:"Team management is an Elite feature 👑",
+  skorSorunsuz:"Reliable",skorTakip:"Watch",skorProblemli:"Risky",skorYeni:"New",
+  skorYeniAcik:"No jobs yet",odemeSkoru:"Payment Score",skorOdenmis:"{p}% of payments collected",skorEnEski:"oldest open job {g} days",
+  isBirim:"jobs",donemSon3Ay:"Last 3 Months",donemBuYil:"This Year",donemTumu:"All Time",
+  donemSub:"Reports are calculated for this period",donemL:"Period",temaRengi:"🎨 Theme Color",temaSub:"Choose the app background color",
+  temaProNotu:" · 👑 Pro feature",temaAcik:"Light",temaOkyanus:"Ocean",temaOrman:"Forest",
+  temaGunbatimi:"Sunset",temaLavanta:"Lavender",temaGul:"Rose",temasiEk:"theme",
+  malzemelerL:"🧰 Materials Used",opsiyonelEk:"(optional)",notBaslik:"📝 Note",malzemePh:"e.g.\\n2x PPR pipe 25mm\\n1x Boiler gasket\\n3m cable",
+  notPh:"Special notes, customer requests, things to watch...",musteriPdfBtn:"📄 PDF Report — Share on WhatsApp / Download",tahsilatSilOnay:"Delete this collection record? This cannot be undone.",isSecildi:"jobs selected",
+  isOnerileri:"job suggestions",ikonMalzeme:"Materials & Delivery",ikonServis:"General Service",ikonTicari:"Business & Admin",
+  ikonKontrol:"Inspection & Report",planOzStarter:["10 active jobs", "20 customers", "Basic income-expense", "Photo attachments", "Basic reports"],planOzPro:["Unlimited jobs & customers", "PDF quotes & invoices", "Send via WhatsApp", "Advanced PDF reports", "Collection tracking & reminders", "Theme colors", "Cloud backup"],planOzElite:["Everything in Pro", "Team & staff management", "Job assignment", "Profit analysis", "Verified Pro badge ✓", "Priority support"],
+
 };
 
 // ─── TAM ÇEVİRİ SÖZLÜKLERİ (6 dil) ───────────────────────────
@@ -217,6 +255,25 @@ const DE = {
   excelIslerL:"Excel — Aufträge",excelGiderlerL:"Excel — Ausgaben",excelFaturalarL:"Excel — Rechnungen",pdfRaporL:"PDF-Buchhaltungsbericht",muhasebeyeGonder:"An Buchhalter senden",yazdirKaydet:"Drucken / Als PDF speichern",
   asistanHosgeldin:"Hallo! 👋 Ich bin der TradeFlow-Assistent. Frag mich zu Rechnungen, Zahlungen, Kosten... oder wähle unten eine Schnellfrage.",soruPh:"Frage eingeben...",
   asistan:"Assistent",asistanSub:"Sofortantworten auf deine Fragen",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Willkommen",hizliGozAt:"Wirf einen schnellen Blick auf deine Aufträge.",anaMenu:"Hauptmenü",gelirlerL:"Einnahmen",
+  planYukselt:"👑 Plan upgraden",planSlogan:"Wenn dein Geschäft wächst, wächst TradeFlow mit",mevcutPlan:"✓ Aktueller Plan",planBaslangic:"Starter",
+  enPopuler:"AM BELIEBTESTEN",ucretsiz:"Kostenlos",odemeYakinda:"💳 Online-Zahlung kommt bald! Kontaktiere uns für ein Upgrade.",promosyonKodu:"🎟️ Aktionscode",
+  kodGir:"Code eingeben",uygulaL:"Anwenden",gecersizKod:"❌ Ungültiger Code. Bitte prüfen und erneut versuchen.",promoTebrik:"🎉 Glückwunsch! Lebenslanger kostenloser Elite-Zugang aktiviert. Alle Funktionen dauerhaft freigeschaltet.",
+  denemeOn:"🎁 Pro-Test",gunKaldi:"Tage übrig",planL:"Plan",yukseltDokun:"Zum Upgraden tippen",
+  tumOzellikler:"Alle Funktionen freigeschaltet",omurBoyuMsg:"🎉 Lebenslang kostenlos — alle Funktionen frei",eliteOzelligi:"👑 Elite-Funktion",proPakette:"ist eine Pro-Funktion 👑",
+  limitIs:"Der Starter-Plan erlaubt max. {n} aktive Aufträge",limitMusteri:"Der Starter-Plan erlaubt max. {n} Kunden",pdfRaporlarL:"PDF-Berichte",ekipEliteMsg:"Teamverwaltung ist eine Elite-Funktion 👑",
+  skorSorunsuz:"Zuverlässig",skorTakip:"Beobachten",skorProblemli:"Riskant",skorYeni:"Neu",
+  skorYeniAcik:"Noch keine Aufträge",odemeSkoru:"Zahlungsscore",skorOdenmis:"{p}% der Zahlungen erhalten",skorEnEski:"ältester offener Auftrag {g} Tage",
+  isBirim:"Aufträge",donemSon3Ay:"Letzte 3 Monate",donemBuYil:"Dieses Jahr",donemTumu:"Gesamt",
+  donemSub:"Berichte werden für diesen Zeitraum berechnet",donemL:"Zeitraum",temaRengi:"🎨 Farbschema",temaSub:"Wähle die Hintergrundfarbe der App",
+  temaProNotu:" · 👑 Pro-Funktion",temaAcik:"Hell",temaOkyanus:"Ozean",temaOrman:"Wald",
+  temaGunbatimi:"Sonnenuntergang",temaLavanta:"Lavendel",temaGul:"Rose",temasiEk:"Design",
+  malzemelerL:"🧰 Verwendete Materialien",opsiyonelEk:"(optional)",notBaslik:"📝 Notiz",malzemePh:"z.B.\\n2x PPR-Rohr 25mm\\n1x Kessel-Dichtung",
+  notPh:"Besondere Hinweise, Kundenwünsche...",musteriPdfBtn:"📄 PDF-Bericht — Teilen / Herunterladen",tahsilatSilOnay:"Diesen Zahlungseintrag löschen? Nicht rückgängig machbar.",isSecildi:"Aufträge ausgewählt",
+  isOnerileri:"Auftragsvorschläge",ikonMalzeme:"Material & Lieferung",ikonServis:"Allgemeiner Service",ikonTicari:"Geschäft & Verwaltung",
+  ikonKontrol:"Kontrolle & Bericht",planOzStarter:["10 aktive Aufträge", "20 Kunden", "Einnahmen & Ausgaben", "Fotos anhängen", "Basis-Berichte"],planOzPro:["Unbegrenzt Aufträge & Kunden", "PDF-Angebote & Rechnungen", "Versand per WhatsApp", "Erweiterte PDF-Berichte", "Zahlungsverfolgung & Erinnerungen", "Farbthemen", "Cloud-Backup"],planOzElite:["Alles aus Pro", "Team- & Personalverwaltung", "Auftragszuweisung", "Gewinnanalyse", "Verifiziert-Abzeichen ✓", "Priorisierter Support"],
+
 };
 const FR = {
   iskontoL:"Remise",
@@ -289,6 +346,25 @@ const FR = {
   excelIslerL:"Excel — Travaux",excelGiderlerL:"Excel — Dépenses",excelFaturalarL:"Excel — Factures",pdfRaporL:"Rapport comptable PDF",muhasebeyeGonder:"Envoyer au comptable",yazdirKaydet:"Imprimer / Enregistrer en PDF",
   asistanHosgeldin:"Bonjour ! 👋 Je suis l'assistant TradeFlow. Posez vos questions sur factures, paiements, coûts... ou choisissez une question rapide ci-dessous.",soruPh:"Écrivez votre question...",
   asistan:"Assistant",asistanSub:"Réponses instantanées à vos questions",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Bienvenue",hizliGozAt:"Jetez un œil rapide à vos travaux du jour.",anaMenu:"Menu principal",gelirlerL:"Revenus",
+  planYukselt:"👑 Passez au niveau supérieur",planSlogan:"TradeFlow grandit avec votre entreprise",mevcutPlan:"✓ Plan actuel",planBaslangic:"Starter",
+  enPopuler:"LE PLUS POPULAIRE",ucretsiz:"Gratuit",odemeYakinda:"💳 Paiement en ligne bientôt disponible ! Contactez-nous pour mettre à niveau.",promosyonKodu:"🎟️ Code promo",
+  kodGir:"Entrez votre code",uygulaL:"Appliquer",gecersizKod:"❌ Code invalide. Vérifiez et réessayez.",promoTebrik:"🎉 Félicitations ! Accès Elite gratuit à vie activé. Toutes les fonctionnalités débloquées pour toujours.",
+  denemeOn:"🎁 Essai Pro",gunKaldi:"jours restants",planL:"Formule",yukseltDokun:"Touchez pour mettre à niveau",
+  tumOzellikler:"Toutes les fonctionnalités actives",omurBoyuMsg:"🎉 Gratuit à vie — tout est débloqué",eliteOzelligi:"👑 Fonction Elite",proPakette:"est une fonction Pro 👑",
+  limitIs:"Le plan Starter permet {n} travaux actifs max.",limitMusteri:"Le plan Starter permet {n} clients max.",pdfRaporlarL:"Rapports PDF",ekipEliteMsg:"La gestion d'équipe est une fonction Elite 👑",
+  skorSorunsuz:"Fiable",skorTakip:"À suivre",skorProblemli:"À risque",skorYeni:"Nouveau",
+  skorYeniAcik:"Aucun travail pour l'instant",odemeSkoru:"Score de paiement",skorOdenmis:"{p}% des paiements encaissés",skorEnEski:"plus ancien travail ouvert : {g} j",
+  isBirim:"travaux",donemSon3Ay:"3 derniers mois",donemBuYil:"Cette année",donemTumu:"Tout",
+  donemSub:"Les rapports sont calculés sur cette période",donemL:"Période",temaRengi:"🎨 Couleur du thème",temaSub:"Choisissez la couleur de fond de l'app",
+  temaProNotu:" · 👑 Fonction Pro",temaAcik:"Clair",temaOkyanus:"Océan",temaOrman:"Forêt",
+  temaGunbatimi:"Coucher de soleil",temaLavanta:"Lavande",temaGul:"Rose",temasiEk:"thème",
+  malzemelerL:"🧰 Matériaux utilisés",opsiyonelEk:"(facultatif)",notBaslik:"📝 Note",malzemePh:"ex.\\n2x tube PPR 25mm\\n1x joint de chaudière",
+  notPh:"Notes particulières, demandes du client...",musteriPdfBtn:"📄 Rapport PDF — Partager / Télécharger",tahsilatSilOnay:"Supprimer cet encaissement ? Action irréversible.",isSecildi:"travaux sélectionnés",
+  isOnerileri:"suggestions de travaux",ikonMalzeme:"Matériel & Livraison",ikonServis:"Service général",ikonTicari:"Commercial & Admin",
+  ikonKontrol:"Contrôle & Rapport",planOzStarter:["10 travaux actifs", "20 clients", "Revenus-dépenses de base", "Photos", "Rapports de base"],planOzPro:["Travaux & clients illimités", "Devis & factures PDF", "Envoi WhatsApp", "Rapports PDF avancés", "Suivi des paiements & rappels", "Thèmes de couleur", "Sauvegarde cloud"],planOzElite:["Tout le plan Pro", "Gestion d'équipe", "Attribution des travaux", "Analyse de rentabilité", "Badge Vérifié ✓", "Support prioritaire"],
+
 };
 const ES = {
   iskontoL:"Descuento",
@@ -361,6 +437,25 @@ const ES = {
   excelIslerL:"Excel — Trabajos",excelGiderlerL:"Excel — Gastos",excelFaturalarL:"Excel — Facturas",pdfRaporL:"Informe contable PDF",muhasebeyeGonder:"Enviar al contable",yazdirKaydet:"Imprimir / Guardar PDF",
   asistanHosgeldin:"¡Hola! 👋 Soy el asistente de TradeFlow. Pregunta sobre facturas, cobros, costes... o elige una pregunta rápida abajo.",soruPh:"Escribe tu pregunta...",
   asistan:"Asistente",asistanSub:"Respuestas instantáneas a tus preguntas",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Bienvenido",hizliGozAt:"Echa un vistazo rápido a tus trabajos de hoy.",anaMenu:"Menú principal",gelirlerL:"Ingresos",
+  planYukselt:"👑 Mejora tu plan",planSlogan:"TradeFlow crece contigo y tu negocio",mevcutPlan:"✓ Plan actual",planBaslangic:"Inicial",
+  enPopuler:"MÁS POPULAR",ucretsiz:"Gratis",odemeYakinda:"💳 ¡Pago online muy pronto! Contáctanos para mejorar ahora.",promosyonKodu:"🎟️ Código promocional",
+  kodGir:"Introduce tu código",uygulaL:"Aplicar",gecersizKod:"❌ Código no válido. Compruébalo e inténtalo de nuevo.",promoTebrik:"🎉 ¡Enhorabuena! Acceso Elite gratuito de por vida activado. Todas las funciones desbloqueadas para siempre.",
+  denemeOn:"🎁 Prueba Pro",gunKaldi:"días restantes",planL:"Plan",yukseltDokun:"Toca para mejorar",
+  tumOzellikler:"Todas las funciones activas",omurBoyuMsg:"🎉 Gratis de por vida — todo desbloqueado",eliteOzelligi:"👑 Función Elite",proPakette:"es una función Pro 👑",
+  limitIs:"El plan Inicial permite hasta {n} trabajos activos",limitMusteri:"El plan Inicial permite hasta {n} clientes",pdfRaporlarL:"Informes PDF",ekipEliteMsg:"La gestión de equipo es función Elite 👑",
+  skorSorunsuz:"Fiable",skorTakip:"Vigilar",skorProblemli:"Problemático",skorYeni:"Nuevo",
+  skorYeniAcik:"Aún sin trabajos",odemeSkoru:"Puntuación de pago",skorOdenmis:"{p}% de los pagos cobrados",skorEnEski:"trabajo abierto más antiguo: {g} días",
+  isBirim:"trabajos",donemSon3Ay:"Últimos 3 meses",donemBuYil:"Este año",donemTumu:"Todo",
+  donemSub:"Los informes se calculan para este período",donemL:"Período",temaRengi:"🎨 Color del tema",temaSub:"Elige el color de fondo de la app",
+  temaProNotu:" · 👑 Función Pro",temaAcik:"Claro",temaOkyanus:"Océano",temaOrman:"Bosque",
+  temaGunbatimi:"Atardecer",temaLavanta:"Lavanda",temaGul:"Rosa",temasiEk:"tema",
+  malzemelerL:"🧰 Materiales usados",opsiyonelEk:"(opcional)",notBaslik:"📝 Nota",malzemePh:"ej.:\\n2x tubo PPR 25mm\\n1x junta de caldera",
+  notPh:"Notas especiales, peticiones del cliente...",musteriPdfBtn:"📄 Informe PDF — Compartir / Descargar",tahsilatSilOnay:"¿Eliminar este cobro? No se puede deshacer.",isSecildi:"trabajos seleccionados",
+  isOnerileri:"sugerencias de trabajos",ikonMalzeme:"Material y entrega",ikonServis:"Servicio general",ikonTicari:"Comercial y admin.",
+  ikonKontrol:"Control e informe",planOzStarter:["10 trabajos activos", "20 clientes", "Ingresos-gastos básicos", "Fotos", "Informes básicos"],planOzPro:["Trabajos y clientes ilimitados", "Presupuestos y facturas PDF", "Envío por WhatsApp", "Informes PDF avanzados", "Seguimiento de cobros y recordatorios", "Temas de color", "Copia en la nube"],planOzElite:["Todo lo de Pro", "Gestión de equipo", "Asignación de trabajos", "Análisis de beneficios", "Insignia Verificado ✓", "Soporte prioritario"],
+
 };
 const IT = {
   iskontoL:"Sconto",
@@ -433,6 +528,25 @@ const IT = {
   excelIslerL:"Excel — Lavori",excelGiderlerL:"Excel — Spese",excelFaturalarL:"Excel — Fatture",pdfRaporL:"Report contabile PDF",muhasebeyeGonder:"Invia al commercialista",yazdirKaydet:"Stampa / Salva PDF",
   asistanHosgeldin:"Ciao! 👋 Sono l'assistente TradeFlow. Chiedimi di fatture, incassi, costi... o scegli una domanda rapida qui sotto.",soruPh:"Scrivi la tua domanda...",
   asistan:"Assistente",asistanSub:"Risposte immediate alle tue domande",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Benvenuto",hizliGozAt:"Dai un'occhiata rapida ai tuoi lavori di oggi.",anaMenu:"Menu principale",gelirlerL:"Entrate",
+  planYukselt:"👑 Aggiorna il tuo piano",planSlogan:"TradeFlow cresce insieme alla tua attività",mevcutPlan:"✓ Piano attuale",planBaslangic:"Base",
+  enPopuler:"PIÙ POPOLARE",ucretsiz:"Gratuito",odemeYakinda:"💳 Pagamento online in arrivo! Contattaci per aggiornare subito.",promosyonKodu:"🎟️ Codice promozionale",
+  kodGir:"Inserisci il codice",uygulaL:"Applica",gecersizKod:"❌ Codice non valido. Controlla e riprova.",promoTebrik:"🎉 Congratulazioni! Accesso Elite gratuito a vita attivato. Tutte le funzioni sbloccate per sempre.",
+  denemeOn:"🎁 Prova Pro",gunKaldi:"giorni rimasti",planL:"Piano",yukseltDokun:"Tocca per aggiornare",
+  tumOzellikler:"Tutte le funzioni attive",omurBoyuMsg:"🎉 Gratuito a vita — tutto sbloccato",eliteOzelligi:"👑 Funzione Elite",proPakette:"è una funzione Pro 👑",
+  limitIs:"Il piano Base consente fino a {n} lavori attivi",limitMusteri:"Il piano Base consente fino a {n} clienti",pdfRaporlarL:"Report PDF",ekipEliteMsg:"La gestione del team è una funzione Elite 👑",
+  skorSorunsuz:"Affidabile",skorTakip:"Da seguire",skorProblemli:"Problematico",skorYeni:"Nuovo",
+  skorYeniAcik:"Nessun lavoro ancora",odemeSkoru:"Punteggio pagamenti",skorOdenmis:"{p}% dei pagamenti incassati",skorEnEski:"lavoro aperto più vecchio: {g} gg",
+  isBirim:"lavori",donemSon3Ay:"Ultimi 3 mesi",donemBuYil:"Quest'anno",donemTumu:"Tutto",
+  donemSub:"I report sono calcolati su questo periodo",donemL:"Periodo",temaRengi:"🎨 Colore del tema",temaSub:"Scegli il colore di sfondo dell'app",
+  temaProNotu:" · 👑 Funzione Pro",temaAcik:"Chiaro",temaOkyanus:"Oceano",temaOrman:"Foresta",
+  temaGunbatimi:"Tramonto",temaLavanta:"Lavanda",temaGul:"Rosa",temasiEk:"tema",
+  malzemelerL:"🧰 Materiali usati",opsiyonelEk:"(opzionale)",notBaslik:"📝 Nota",malzemePh:"es.\\n2x tubo PPR 25mm\\n1x guarnizione caldaia",
+  notPh:"Note particolari, richieste del cliente...",musteriPdfBtn:"📄 Report PDF — Condividi / Scarica",tahsilatSilOnay:"Eliminare questo incasso? Azione irreversibile.",isSecildi:"lavori selezionati",
+  isOnerileri:"suggerimenti di lavori",ikonMalzeme:"Materiali e consegna",ikonServis:"Servizio generale",ikonTicari:"Commerciale e admin",
+  ikonKontrol:"Controllo e report",planOzStarter:["10 lavori attivi", "20 clienti", "Entrate-uscite base", "Foto", "Report base"],planOzPro:["Lavori e clienti illimitati", "Preventivi e fatture PDF", "Invio via WhatsApp", "Report PDF avanzati", "Monitoraggio incassi e promemoria", "Temi colore", "Backup cloud"],planOzElite:["Tutto il piano Pro", "Gestione team", "Assegnazione lavori", "Analisi profitti", "Badge Verificato ✓", "Supporto prioritario"],
+
 };
 const PT = {
   iskontoL:"Desconto",
@@ -505,6 +619,25 @@ const PT = {
   excelIslerL:"Excel — Trabalhos",excelGiderlerL:"Excel — Despesas",excelFaturalarL:"Excel — Faturas",pdfRaporL:"Relatório contabilístico PDF",muhasebeyeGonder:"Enviar ao contabilista",yazdirKaydet:"Imprimir / Guardar PDF",
   asistanHosgeldin:"Olá! 👋 Sou o assistente TradeFlow. Pergunte sobre faturas, recebimentos, custos... ou escolha uma pergunta rápida abaixo.",soruPh:"Escreva a sua pergunta...",
   asistan:"Assistente",asistanSub:"Respostas imediatas às suas perguntas",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Bem-vindo",hizliGozAt:"Dê uma olhada rápida nos seus trabalhos de hoje.",anaMenu:"Menu principal",gelirlerL:"Receitas",
+  planYukselt:"👑 Melhore seu plano",planSlogan:"O TradeFlow cresce junto com o seu negócio",mevcutPlan:"✓ Plano atual",planBaslangic:"Inicial",
+  enPopuler:"MAIS POPULAR",ucretsiz:"Grátis",odemeYakinda:"💳 Pagamento online em breve! Fale conosco para melhorar agora.",promosyonKodu:"🎟️ Código promocional",
+  kodGir:"Digite seu código",uygulaL:"Aplicar",gecersizKod:"❌ Código inválido. Verifique e tente novamente.",promoTebrik:"🎉 Parabéns! Acesso Elite gratuito vitalício ativado. Todos os recursos liberados para sempre.",
+  denemeOn:"🎁 Teste Pro",gunKaldi:"dias restantes",planL:"Plano",yukseltDokun:"Toque para melhorar",
+  tumOzellikler:"Todos os recursos ativos",omurBoyuMsg:"🎉 Grátis para sempre — tudo liberado",eliteOzelligi:"👑 Recurso Elite",proPakette:"é um recurso Pro 👑",
+  limitIs:"O plano Inicial permite até {n} trabalhos ativos",limitMusteri:"O plano Inicial permite até {n} clientes",pdfRaporlarL:"Relatórios PDF",ekipEliteMsg:"Gestão de equipe é recurso Elite 👑",
+  skorSorunsuz:"Confiável",skorTakip:"Acompanhar",skorProblemli:"Problemático",skorYeni:"Novo",
+  skorYeniAcik:"Nenhum trabalho ainda",odemeSkoru:"Pontuação de pagamento",skorOdenmis:"{p}% dos pagamentos recebidos",skorEnEski:"trabalho aberto mais antigo: {g} dias",
+  isBirim:"trabalhos",donemSon3Ay:"Últimos 3 meses",donemBuYil:"Este ano",donemTumu:"Tudo",
+  donemSub:"Os relatórios são calculados neste período",donemL:"Período",temaRengi:"🎨 Cor do tema",temaSub:"Escolha a cor de fundo do app",
+  temaProNotu:" · 👑 Recurso Pro",temaAcik:"Claro",temaOkyanus:"Oceano",temaOrman:"Floresta",
+  temaGunbatimi:"Pôr do sol",temaLavanta:"Lavanda",temaGul:"Rosa",temasiEk:"tema",
+  malzemelerL:"🧰 Materiais usados",opsiyonelEk:"(opcional)",notBaslik:"📝 Nota",malzemePh:"ex.\\n2x tubo PPR 25mm\\n1x vedação de caldeira",
+  notPh:"Notas especiais, pedidos do cliente...",musteriPdfBtn:"📄 Relatório PDF — Compartilhar / Baixar",tahsilatSilOnay:"Excluir este recebimento? Não pode ser desfeito.",isSecildi:"trabalhos selecionados",
+  isOnerileri:"sugestões de trabalhos",ikonMalzeme:"Material e entrega",ikonServis:"Serviço geral",ikonTicari:"Comercial e admin",
+  ikonKontrol:"Controle e relatório",planOzStarter:["10 trabalhos ativos", "20 clientes", "Receitas-despesas básicas", "Fotos", "Relatórios básicos"],planOzPro:["Trabalhos e clientes ilimitados", "Orçamentos e faturas PDF", "Envio pelo WhatsApp", "Relatórios PDF avançados", "Controle de recebimentos e lembretes", "Temas de cor", "Backup na nuvem"],planOzElite:["Tudo do Pro", "Gestão de equipe", "Atribuição de trabalhos", "Análise de lucro", "Selo Verificado ✓", "Suporte prioritário"],
+
 };
 const NL = {
   iskontoL:"Korting",
@@ -577,6 +710,25 @@ const NL = {
   excelIslerL:"Excel — Klussen",excelGiderlerL:"Excel — Uitgaven",excelFaturalarL:"Excel — Facturen",pdfRaporL:"PDF-boekhoudrapport",muhasebeyeGonder:"Naar boekhouder sturen",yazdirKaydet:"Afdrukken / Opslaan als PDF",
   asistanHosgeldin:"Hallo! 👋 Ik ben de TradeFlow-assistent. Vraag me over facturen, betalingen, kosten... of kies hieronder een snelle vraag.",soruPh:"Typ je vraag...",
   asistan:"Assistent",asistanSub:"Direct antwoord op je vragen",
+  // ── Yeni özellik çevirileri (plan, skor, tema, dönem, malzeme/not) ──
+  hosGeldin:"Welkom",hizliGozAt:"Bekijk snel je klussen van vandaag.",anaMenu:"Hoofdmenu",gelirlerL:"Inkomsten",
+  planYukselt:"👑 Upgrade je abonnement",planSlogan:"TradeFlow groeit met je bedrijf mee",mevcutPlan:"✓ Huidig abonnement",planBaslangic:"Starter",
+  enPopuler:"MEEST GEKOZEN",ucretsiz:"Gratis",odemeYakinda:"💳 Online betalen komt eraan! Neem contact op om te upgraden.",promosyonKodu:"🎟️ Promotiecode",
+  kodGir:"Voer je code in",uygulaL:"Toepassen",gecersizKod:"❌ Ongeldige code. Controleer en probeer opnieuw.",promoTebrik:"🎉 Gefeliciteerd! Levenslang gratis Elite geactiveerd. Alle functies voorgoed ontgrendeld.",
+  denemeOn:"🎁 Pro-proefperiode",gunKaldi:"dagen over",planL:"Abonnement",yukseltDokun:"Tik om te upgraden",
+  tumOzellikler:"Alle functies actief",omurBoyuMsg:"🎉 Levenslang gratis — alles ontgrendeld",eliteOzelligi:"👑 Elite-functie",proPakette:"is een Pro-functie 👑",
+  limitIs:"Het Starter-abonnement staat max. {n} actieve klussen toe",limitMusteri:"Max. {n} klanten in het Starter-abonnement",pdfRaporlarL:"PDF-rapporten",ekipEliteMsg:"Teambeheer is een Elite-functie 👑",
+  skorSorunsuz:"Betrouwbaar",skorTakip:"Opletten",skorProblemli:"Risicovol",skorYeni:"Nieuw",
+  skorYeniAcik:"Nog geen klussen",odemeSkoru:"Betaalscore",skorOdenmis:"{p}% van betalingen ontvangen",skorEnEski:"oudste open klus {g} dgn",
+  isBirim:"klussen",donemSon3Ay:"Laatste 3 mnd",donemBuYil:"Dit jaar",donemTumu:"Alles",
+  donemSub:"Rapporten worden voor deze periode berekend",donemL:"Periode",temaRengi:"🎨 Themakleur",temaSub:"Kies de achtergrondkleur van de app",
+  temaProNotu:" · 👑 Pro-functie",temaAcik:"Licht",temaOkyanus:"Oceaan",temaOrman:"Bos",
+  temaGunbatimi:"Zonsondergang",temaLavanta:"Lavendel",temaGul:"Roze",temasiEk:"thema",
+  malzemelerL:"🧰 Gebruikte materialen",opsiyonelEk:"(optioneel)",notBaslik:"📝 Notitie",malzemePh:"bijv.\\n2x PPR-buis 25mm\\n1x ketelpakking",
+  notPh:"Bijzondere notities, klantwensen...",musteriPdfBtn:"📄 PDF-rapport — Delen / Downloaden",tahsilatSilOnay:"Deze incasso verwijderen? Kan niet ongedaan worden gemaakt.",isSecildi:"klussen geselecteerd",
+  isOnerileri:"klusvoorstellen",ikonMalzeme:"Materiaal & levering",ikonServis:"Algemene service",ikonTicari:"Zakelijk & admin",
+  ikonKontrol:"Controle & rapport",planOzStarter:["10 actieve klussen", "20 klanten", "Basis inkomsten-uitgaven", "Foto's", "Basisrapporten"],planOzPro:["Onbeperkt klussen & klanten", "PDF-offertes & facturen", "Versturen via WhatsApp", "Geavanceerde PDF-rapporten", "Incasso-opvolging & herinneringen", "Themakleuren", "Cloudback-up"],planOzElite:["Alles van Pro", "Team- & personeelsbeheer", "Klustoewijzing", "Winstanalyse", "Geverifieerd-badge ✓", "Prioriteitssupport"],
+
 };
 
 const PARTIALS = {
