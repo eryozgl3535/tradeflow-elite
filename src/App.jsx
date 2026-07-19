@@ -48,42 +48,43 @@ const TEMA_LISTE = [
 
 // ═══ ABONELİK PLANLARI ═══
 let PLAN_AKTIF = "starter";
+let TT = {};
 const PLAN_LIMIT = { starter:{is:10, musteri:20} };
-const PLAN_BILGI = [
-  {id:"starter",ad:"Başlangıç",fiyat:"Ücretsiz",renk:"#6B7280",ozellik:["10 aktif iş","20 müşteri","Temel gelir-gider","Fotoğraf ekleme","Temel raporlar"]},
-  {id:"pro",ad:"Pro",fiyat:"₺399/ay",etiket:"EN POPÜLER",renk:"#1B2A4A",ozellik:["Sınırsız iş & müşteri","PDF teklif & fatura","WhatsApp'tan gönderim","Gelişmiş PDF raporlar","Tahsilat takibi & hatırlatma","Tema renkleri","Bulut yedekleme"]},
-  {id:"elite",ad:"Elite",fiyat:"₺799/ay",renk:"#C9A24B",ozellik:["Pro'daki her şey","Ekip & personel yönetimi","İş atama","Kâr analizi","Doğrulanmış Usta rozeti ✓","Öncelikli destek"]},
+const planBilgi = () => [
+  {id:"starter",ad:TT.planBaslangic||"Başlangıç",fiyat:TT.ucretsiz||"Ücretsiz",renk:"#6B7280",ozellik:TT.planOzStarter||["10 aktif iş","20 müşteri","Temel gelir-gider","Fotoğraf ekleme","Temel raporlar"]},
+  {id:"pro",ad:"Pro",fiyat:"₺399/ay",etiket:TT.enPopuler||"EN POPÜLER",renk:"#1B2A4A",ozellik:TT.planOzPro||["Sınırsız iş & müşteri","PDF teklif & fatura","WhatsApp'tan gönderim","Gelişmiş PDF raporlar","Tahsilat takibi & hatırlatma","Tema renkleri","Bulut yedekleme"]},
+  {id:"elite",ad:"Elite",fiyat:"₺799/ay",renk:"#C9A24B",ozellik:TT.planOzElite||["Pro'daki her şey","Ekip & personel yönetimi","İş atama","Kâr analizi","Doğrulanmış Usta rozeti ✓","Öncelikli destek"]},
 ];
 function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
   const [kod,setKod]=useState("");
   const [promoSonuc,setPromoSonuc]=useState(null); // "ok" | "hata"
   return <BottomSheet onKapat={onKapat} maxH="92vh">
-    <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:4}}>👑 Planını Yükselt</div>
+    <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:4}}>{TT.planYukselt||"👑 Planını Yükselt"}</div>
     {sebep&&<div style={{fontSize:12,color:C.red,fontWeight:600,marginBottom:6}}>⚠️ {sebep}</div>}
-    {denemeKalan>0&&<div style={{fontSize:12,color:GOLD,fontWeight:700,marginBottom:6}}>🎁 Pro denemen: {denemeKalan} gün kaldı</div>}
-    <div style={{fontSize:11,color:C.t3,marginBottom:14}}>İşin büyüdükçe TradeFlow da seninle büyüsün</div>
-    {PLAN_BILGI.map(p=><div key={p.id} style={{border:`2px solid ${p.id===plan?p.renk:C.border}`,borderRadius:16,padding:"16px",marginBottom:12,position:"relative",background:p.id==="pro"?C.purpleBg:C.card}}>
+    {denemeKalan>0&&<div style={{fontSize:12,color:GOLD,fontWeight:700,marginBottom:6}}>{(TT.denemeOn||"🎁 Pro denemen")+": "+denemeKalan+" "+(TT.gunKaldi||"gün kaldı")}</div>}
+    <div style={{fontSize:11,color:C.t3,marginBottom:14}}>{TT.planSlogan||"İşin büyüdükçe TradeFlow da seninle büyüsün"}</div>
+    {planBilgi().map(p=><div key={p.id} style={{border:`2px solid ${p.id===plan?p.renk:C.border}`,borderRadius:16,padding:"16px",marginBottom:12,position:"relative",background:p.id==="pro"?C.purpleBg:C.card}}>
       {p.etiket&&<div style={{position:"absolute",top:-9,right:14,background:GOLD,color:"#fff",fontSize:9,fontWeight:800,padding:"3px 10px",borderRadius:8,letterSpacing:"0.06em"}}>{p.etiket}</div>}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-        <span style={{fontSize:15,fontWeight:800,color:p.renk}}>{p.ad}{p.id===plan&&<span style={{fontSize:10,color:C.green,marginLeft:8}}>✓ Mevcut planın</span>}</span>
+        <span style={{fontSize:15,fontWeight:800,color:p.renk}}>{p.ad}{p.id===plan&&<span style={{fontSize:10,color:C.green,marginLeft:8}}>{TT.mevcutPlan||"✓ Mevcut planın"}</span>}</span>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{p.fiyat}</span>
       </div>
       {p.ozellik.map(o=><div key={o} style={{fontSize:12,color:C.t2,padding:"2px 0"}}>✓ {o}</div>)}
     </div>)}
     {/* 🎟️ Promosyon kodu */}
     <div style={{border:`1px dashed ${GOLD}`,borderRadius:14,padding:"14px",marginBottom:14,background:C.bg}}>
-      <div style={{fontSize:12,fontWeight:700,color:C.t1,marginBottom:8}}>🎟️ Promosyon Kodu</div>
+      <div style={{fontSize:12,fontWeight:700,color:C.t1,marginBottom:8}}>{TT.promosyonKodu||"🎟️ Promosyon Kodu"}</div>
       {(omurBoyu||promoSonuc==="ok")?
-        <div style={{fontSize:13,fontWeight:700,color:C.green,textAlign:"center",padding:"6px 0"}}>🎉 Tebrikler! Ömür boyu ücretsiz Elite hizmetiniz tanımlandı. Tüm özellikler sınırsız ve süresiz açık.</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.green,textAlign:"center",padding:"6px 0"}}>{TT.promoTebrik||"🎉 Tebrikler! Ömür boyu ücretsiz Elite hizmetiniz tanımlandı."}</div>
         :<>
         <div style={{display:"flex",gap:8}}>
-          <input value={kod} onChange={e=>{setKod(e.target.value.toUpperCase());setPromoSonuc(null);}} placeholder="Kodunuzu girin" style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 12px",color:C.t1,fontSize:13,outline:"none",letterSpacing:"0.1em",fontWeight:700}}/>
-          <button onClick={()=>{if(onPromo&&onPromo(kod.trim())){setPromoSonuc("ok");}else{setPromoSonuc("hata");}}} style={{background:GOLD,border:"none",borderRadius:10,padding:"0 18px",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>Uygula</button>
+          <input value={kod} onChange={e=>{setKod(e.target.value.toUpperCase());setPromoSonuc(null);}} placeholder={TT.kodGir||"Kodunuzu girin"} style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 12px",color:C.t1,fontSize:13,outline:"none",letterSpacing:"0.1em",fontWeight:700}}/>
+          <button onClick={()=>{if(onPromo&&onPromo(kod.trim())){setPromoSonuc("ok");}else{setPromoSonuc("hata");}}} style={{background:GOLD,border:"none",borderRadius:10,padding:"0 18px",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer"}}>{TT.uygulaL||"Uygula"}</button>
         </div>
-        {promoSonuc==="hata"&&<div style={{fontSize:11,color:C.red,fontWeight:600,marginTop:6}}>❌ Geçersiz kod. Kontrol edip tekrar deneyin.</div>}
+        {promoSonuc==="hata"&&<div style={{fontSize:11,color:C.red,fontWeight:600,marginTop:6}}>{TT.gecersizKod||"❌ Geçersiz kod. Kontrol edip tekrar deneyin."}</div>}
         </>}
     </div>
-    <div style={{fontSize:11,color:C.t3,textAlign:"center",marginBottom:12}}>💳 Online ödeme çok yakında! Şimdi yükseltmek için bize ulaşın.</div>
+    <div style={{fontSize:11,color:C.t3,textAlign:"center",marginBottom:12}}>{TT.odemeYakinda||"💳 Online ödeme çok yakında!"}</div>
     <button onClick={onKapat} style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:C.t2,fontSize:14,fontWeight:600,cursor:"pointer"}}>Kapat</button>
   </BottomSheet>;
 }
@@ -137,7 +138,7 @@ function KurucuPanel({onKapat}){
 
 // 🏅 Müşteri ödeme skoru — tahsilat oranı + bekleyen iş yaşına göre otomatik
 function musteriSkor(isler){
-  if(!isler||isler.length===0)return{emoji:"⚪",ad:"Yeni",renk:"#9CA3AF",puan:null,aciklama:"Henüz iş kaydı yok"};
+  if(!isler||isler.length===0)return{emoji:"⚪",ad:TT.skorYeni||"Yeni",renk:"#9CA3AF",puan:null,aciklama:TT.skorYeniAcik||"Henüz iş kaydı yok"};
   const toplam=isler.reduce((s,j)=>s+j.tutar,0);
   const tahsil=isler.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0)
     +isler.filter(j=>j.durum!=="tamamlandi").reduce((s,j)=>s+(j.odemeler||[]).reduce((ss,o)=>ss+o.tutar,0),0);
@@ -145,10 +146,10 @@ function musteriSkor(isler){
   const acik=isler.filter(j=>j.durum!=="tamamlandi");
   const enEski=acik.length?Math.max(0,...acik.map(j=>Math.floor((Date.now()-new Date(j.tarih).getTime())/86400000))):0;
   const puan=Math.round(oran*100);
-  const detay="Ödemelerin %"+puan+"'i alınmış"+(enEski>0?" · en eski bekleyen iş "+enEski+" gün":"")+" · "+isler.length+" iş";
-  if(oran>=0.85&&enEski<=30)return{emoji:"🟢",ad:"Sorunsuz",renk:"#0E8A5F",puan,aciklama:detay};
-  if(oran>=0.45&&enEski<=60)return{emoji:"🟡",ad:"Takip Et",renk:"#B4690E",puan,aciklama:detay};
-  return{emoji:"🔴",ad:"Problemli",renk:"#C0392B",puan,aciklama:detay};
+  const detay=(TT.skorOdenmis||"Ödemelerin %{p}'i alınmış").replace("{p}",puan)+(enEski>0?" · "+(TT.skorEnEski||"en eski bekleyen iş {g} gün").replace("{g}",enEski):"")+" · "+isler.length+" "+(TT.isBirim||"iş");
+  if(oran>=0.85&&enEski<=30)return{emoji:"🟢",ad:TT.skorSorunsuz||"Sorunsuz",renk:"#0E8A5F",puan,aciklama:detay};
+  if(oran>=0.45&&enEski<=60)return{emoji:"🟡",ad:TT.skorTakip||"Takip Et",renk:"#B4690E",puan,aciklama:detay};
+  return{emoji:"🔴",ad:TT.skorProblemli||"Problemli",renk:"#C0392B",puan,aciklama:detay};
 }
 
 // 🔊 Ses efektleri — dosya gerektirmez, Web Audio ile üretilir
@@ -856,13 +857,13 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,gide
 
     {/* 🧰 Kullanılan malzemeler */}
     {job.malzemeler&&<div style={{marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>🧰 Kullanılan Malzemeler</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>{T.malzemelerL||"🧰 Kullanılan Malzemeler"}</div>
       <Sh s={{padding:"12px 14px"}}><div style={{fontSize:13,color:C.t1,whiteSpace:"pre-wrap",lineHeight:1.6}}>{job.malzemeler}</div></Sh>
     </div>}
 
     {/* 📝 Not */}
     {job.not&&<div style={{marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📝 Not</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>{T.notBaslik||"📝 Not"}</div>
       <Sh s={{padding:"12px 14px",borderLeft:`3px solid ${GOLD}`}}><div style={{fontSize:13,color:C.t1,whiteSpace:"pre-wrap",lineHeight:1.6}}>{job.not}</div></Sh>
     </div>}
 
@@ -1092,10 +1093,10 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   // Sektöre özel iş türü ikonları + birkaç genel ikon
   const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg,ad:t.ad,isler:t.isler})),
-    {e:"📦",bg:"#FEF3C7",ad:"Malzeme & Teslimat",isler:["Malzeme Temini","Yedek Parça Siparişi","Ürün Teslimatı","Malzeme Keşfi & Ölçü Alma"]},
-    {e:"🛠️",bg:"#EDE9FE",ad:"Genel Servis",isler:["Arıza Tespiti","Genel Bakım","Acil Servis Çağrısı","Garanti Kapsamında Onarım"]},
-    {e:"💼",bg:"#EDE9FE",ad:"Ticari & İdari",isler:["Fiyat Teklifi Hazırlama","Keşif & Proje Görüşmesi","Sözleşme Görüşmesi","Danışmanlık Hizmeti"]},
-    {e:"📋",bg:"#DBEAFE",ad:"Kontrol & Rapor",isler:["Periyodik Kontrol","Keşif Raporu Hazırlama","İş Teslim Tutanağı","Yıllık Bakım Kontrolü"]}]
+    {e:"📦",bg:"#FEF3C7",ad:(T.ikonMalzeme||"Malzeme & Teslimat"),isler:["Malzeme Temini","Yedek Parça Siparişi","Ürün Teslimatı","Malzeme Keşfi & Ölçü Alma"]},
+    {e:"🛠️",bg:"#EDE9FE",ad:(T.ikonServis||"Genel Servis"),isler:["Arıza Tespiti","Genel Bakım","Acil Servis Çağrısı","Garanti Kapsamında Onarım"]},
+    {e:"💼",bg:"#EDE9FE",ad:(T.ikonTicari||"Ticari & İdari"),isler:["Fiyat Teklifi Hazırlama","Keşif & Proje Görüşmesi","Sözleşme Görüşmesi","Danışmanlık Hizmeti"]},
+    {e:"📋",bg:"#DBEAFE",ad:(T.ikonKontrol||"Kontrol & Rapor"),isler:["Periyodik Kontrol","Keşif Raporu Hazırlama","İş Teslim Tutanağı","Yıllık Bakım Kontrolü"]}]
     .filter((v,i,a)=>a.findIndex(x=>x.e===v.e)===i); // tekrarları temizle
   const edit=!!duzenlenecek;
   const [icon,setIcon]=useState(edit?{e:duzenlenecek.icon,bg:duzenlenecek.iconBg}:icons[0]);
@@ -1122,13 +1123,13 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>{T.ikon}</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{icons.map(ic=><button key={ic.e} onClick={()=>{setIcon(ic);if(!edit&&ic.isler)setOneriGoster(true);}} title={ic.ad||""} style={{width:46,height:46,borderRadius:12,background:ic.bg,border:`2px solid ${icon.e===ic.e?P:"transparent"}`,fontSize:20,cursor:"pointer"}}>{ic.e}</button>)}</div>
-      {icon.ad&&<div style={{fontSize:10,color:P,fontWeight:700,marginTop:6}}>{icon.e} {icon.ad} işleri seçildi</div>}
+      {icon.ad&&<div style={{fontSize:10,color:P,fontWeight:700,marginTop:6}}>{icon.e} {icon.ad} {T.isSecildi||"işleri seçildi"}</div>}
     </div>
     <div style={{position:"relative"}}>
       <Inp label={T.isBasligi} value={form.baslik} onChange={e=>set("baslik",e.target.value)} onFocus={()=>!edit&&setOneriGoster(true)} placeholder={sektor.isOrnekPh}/>
       {/* Sektöre özel iş önerileri */}
       {oneriGoster&&!edit&&<div style={{marginTop:-6,marginBottom:14,background:C.bg,borderRadius:12,padding:"6px",border:`1px solid ${C.border}`}}>
-        <div style={{fontSize:10,color:C.t3,padding:"4px 8px",fontWeight:600}}>💡 {icon.isler?icon.e+" "+icon.ad+" iş önerileri":T.hazirIslerOn+isKolu+T.hazirIslerSon}</div>
+        <div style={{fontSize:10,color:C.t3,padding:"4px 8px",fontWeight:600}}>💡 {icon.isler?icon.e+" "+icon.ad+" "+(T.isOnerileri||"iş önerileri"):T.hazirIslerOn+isKolu+T.hazirIslerSon}</div>
         {(icon.isler||sektor.ornekIsler).map(is=><div key={is} onClick={()=>{set("baslik",is);setOneriGoster(false);}} style={{padding:"9px 10px",borderRadius:8,cursor:"pointer",fontSize:13,color:C.t1,display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>e.currentTarget.style.background=C.card} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           <span style={{color:P}}>+</span> {is}
         </div>)}
@@ -1171,14 +1172,14 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     </div>
     {/* 🧰 Kullanılan malzemeler */}
     <div style={{marginBottom:14}}>
-      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>🧰 Kullanılan Malzemeler (opsiyonel)</div>
-      <textarea value={form.malzemeler} onChange={e=>set("malzemeler",e.target.value)} placeholder={"Örn:\n2x PPR boru 25mm\n1x Kombi contası\n3m kablo"} rows={3}
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>{(T.malzemelerL||"🧰 Kullanılan Malzemeler")+" "+(T.opsiyonelEk||"(opsiyonel)")}</div>
+      <textarea value={form.malzemeler} onChange={e=>set("malzemeler",e.target.value)} placeholder={T.malzemePh||"Örn:\n2x PPR boru 25mm\n1x Kombi contası\n3m kablo"} rows={3}
         style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none",resize:"vertical",fontFamily:"inherit"}}/>
     </div>
     {/* 📝 Not */}
     <div style={{marginBottom:14}}>
-      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>📝 Not (opsiyonel)</div>
-      <textarea value={form.not} onChange={e=>set("not",e.target.value)} placeholder="İşle ilgili özel notlar, müşteri istekleri, dikkat edilecekler..." rows={3}
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>{(T.notBaslik||"📝 Not")+" "+(T.opsiyonelEk||"(opsiyonel)")}</div>
+      <textarea value={form.not} onChange={e=>set("not",e.target.value)} placeholder={T.notPh||"İşle ilgili özel notlar, müşteri istekleri, dikkat edilecekler..."} rows={3}
         style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none",resize:"vertical",fontFamily:"inherit"}}/>
     </div>
     <div style={{display:"flex",gap:10}}>
@@ -2045,7 +2046,7 @@ function TahsilatlarTab({jobs,onTahsil,onSil,filtre,T}){
         <div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{j.musteri}</div><div style={{fontSize:11,color:C.t3}}>{j.baslik} · {j.tarih}</div></div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontSize:14,fontWeight:800,color:C.green}}>✓ {fmt(j.tutar)}</span>
-          <button onClick={()=>{if(window.confirm(j.musteri+" — "+fmt(j.tutar)+"\nBu tahsilat kaydı silinsin mi? Bu işlem geri alınamaz."))onSil&&onSil(j.id);}} title="Sil" style={{background:C.redBg,border:"none",borderRadius:9,width:30,height:30,color:C.red,fontSize:14,fontWeight:700,cursor:"pointer",flexShrink:0}}>🗑</button>
+          <button onClick={()=>{if(window.confirm(j.musteri+" — "+fmt(j.tutar)+"\n"+(T.tahsilatSilOnay||"Bu tahsilat kaydı silinsin mi? Bu işlem geri alınamaz.")))onSil&&onSil(j.id);}} title="Sil" style={{background:C.redBg,border:"none",borderRadius:9,width:30,height:30,color:C.red,fontSize:14,fontWeight:700,cursor:"pointer",flexShrink:0}}>🗑</button>
         </div>
       </Sh>)}</>}
   </div>;
@@ -2115,7 +2116,7 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider,is
     {(()=>{const sk=musteriSkor(musteri.isler);return <Sh s={{padding:"13px 15px",marginBottom:14,borderLeft:`3px solid ${sk.renk}`,display:"flex",alignItems:"center",gap:12}}>
       <span style={{fontSize:26}}>{sk.emoji}</span>
       <div style={{flex:1}}>
-        <div style={{fontSize:13,fontWeight:800,color:sk.renk}}>Ödeme Skoru: {sk.ad}{sk.puan!==null?" — %"+sk.puan:""}</div>
+        <div style={{fontSize:13,fontWeight:800,color:sk.renk}}>{(T.odemeSkoru||"Ödeme Skoru")+": "}{sk.ad}{sk.puan!==null?" — %"+sk.puan:""}</div>
         <div style={{fontSize:11,color:C.t2,marginTop:2}}>{sk.aciklama}</div>
       </div>
     </Sh>;})()}
@@ -2124,11 +2125,11 @@ function MusteriDetayModal({musteri,onKapat,T,onSil,giderler,onYeniIs,onGider,is
       <button onClick={()=>onYeniIs&&onYeniIs(musteri.ad)} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:"12px 0",color:C.green,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.yeniIsAc}</button>
       <button onClick={()=>onGider&&onGider(musteri.ad)} style={{flex:1,background:C.redBg,border:"none",borderRadius:12,padding:"12px 0",color:C.red,fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{T.giderEkleBtn}</button>
     </div>
-    <button onClick={()=>musteriPdf(musteri,giderler,isletme)} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:"14px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",marginBottom:14}}>📄 PDF Raporu — WhatsApp'ta Paylaş / İndir</button>
+    <button onClick={()=>musteriPdf(musteri,giderler,isletme)} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:"14px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",marginBottom:14}}>{T.musteriPdfBtn||"📄 PDF Raporu — WhatsApp'ta Paylaş / İndir"}</button>
 
     {/* 🧰 Kullanılan Malzemeler (tüm işlerden — tamamlananlar dahil) */}
     {musteri.isler.some(j=>j.malzemeler)&&<div style={{marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>🧰 Kullanılan Malzemeler</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>{T.malzemelerL||"🧰 Kullanılan Malzemeler"}</div>
       <Sh s={{padding:"4px 14px"}}>
         {musteri.isler.filter(j=>j.malzemeler).map(j=><div key={j.id} style={{padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
@@ -2869,7 +2870,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.finansB}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
       <Row icon="💰" label={T.paraBirimi} sub={kurKaynakAd()} value={para+" ("+fmt(1)+")"} onClick={()=>setModal("para")}/>
-      <Row icon="📊" label={T.raporlamaDonemi} sub="Raporlar bu döneme göre hesaplanır" value={raporDonemAd+" ›"} onClick={onRaporDonem}/>
+      <Row icon="📊" label={T.raporlamaDonemi} sub={T.donemSub||"Raporlar bu döneme göre hesaplanır"} value={raporDonemAd+" ›"} onClick={onRaporDonem}/>
       <Row icon="🏦" label={T.bankaHesabi} sub={T.ibanSub} onClick={()=>goster("Pro! ⚡")}/>
     </Sh>
 
@@ -2880,22 +2881,22 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
       <div onClick={onPlanAc} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderTop:`1px solid ${C.border}`,cursor:"pointer",background:plan!=="starter"?C.purpleBg:"transparent"}}>
         <span style={{fontSize:20}}>👑</span>
         <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.t1}}>Plan: {plan==="elite"?"Elite":plan==="pro"?"Pro":"Başlangıç"}{plan==="elite"&&<span style={{color:GOLD}}> ✓</span>}</div>
-          <div style={{fontSize:11,color:C.t3}}>{isletme?.omurBoyu?"🎉 Ömür boyu ücretsiz — tüm özellikler açık":denemeKalan>0?"🎁 Pro deneme — "+denemeKalan+" gün kaldı":plan==="starter"?"Yükseltmek için dokun":"Tüm özellikler açık"}</div>
+          <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{(T.planL||"Plan")+": "}{plan==="elite"?"Elite":plan==="pro"?"Pro":(T.planBaslangic||"Başlangıç")}{plan==="elite"&&<span style={{color:GOLD}}> ✓</span>}</div>
+          <div style={{fontSize:11,color:C.t3}}>{isletme?.omurBoyu?(T.omurBoyuMsg||"🎉 Ömür boyu ücretsiz — tüm özellikler açık"):denemeKalan>0?(T.denemeOn||"🎁 Pro denemen")+" — "+denemeKalan+" "+(T.gunKaldi||"gün kaldı"):plan==="starter"?(T.yukseltDokun||"Yükseltmek için dokun"):(T.tumOzellikler||"Tüm özellikler açık")}</div>
         </div>
         <span style={{color:C.t3}}>›</span>
       </div>
       <Row icon="🌙" label={T.karanlikMod} sub={T.karanlikSub} toggle tState={karanlik} tSet={setKaranlik}/>
       {/* 🎨 Renk temaları */}
       {!karanlik&&<div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
-        <div style={{fontSize:13,fontWeight:600,color:C.t1,marginBottom:2}}>🎨 Tema Rengi</div>
-        <div style={{fontSize:11,color:C.t3,marginBottom:10}}>Uygulamanın zemin rengini seç{plan==="starter"&&<span style={{color:GOLD,fontWeight:700}}> · 👑 Pro özelliği</span>}</div>
+        <div style={{fontSize:13,fontWeight:600,color:C.t1,marginBottom:2}}>{T.temaRengi||"🎨 Tema Rengi"}</div>
+        <div style={{fontSize:11,color:C.t3,marginBottom:10}}>{T.temaSub||"Uygulamanın zemin rengini seç"}{plan==="starter"&&<span style={{color:GOLD,fontWeight:700}}>{T.temaProNotu||" · 👑 Pro özelliği"}</span>}</div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {TEMA_LISTE.map(([id,ikon,ad,renk])=><button key={id} onClick={()=>{if(plan==="starter"){onPlanAc();return;}setTema(id);goster(ikon+" "+ad+" teması")}} title={ad}
+          {TEMA_LISTE.map(([id,ikon,ad,renk])=>{const adC=({acik:T.temaAcik,okyanus:T.temaOkyanus,orman:T.temaOrman,gunbatimi:T.temaGunbatimi,lavanta:T.temaLavanta,gul:T.temaGul})[id]||ad;return <button key={id} onClick={()=>{if(plan==="starter"){onPlanAc();return;}setTema(id);goster(ikon+" "+adC+" "+(T.temasiEk||"teması"))}} title={adC}
             style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"transparent",border:"none",cursor:"pointer",padding:0}}>
             <span style={{width:38,height:38,borderRadius:"50%",background:renk,border:`3px solid ${tema===id?P:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,boxShadow:tema===id?`0 0 0 2px ${C.card}, 0 0 0 4px ${P}33`:"none"}}>{ikon}</span>
-            <span style={{fontSize:9,fontWeight:tema===id?700:500,color:tema===id?P:C.t3}}>{ad}</span>
-          </button>)}
+            <span style={{fontSize:9,fontWeight:tema===id?700:500,color:tema===id?P:C.t3}}>{adC}</span>
+          </button>;})}
         </div>
       </div>}
       <Row icon="🔊" label={T.sesEfektleri} sub={T.sesEfektSub} toggle tState={sesEfekt} tSet={setSesEfekt}/>
@@ -2919,7 +2920,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.destek}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
       {kullaniciEmail&&kullaniciEmail.toLowerCase()===KURUCU_EMAIL&&<Row icon="👑" label="Kurucu Paneli" sub="Üye sayısı ve plan istatistikleri" onClick={()=>onAc("kurucu")}/>}
-      <Row icon="👷" label={T.ekipYonetimi} sub={plan==="elite"?T.ekipSub:"👑 Elite özelliği"} onClick={()=>{if(plan!=="elite"){onPlanAc();return;}onAc("ekip");}}/>
+      <Row icon="👷" label={T.ekipYonetimi} sub={plan==="elite"?T.ekipSub:(T.eliteOzelligi||"👑 Elite özelliği")} onClick={()=>{if(plan!=="elite"){onPlanAc();return;}onAc("ekip");}}/>
       <Row icon="🤖" label={T.asistan} sub={T.asistanSub} onClick={()=>onAc("asistan")}/>
       {DESTEK_TEL&&<Row icon="💬" label={T.whatsappDestek} sub={"0"+DESTEK_TEL.slice(2,5)+" "+DESTEK_TEL.slice(5,8)+" "+DESTEK_TEL.slice(8,10)+" "+DESTEK_TEL.slice(10)+" — "+DESTEK_SAAT} onClick={()=>window.open("https://wa.me/"+DESTEK_TEL,"_blank")}/>}
       {DESTEK_EMAIL&&<Row icon="✉️" label={T.epostaDestek} sub={DESTEK_EMAIL} onClick={()=>window.open("mailto:"+DESTEK_EMAIL+"?subject=TradeFlow Destek","_blank")}/>}
@@ -2988,7 +2989,7 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme}){
       <div style={{width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${P},#0F1B33)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>{(isletme.yetkili||"EO").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}</div>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isletme.yetkili||"Kullanıcı"}{KURUCU_MU?" 👑":""}</div>
-        <div style={{fontSize:11,color:PLAN_AKTIF==="elite"?GOLD:P,fontWeight:600}}>{PLAN_AKTIF==="elite"?"Elite ✓":PLAN_AKTIF==="pro"?"Pro":"Başlangıç"}</div>
+        <div style={{fontSize:11,color:PLAN_AKTIF==="elite"?GOLD:P,fontWeight:600}}>{PLAN_AKTIF==="elite"?"Elite ✓":PLAN_AKTIF==="pro"?"Pro":(TT.planBaslangic||"Başlangıç")}</div>
       </div>
       <span style={{color:C.t3,fontSize:13}}>⌄</span>
     </div>
@@ -3240,12 +3241,12 @@ export default function TradeFlow(){
   const yeniIsKilit=()=>{
     if(plan==="starter"){
       const aktifIsler=jobs.filter(j=>j.durum!=="tamamlandi").length;
-      if(aktifIsler>=PLAN_LIMIT.starter.is){setPlanAc("Başlangıç planında en fazla "+PLAN_LIMIT.starter.is+" aktif iş olabilir ("+aktifIsler+"/"+PLAN_LIMIT.starter.is+")");return true;}
+      if(aktifIsler>=PLAN_LIMIT.starter.is){setPlanAc((T.limitIs||"Başlangıç planında en fazla {n} aktif iş olabilir").replace("{n}",PLAN_LIMIT.starter.is)+" ("+aktifIsler+"/"+PLAN_LIMIT.starter.is+")");return true;}
     }
     return false;
   };
   const proKilit=(ozellik)=>{
-    if(plan==="starter"){setPlanAc(ozellik+" Pro pakette 👑");return true;}
+    if(plan==="starter"){setPlanAc(ozellik+" "+(T.proPakette||"Pro pakette 👑"));return true;}
     return false;
   };
   const [toast,setToast]=useState(null);
@@ -3387,10 +3388,11 @@ export default function TradeFlow(){
 
   C=karanlik?DARK:(TEMALAR[tema]||LIGHT);
   const T=getT(dil);
+  TT=T;
   paraAyarla(para);
   updateDurum(T);
 
-  const DONEMLER={buAy:"Bu Ay",son3Ay:"Son 3 Ay",buYil:"Bu Yıl",tumu:"Tümü"};
+  const DONEMLER={buAy:T.buAy||"Bu Ay",son3Ay:T.donemSon3Ay||"Son 3 Ay",buYil:T.donemBuYil||"Bu Yıl",tumu:T.donemTumu||"Tümü"};
   const donemBas=(()=>{const n=new Date();if(raporDonem==="buAy")return new Date(n.getFullYear(),n.getMonth(),1);if(raporDonem==="son3Ay")return new Date(n.getFullYear(),n.getMonth()-2,1);if(raporDonem==="buYil")return new Date(n.getFullYear(),0,1);return null;})();
   const donemFiltre=(dizi)=>donemBas?dizi.filter(x=>x.tarih&&new Date(x.tarih)>=donemBas):dizi;
   const goster=(m)=>{setToast(m);setTimeout(()=>setToast(null),2200);const s=String(m);if(s.includes("💰")||s.includes("Tahsil"))calSes("para");else if(s.includes("🗑")||s.includes("silindi"))calSes("sil");else if(s.includes("✓")||s.includes("✅")||s.includes("🎉")||s.includes("eklendi")||s.includes("kaydedildi"))calSes("basari");else calSes("tik");};
@@ -3580,7 +3582,7 @@ export default function TradeFlow(){
           onYeniIsIcin={(ad)=>{setYeniIsMusteri(ad);setYeniAc(true);}}
           onGiderIcin={(ad)=>{setGiderMusteri(ad);setGiderAc(true);}}
           onKayitSil={(ad)=>{setMusteriKayitlari(p=>p.filter(m=>m.ad!==ad));goster("Kayıt silindi");}}
-          onMusteriEkle={(m)=>{if(plan==="starter"&&musteriKayitlari.length>=PLAN_LIMIT.starter.musteri){setPlanAc("Başlangıç planında en fazla "+PLAN_LIMIT.starter.musteri+" müşteri kaydedilebilir");return;}setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}} onMusteriSil={(ad)=>{
+          onMusteriEkle={(m)=>{if(plan==="starter"&&musteriKayitlari.length>=PLAN_LIMIT.starter.musteri){setPlanAc((T.limitMusteri||"Başlangıç planında en fazla {n} müşteri kaydedilebilir").replace("{n}",PLAN_LIMIT.starter.musteri));return;}setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}} onMusteriSil={(ad)=>{
           // Bağımsız kayıttan sil
           setMusteriKayitlari(p=>p.filter(m=>m.ad!==ad));
           // O müşterinin işlerini de sil (isteğe bağlı — onay modalında uyarıldı)
@@ -3592,14 +3594,14 @@ export default function TradeFlow(){
           {sekme==="raporlar"&&<><div style={{padding:"12px 14px 0",display:"flex",gap:6,flexWrap:"wrap"}}>{Object.entries(DONEMLER).map(([id,ad])=><button key={id} onClick={()=>setRaporDonem(id)} style={{background:raporDonem===id?P:C.card,color:raporDonem===id?"#fff":C.t2,border:`1px solid ${raporDonem===id?P:C.border}`,borderRadius:20,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>{ad}</button>)}</div><RaporlarTab jobs={donemFiltre(jobs)} giderler={donemFiltre(giderler)} T={T} ekip={ekip}/></>}
           {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
           {sekme==="daha"&&<DahaFazlaTab
-          onExcelMuhasebe={()=>{if(proKilit("PDF raporlar"))return;pdfMuhasebeRaporu(jobs,giderler,isletme);goster("📈 PDF raporu hazır");}}
-          onExcelIs={()=>{if(proKilit("PDF raporlar"))return;excelIsler(jobs,isletme);goster("📊 PDF hazır");}}
-          onExcelGider={()=>{if(proKilit("PDF raporlar"))return;excelGiderler(giderler,jobs,isletme);goster("📊 PDF hazır");}}
-          onExcelFatura={()=>{if(proKilit("PDF raporlar"))return;excelFaturalar(faturalar,isletme);goster("📊 PDF hazır");}}
+          onExcelMuhasebe={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;pdfMuhasebeRaporu(jobs,giderler,isletme);goster("📈 PDF raporu hazır");}}
+          onExcelIs={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;excelIsler(jobs,isletme);goster("📊 PDF hazır");}}
+          onExcelGider={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;excelGiderler(giderler,jobs,isletme);goster("📊 PDF hazır");}}
+          onExcelFatura={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;excelFaturalar(faturalar,isletme);goster("📊 PDF hazır");}}
           onPdf={()=>pdfMuhasebeRaporu(jobs,giderler,isletme)}
           onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
-          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 Dönem: "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
+          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
         </div>
 
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1B2A4A",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
