@@ -384,7 +384,7 @@ const Spark=({renk})=><svg width="100%" height="34" viewBox="0 0 120 34" preserv
 const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,cekSenetler=[]}){
   const ad=(yetkili||"").split(" ")[0]||"";
   const saat=new Date().getHours();
-  const selam=saat<12?(T.gunaydin||"Günaydın,").replace(",",""):saat<18?"İyi günler":"İyi akşamlar";
+  const selam=(saat>=7&&saat<11)?"Günaydın":(saat>=11&&saat<18)?"İyi günler":"İyi akşamlar";
   const buAy=new Date().toISOString().slice(0,7);
   const gecenAy=(()=>{const d=new Date();d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,7);})();
   const bugun=new Date().toISOString().slice(0,10);
@@ -420,13 +420,10 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const cevre=2*Math.PI*44;
   return <div style={{padding:"18px 16px 0"}}>
     {/* Karşılama + illüstrasyon (tablette ERAİ) */}
-    <div style={{display:"flex",alignItems:"flex-end",gap:0,marginBottom:16,position:"relative",minHeight:158,overflow:"hidden"}}>
-      <div style={{flex:"0 0 55%",zIndex:2,paddingBottom:2}}>
-        <div style={{fontSize:25,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>{selam}{ad?", "+ad:""} 👋</div>
-        <div style={{fontSize:13,color:C.t3,marginTop:5,lineHeight:1.5}}>Harika işler başarmak için hazırsın.</div>
-        <button onClick={onYeniIs} style={{marginTop:14,background:GRAD,border:"none",borderRadius:22,padding:"13px 20px",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.35)"}}><i className="ti ti-plus" style={{fontSize:16}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
-      </div>
-      <img src="/karsilama.png" alt="" style={{position:"absolute",right:-10,bottom:0,height:152,maxWidth:"52%",objectFit:"contain",objectPosition:"right bottom",pointerEvents:"none"}}/>
+    <div style={{padding:"10px 2px 4px",marginBottom:18}}>
+      <div style={{fontSize:27,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.25}}>{selam}{ad?", "+ad:""} 👋</div>
+      <div style={{fontSize:13.5,color:C.t3,marginTop:6,lineHeight:1.5}}>Harika işler başarmak için hazırsın.</div>
+      <button onClick={onYeniIs} style={{marginTop:16,background:GRAD,border:"none",borderRadius:22,padding:"14px 26px",color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.35)"}}><i className="ti ti-plus" style={{fontSize:16}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
     </div>
     {/* Hızlı İşlemler */}
     <Sh s={{padding:"16px 12px",marginBottom:16}}>
