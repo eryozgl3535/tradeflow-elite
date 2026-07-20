@@ -420,13 +420,13 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const cevre=2*Math.PI*44;
   return <div style={{padding:"18px 16px 0"}}>
     {/* Karşılama + illüstrasyon (tablette ERAİ) */}
-    <div style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:16,position:"relative"}}>
-      <div style={{flex:"0 0 52%",zIndex:2}}>
+    <div style={{display:"flex",alignItems:"flex-end",gap:0,marginBottom:16,position:"relative",minHeight:158,overflow:"hidden"}}>
+      <div style={{flex:"0 0 55%",zIndex:2,paddingBottom:2}}>
         <div style={{fontSize:25,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>{selam}{ad?", "+ad:""} 👋</div>
         <div style={{fontSize:13,color:C.t3,marginTop:5,lineHeight:1.5}}>Harika işler başarmak için hazırsın.</div>
         <button onClick={onYeniIs} style={{marginTop:14,background:GRAD,border:"none",borderRadius:22,padding:"13px 20px",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.35)"}}><i className="ti ti-plus" style={{fontSize:16}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
       </div>
-      <img src="/karsilama.png" alt="" style={{position:"absolute",right:-16,top:-6,width:"58%",maxWidth:270,pointerEvents:"none"}}/>
+      <img src="/karsilama.png" alt="" style={{position:"absolute",right:-10,bottom:0,height:152,maxWidth:"52%",objectFit:"contain",objectPosition:"right bottom",pointerEvents:"none"}}/>
     </div>
     {/* Hızlı İşlemler */}
     <Sh s={{padding:"16px 12px",marginBottom:16}}>
