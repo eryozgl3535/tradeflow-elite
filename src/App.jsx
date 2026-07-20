@@ -1038,15 +1038,6 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,gide
       </div>}
     </div>
 
-    {/* 👥 Kaç kişiyle yapılacak */}
-    <div style={{marginBottom:14}}>
-      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>👥 Kaç Kişiyle Yapılacak?</div>
-      <div style={{display:"flex",alignItems:"center",gap:14}}>
-        <button onClick={()=>set("kisiSayisi",Math.max(1,(form.kisiSayisi||1)-1))} style={{width:42,height:42,borderRadius:12,background:C.bg,border:`1px solid ${C.border}`,fontSize:20,color:C.t1,cursor:"pointer"}}>−</button>
-        <div style={{fontSize:20,fontWeight:800,color:P,minWidth:60,textAlign:"center"}}>{form.kisiSayisi||1} kişi</div>
-        <button onClick={()=>set("kisiSayisi",Math.min(20,(form.kisiSayisi||1)+1))} style={{width:42,height:42,borderRadius:12,background:C.bg,border:`1px solid ${C.border}`,fontSize:20,color:C.t1,cursor:"pointer"}}>+</button>
-      </div>
-    </div>
     {/* 🚦 İş Aşaması + hız/kâr uyarısı */}
     {job.durum!=="tamamlandi"&&(()=>{
       const asama=job.asama||0;
@@ -1385,6 +1376,15 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
         <input value={form.isAdresi} onChange={e=>set("isAdresi",e.target.value)} placeholder={T.adresPh}
           style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none"}}/>
         {form.isAdresi&&<button onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(form.isAdresi)}&travelmode=driving`,"_blank")} style={{background:C.blue,border:"none",borderRadius:12,padding:"12px 14px",color:"#fff",fontSize:13,cursor:"pointer",flexShrink:0}}>🗺️</button>}
+      </div>
+    </div>
+    {/* 👥 Kaç kişiyle yapılacak */}
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>👥 Kaç Kişiyle Yapılacak?</div>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <button onClick={()=>set("kisiSayisi",Math.max(1,(form.kisiSayisi||1)-1))} style={{width:42,height:42,borderRadius:12,background:C.bg,border:`1px solid ${C.border}`,fontSize:20,color:C.t1,cursor:"pointer"}}>−</button>
+        <div style={{fontSize:20,fontWeight:800,color:P,minWidth:60,textAlign:"center"}}>{form.kisiSayisi||1} kişi</div>
+        <button onClick={()=>set("kisiSayisi",Math.min(20,(form.kisiSayisi||1)+1))} style={{width:42,height:42,borderRadius:12,background:C.bg,border:`1px solid ${C.border}`,fontSize:20,color:C.t1,cursor:"pointer"}}>+</button>
       </div>
     </div>
     {/* 🧰 Kullanılan malzemeler */}
