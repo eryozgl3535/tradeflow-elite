@@ -284,6 +284,88 @@ function UstaHarcamaKuyrugu({harcamalar,onOnay,onRed}){
     </div>}
   </div>;
 }
+
+// 📅 Takvim — işlerin ay görünümü
+function TakvimEkrani({onKapat,jobs,onIsSec}){
+  const bugun=new Date();
+  const [ay,setAy]=useState(new Date(bugun.getFullYear(),bugun.getMonth(),1));
+  const [seciliGun,setSeciliGun]=useState(bugun.toISOString().slice(0,10));
+  const AYLAR=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  const GUNLER=["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+  const ilkGun=(ay.getDay()+6)%7; // Pazartesi=0
+  const gunSayisi=new Date(ay.getFullYear(),ay.getMonth()+1,0).getDate();
+  const tarihStr=(g)=>ay.getFullYear()+"-"+String(ay.getMonth()+1).padStart(2,"0")+"-"+String(g).padStart(2,"0");
+  const gunIsleri=(t)=>jobs.filter(j=>(j.tarih||"")===t||(j.hatirlatma||"").startsWith(t));
+  const seciliIsler=gunIsleri(seciliGun);
+  const bugunStr=bugun.toISOString().slice(0,10);
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,overflowY:"auto"}}>
+    <div style={{maxWidth:560,margin:"0 auto",padding:"0 14px 40px"}}>
+      <GeriBaslik baslik="📅 Takvim" onKapat={onKapat}/>
+      <Sh s={{padding:"14px",marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <button onClick={()=>setAy(new Date(ay.getFullYear(),ay.getMonth()-1,1))} style={{background:C.bg,border:"none",borderRadius:10,width:36,height:36,fontSize:16,color:C.t1,cursor:"pointer"}}>‹</button>
+          <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{AYLAR[ay.getMonth()]} {ay.getFullYear()}</div>
+          <button onClick={()=>setAy(new Date(ay.getFullYear(),ay.getMonth()+1,1))} style={{background:C.bg,border:"none",borderRadius:10,width:36,height:36,fontSize:16,color:C.t1,cursor:"pointer"}}>›</button>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:6}}>
+          {GUNLER.map(g=><div key={g} style={{textAlign:"center",fontSize:10,fontWeight:700,color:C.t3}}>{g}</div>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+          {Array.from({length:ilkGun}).map((_,i)=><div key={"b"+i}/>)}
+          {Array.from({length:gunSayisi}).map((_,i)=>{
+            const g=i+1,t=tarihStr(g),iler=gunIsleri(t),secili=t===seciliGun,bugunMu=t===bugunStr;
+            return <div key={g} onClick={()=>setSeciliGun(t)} style={{aspectRatio:"1",borderRadius:11,background:secili?P:bugunMu?C.purpleBg:"transparent",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",border:bugunMu&&!secili?`1.5px solid ${P}`:"1.5px solid transparent"}}>
+              <span style={{fontSize:12.5,fontWeight:bugunMu||secili?800:600,color:secili?"#fff":C.t1}}>{g}</span>
+              {iler.length>0&&<div style={{display:"flex",gap:2,marginTop:2}}>
+                {iler.slice(0,3).map((j,x)=><span key={x} style={{width:4,height:4,borderRadius:"50%",background:secili?"#fff":j.durum==="tamamlandi"?"#0E9F6E":"#F59E0B"}}/>)}
+              </div>}
+            </div>;
+          })}
+        </div>
+      </Sh>
+      <div style={{fontSize:13,fontWeight:800,color:C.t1,margin:"0 2px 10px"}}>{new Date(seciliGun).toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})} · {seciliIsler.length} iş</div>
+      {seciliIsler.length===0&&<Sh s={{padding:"16px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Bu güne planlı iş yok</div></Sh>}
+      {seciliIsler.map(j=><Sh key={j.id} s={{padding:"13px 15px",marginBottom:9,cursor:"pointer"}} onClick={()=>onIsSec(j)}>
+        <div style={{display:"flex",alignItems:"center",gap:11}}>
+          <div style={{width:40,height:40,borderRadius:11,background:j.iconBg||C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{j.icon||"🔧"}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13.5,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.baslik}</div>
+            <div style={{fontSize:11,color:C.t3}}>{j.musteri}{(j.hatirlatma||"").startsWith(seciliGun)?" · ⏰ "+(j.hatirlatma||"").slice(11,16):""}</div>
+          </div>
+          <span style={{fontSize:10,fontWeight:800,color:j.durum==="tamamlandi"?C.green:P}}>{j.durum==="tamamlandi"?"✅":fmt(j.tutar)}</span>
+        </div>
+      </Sh>)}
+    </div>
+  </div>;
+}
+
+// 🗑️ Çöp Kutusu — 30 gün geri kurtarma
+function CopKutusuEkrani({onKapat,copKutusu,onGeriAl,onKaliciSil}){
+  const TIP={is:["📋","İş"],gider:["💸","Gider"],fatura:["🧾","Fatura"]};
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,overflowY:"auto"}}>
+    <div style={{maxWidth:560,margin:"0 auto",padding:"0 14px 40px"}}>
+      <GeriBaslik baslik="🗑️ Çöp Kutusu" onKapat={onKapat}/>
+      <div style={{fontSize:11.5,color:C.t3,margin:"0 2px 14px"}}>Silinenler burada <b>30 gün</b> saklanır, sonra kendiliğinden kalıcı silinir.</div>
+      {copKutusu.length===0&&<Sh s={{padding:"22px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Çöp kutusu boş 🎉</div></Sh>}
+      {copKutusu.map((c,i)=>{
+        const [ik,ad]=TIP[c.tip]||["📄",c.tip];
+        const kalan=Math.max(0,30-Math.floor((Date.now()-new Date(c.silinme).getTime())/86400000));
+        const baslik=c.veri.baslik||c.veri.ad||("Fatura "+(c.veri.no||""));
+        return <Sh key={i} s={{padding:"13px 15px",marginBottom:9}}>
+          <div style={{display:"flex",alignItems:"center",gap:11}}>
+            <div style={{width:40,height:40,borderRadius:11,background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{ik}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:13,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{baslik}</div>
+              <div style={{fontSize:10.5,color:C.t3}}>{ad}{c.veri.tutar?" · "+fmt(c.veri.tutar):""} · ⏳ {kalan} gün kaldı</div>
+            </div>
+            <button onClick={()=>onKaliciSil(i)} style={{background:C.redBg,border:"none",borderRadius:9,padding:"7px 10px",fontSize:11,fontWeight:800,color:C.red,cursor:"pointer",marginRight:6}}>Kalıcı Sil</button>
+            <button onClick={()=>onGeriAl(i)} style={{background:C.greenBg,border:"none",borderRadius:9,padding:"7px 11px",fontSize:11,fontWeight:800,color:C.green,cursor:"pointer"}}>↩️ Geri Al</button>
+          </div>
+        </Sh>;
+      })}
+    </div>
+  </div>;
+}
 // ═══ KURUCU PANELİ ═══
 // ═══ DESTEK İLETİŞİM — tek yerden yönetilir ═══
 const DESTEK_EMAIL = ""; // Destek adresi belirlenince buraya yazılacak — boşsa satır gizlenir
@@ -576,7 +658,7 @@ const BtnS=({children,onClick})=><button onClick={onClick} style={{flex:1,backgr
 // 📱 Yeni mobil ana sayfa — referans tasarıma birebir
 const Spark=({renk})=><svg width="100%" height="34" viewBox="0 0 120 34" preserveAspectRatio="none" style={{display:"block"}}><path d="M2,26 C14,20 20,28 32,22 C44,16 50,24 62,18 C74,12 80,20 92,12 C102,6 110,10 118,4" fill="none" stroke={renk} strokeWidth="2.5" strokeLinecap="round"/></svg>;
 
-const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,cekSenetler=[]}){
+const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,onTakvim,cekSenetler=[]}){
   const ad=(yetkili||"").split(" ")[0]||"";
   const saat=new Date().getHours();
   const selam=(saat>=7&&saat<11)?"Günaydın":(saat>=11&&saat<18)?"İyi günler":"İyi akşamlar";
@@ -622,7 +704,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     {/* Yeni İş + Bugün Ne Yapıyoruz? yan yana */}
     <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"stretch"}}>
       <button onClick={onYeniIs} style={{flex:"0 0 46%",background:GRAD,border:"none",borderRadius:18,padding:"16px 10px",color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.3)"}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
-      <div onClick={()=>bugunIsler.length>0?onIsSec(bugunIsler[0]):setSekme("isler")} style={{flex:1,background:C.card,borderRadius:18,padding:"12px 14px",cursor:"pointer",boxShadow:C.sh,display:"flex",alignItems:"center",gap:10}}>
+      <div onClick={onTakvim} style={{flex:1,background:C.card,borderRadius:18,padding:"12px 14px",cursor:"pointer",boxShadow:C.sh,display:"flex",alignItems:"center",gap:10}}>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:3}}>Bugün Ne Yapıyoruz?</div>
           {bugunIsler.length===0
@@ -3200,6 +3282,8 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
   const items=[
     {icon:"🤖",label:T.asistan,alt:T.asistanSub,act:()=>onAc("asistan")},
     {icon:"💼",label:"Çek · Senet",alt:"🔐 PIN korumalı",act:()=>onAc("kasa")},
+    {icon:"📅",label:"Takvim",alt:"İşlerini ay görünümünde planla",act:()=>onAc("takvim")},
+    {icon:"🗑️",label:"Çöp Kutusu",alt:"Silinenler 30 gün geri alınabilir",act:()=>onAc("cop")},
     {icon:"📈",label:"Muhasebe Raporu (PDF)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
     {icon:"📊",label:(T.excelIslerL||"İşler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelIs},
     {icon:"💸",label:(T.excelGiderlerL||"Giderler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelGider},
@@ -3232,7 +3316,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
 }
 
 // ─── PROFİL ─────────────────────────────────────────────────────
-function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,sesEfekt,setSesEfekt,raporDonemAd,onRaporDonem,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
+function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,sesEfekt,setSesEfekt,raporDonemAd,onRaporDonem,ozetSaat,setOzetSaat,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
   const [bildirimIzin,setBildirimIzin]=useState(false);
   const [kompaktMod,setKompaktMod]=useState(false);
   const logo=isletme?.logo||null;
@@ -3349,6 +3433,15 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
           <div style={{fontSize:11,color:C.t3}}>{isletme?.omurBoyu?(T.omurBoyuMsg||"🎉 Ömür boyu ücretsiz — tüm özellikler açık"):denemeKalan>0?(T.denemeOn||"🎁 Pro denemen")+" — "+denemeKalan+" "+(T.gunKaldi||"gün kaldı"):plan==="starter"?(T.yukseltDokun||"Yükseltmek için dokun"):(T.tumOzellikler||"Tüm özellikler açık")}</div>
         </div>
         <span style={{color:C.t3}}>›</span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderTop:`1px solid ${C.border}`}}>
+        <span style={{fontSize:20}}>🌙</span>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:600,color:C.t1}}>Gün Sonu Özeti</div>
+          <div style={{fontSize:11,color:C.t3}}>{ozetSaat?"Her akşam "+ozetSaat+"'te günün özetini bildirir":"Kapalı — saat seçince açılır"}</div>
+        </div>
+        <input type="time" value={ozetSaat||""} onChange={e=>setOzetSaat(e.target.value)} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 10px",fontSize:13,color:C.t1,outline:"none"}}/>
+        {ozetSaat&&<button onClick={()=>setOzetSaat("")} style={{background:C.redBg,border:"none",borderRadius:9,padding:"7px 9px",fontSize:11,fontWeight:700,color:C.red,cursor:"pointer"}}>Kapat</button>}
       </div>
       <Row icon="🌙" label={T.karanlikMod} sub={T.karanlikSub} toggle tState={karanlik} tSet={setKaranlik}/>
       {/* 🎨 Renk temaları */}
@@ -3708,6 +3801,9 @@ export default function TradeFlow(){
   const [planAc,setPlanAc]=useState(null);
   const [cekSenetler,setCekSenetler]=useState([]);
   const [ustaHarcamalar,setUstaHarcamalar]=useState([]);
+  const [copKutusu,setCopKutusu]=useState([]); // {tip, veri, silinme}
+  const [ozetSaat,setOzetSaat]=useState("19:00"); // ""=kapalı
+  const copeAt=(tip,veri)=>setCopKutusu(p=>[{tip,veri,silinme:new Date().toISOString()},...p].slice(0,200));
   const [kasaAcik,setKasaAcik]=useState(false); // PIN doğrulandı mı (oturumluk)
   const jobPatch=(id,patch)=>setJobs(p=>p.map(j=>j.id===id?{...j,...patch}:j)); // null | sebep metni | true
   const [sesEfekt,setSesEfekt]=useState(true);
@@ -3827,6 +3923,8 @@ export default function TradeFlow(){
           if(typeof v.raporDonem==="string")setRaporDonem(v.raporDonem);
           if(Array.isArray(v.cekSenetler))setCekSenetler(v.cekSenetler);
           if(Array.isArray(v.ustaHarcamalar))setUstaHarcamalar(v.ustaHarcamalar);
+          if(Array.isArray(v.copKutusu))setCopKutusu(v.copKutusu.filter(c=>Date.now()-new Date(c.silinme).getTime()<30*86400000));
+          if(typeof v.ozetSaat==="string")setOzetSaat(v.ozetSaat);
           if(Array.isArray(v.modulAktif)){
             // Sadece açık/kapalı durumunu uygula, fonksiyonlu yapıyı koru
             setModuller(MODUL_VARSAYILAN.map(md=>{
@@ -3852,7 +3950,7 @@ export default function TradeFlow(){
     if(!kullanici||!veriYuklendi)return;
     const zaman=setTimeout(async()=>{
       if(USTA_MI)return;
-      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,ustaHarcamalar,karanlik,tema,sesEfekt,raporDonem,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
+      const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,ustaHarcamalar,copKutusu,ozetSaat,karanlik,tema,sesEfekt,raporDonem,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
       await yerelKaydet(kullanici.id,paket); // 1) cihaza — her zaman
       if(!navigator.onLine){setSenkronBekliyor(true);return;} // internet yok: kuyrukta
       try{
@@ -3862,7 +3960,7 @@ export default function TradeFlow(){
       }catch(e){console.error("Kaydetme:",e);setSenkronBekliyor(true);}
     },800);
     return ()=>clearTimeout(zaman);
-  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,ustaHarcamalar,karanlik,tema,sesEfekt,raporDonem,moduller,kullanici,veriYuklendi,senkronTik]);
+  },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,ustaHarcamalar,copKutusu,ozetSaat,karanlik,tema,sesEfekt,raporDonem,moduller,kullanici,veriYuklendi,senkronTik]);
 
   const cikisYap=async()=>{
     await supabase.auth.signOut();
@@ -3941,6 +4039,35 @@ export default function TradeFlow(){
     const t=setInterval(cek,60000);
     return ()=>{dur=true;clearInterval(t);};
   },[veriYuklendi,kullanici]);
+
+  // 🌙 Gün sonu özeti — kullanıcının seçtiği saatte bir kez
+  useEffect(()=>{
+    if(!veriYuklendi||USTA_MI||!ozetSaat)return;
+    const kontrol=()=>{
+      const simdi=new Date();
+      const ss=String(simdi.getHours()).padStart(2,"0")+":"+String(simdi.getMinutes()).padStart(2,"0");
+      const bugunT=simdi.toISOString().slice(0,10);
+      if(ss!==ozetSaat)return;
+      try{
+        if(localStorage.getItem("tfOzetGun")===bugunT)return;
+        localStorage.setItem("tfOzetGun",bugunT);
+      }catch(e){}
+      const yarinT=new Date(Date.now()+86400000).toISOString().slice(0,10);
+      const bitenler=jobs.filter(j=>j.durum==="tamamlandi"&&(j.tarih||"")===bugunT);
+      const tahsilat=bitenler.reduce((s,j)=>s+j.tutar,0);
+      const yarinki=jobs.filter(j=>j.durum!=="tamamlandi"&&((j.tarih||"")===yarinT||(j.hatirlatma||"").startsWith(yarinT))).length;
+      const bugunGider=giderler.filter(g=>(g.tarih||"")===bugunT).reduce((s,g)=>s+g.tutar,0);
+      let m="Bugün "+bitenler.length+" iş bitirdin";
+      if(tahsilat>0)m+=", "+fmt(tahsilat)+" tahsilat";
+      if(bugunGider>0)m+=", "+fmt(bugunGider)+" gider";
+      m+=". "+(yarinki>0?"Yarın "+yarinki+" randevun var. 💪":"Yarın için planlı işin yok — yarını planla! 🗓️");
+      bildirimEkle("🌙 Gün Sonu Özeti",m,"is");
+      goster("🌙 Gün sonu özetin hazır — Bildirimler'de");
+    };
+    kontrol();
+    const t=setInterval(kontrol,30000);
+    return ()=>clearInterval(t);
+  },[veriYuklendi,ozetSaat,jobs,giderler]);
   const bildirimEkle=(baslik,mesaj,tip)=>setBildirimler(p=>[{id:Date.now()+Math.random(),baslik,mesaj,tip,okundu:false,zaman:new Date().toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})},...p]);
   const bannerGoster=(baslik,mesaj)=>{setBanner({baslik,mesaj});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
 
@@ -4027,6 +4154,7 @@ export default function TradeFlow(){
   const jobSil=(id)=>{
     const j=jobs.find(x=>x.id===id);
     setJobs(p=>p.filter(x=>x.id!==id));
+    if(j)copeAt("is",j);
     if(j){
       setSonSilinen(j);
       setTimeout(()=>setSonSilinen(s=>s&&s.id===j.id?null:s),6000);
@@ -4120,9 +4248,9 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
-          {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
+          {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
           {sekme==="musteriler"&&<MusterilerTab jobs={jobs} T={T} musteriKayitlari={musteriKayitlari} giderler={giderler} isletme={isletme}
           onYeniIsIcin={(ad)=>{setYeniIsMusteri(ad);setYeniAc(true);}}
@@ -4148,7 +4276,7 @@ export default function TradeFlow(){
               setUstaHarcamalar(p=>p.map(x=>x.id===h.id?{...x,durum:"reddedildi"}:x));
               goster("❌ Harcama reddedildi");
             }}/>}
-          {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{setGiderler(p=>p.filter(g=>g.id!==id));goster(T.sil+" ✓");}} T={T}/>}
+          {sekme==="giderler"&&<GiderlerTab giderler={giderler} onYeni={()=>setGiderAc(true)} onSil={(id)=>{const g=giderler.find(x=>x.id===id);if(g)copeAt("gider",g);setGiderler(p=>p.filter(x=>x.id!==id));goster("🗑️ Gider silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="daha"&&<DahaFazlaTab
           onExcelMuhasebe={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;pdfMuhasebeRaporu(jobs,giderler,isletme);goster("📈 PDF raporu hazır");}}
           onExcelIs={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;excelIsler(jobs,isletme);goster("📊 PDF hazır");}}
@@ -4157,7 +4285,7 @@ export default function TradeFlow(){
           onPdf={()=>pdfMuhasebeRaporu(jobs,giderler,isletme)}
           onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
-          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
+          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} ozetSaat={ozetSaat} setOzetSaat={(v)=>{setOzetSaat(v);if(v)goster("🌙 Gün sonu özeti: "+v);}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
         </div>
 
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1C4E60",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
@@ -4193,6 +4321,14 @@ export default function TradeFlow(){
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T} jobs={jobs} giderler={giderler} faturalar={faturalar} musteriKayitlari={musteriKayitlari} isletme={isletme}/>}
+        {ekran==="takvim"&&<TakvimEkrani onKapat={()=>setEkran(null)} jobs={jobs} onIsSec={(j)=>{setEkran(null);setSecili(j);}}/>}
+        {ekran==="cop"&&<CopKutusuEkrani onKapat={()=>setEkran(null)} copKutusu={copKutusu}
+          onGeriAl={(i)=>{const c=copKutusu[i];if(!c)return;
+            if(c.tip==="is")setJobs(p=>[...p,c.veri]);
+            else if(c.tip==="gider")setGiderler(p=>[...p,c.veri]);
+            else if(c.tip==="fatura")setFaturalar(p=>[...p,c.veri]);
+            setCopKutusu(p=>p.filter((_,x)=>x!==i));goster("↩️ Geri alındı");}}
+          onKaliciSil={(i)=>{if(window.confirm("Bu kayıt KALICI olarak silinecek — geri dönüşü yok. Emin misin?"))setCopKutusu(p=>p.filter((_,x)=>x!==i));}}/>}
         {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
         {ekran==="kasa"&&!kasaAcik&&<PinKapi kayitliPin={isletme.kasaPin} onPinAyarla={(p)=>{setIsletme(i=>({...i,kasaPin:p}));goster("🔐 PIN kaydedildi");}} onBasari={()=>setKasaAcik(true)} onKapat={()=>setEkran(null)}/>}
         {ekran==="kasa"&&kasaAcik&&<KasaEkrani onKapat={()=>{setEkran(null);setKasaAcik(false);}} cekSenetler={cekSenetler} setCekSenetler={setCekSenetler} jobs={jobs} giderler={giderler} goster={goster}/>}
