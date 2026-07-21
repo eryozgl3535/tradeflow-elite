@@ -1,7 +1,7 @@
 if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260711-faz1","background:#1C4E60;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
 import { useState, useEffect, memo, useRef, useCallback } from "react";
 import { PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { supabase, yerelKaydet, yerelYukle } from "./veri.js";
+import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.js";
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
 import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf } from "./utils.js";
@@ -89,6 +89,126 @@ function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
   </BottomSheet>;
 }
 
+
+// ═══ 👷 USTA PANELİ — çalışan görünümü (yalnız atanan işler) ═══
+function UstaPanel({kullanici}){
+  const [veri,setVeri]=useState(null);
+  const [hata,setHata]=useState(null);
+  const [secili,setSecili]=useState(null);
+  const [sifreAc,setSifreAc]=useState(false);
+  const [harcamaAc,setHarcamaAc]=useState(null); // iş id ya da true
+  const yukle=async()=>{
+    try{
+      const {data,error}=await supabase.rpc("usta_isler");
+      if(error||!data||data.hata){setHata("Erişim yok. Patronunuz hesabınızı doğrulamalı veya SQL kurulumu eksik.");return;}
+      setVeri(data);
+    }catch(e){setHata("Bağlantı hatası — internet gerekli.");}
+  };
+  useEffect(()=>{yukle();},[]);
+  const asamaIlerlet=async(j)=>{
+    const y=Math.min((j.asama||0)+1,ASAMALAR.length-1);
+    const patch={asama:y};
+    if(y===ASAMALAR.length-1)patch.durum="tamamlandi";
+    await supabase.rpc("usta_is_guncelle",{is_id:j.id,yeni:patch});
+    setSecili(null);yukle();
+  };
+  const K=C;
+  return <div style={{minHeight:"100vh",background:K.bg,fontFamily:"-apple-system,sans-serif",display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:520,padding:"52px 14px 30px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+        <div>
+          <div style={{fontSize:20,fontWeight:800,color:K.t1}}>👷 {veri?.ad||"Usta"} </div>
+          <div style={{fontSize:11,color:K.t3}}>{veri?.rol||""} · Usta Paneli</div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>setSifreAc(true)} style={{background:K.card,border:`1px solid ${K.border}`,borderRadius:11,padding:"9px 12px",fontSize:12,fontWeight:700,color:K.t2,cursor:"pointer"}}>🔑 Şifre</button>
+          <button onClick={()=>supabase.auth.signOut()} style={{background:K.redBg,border:"none",borderRadius:11,padding:"9px 12px",fontSize:12,fontWeight:700,color:K.red,cursor:"pointer"}}>Çıkış</button>
+        </div>
+      </div>
+      <div style={{textAlign:"center",margin:"2px 0 14px"}}><span style={{fontSize:10,fontWeight:700,letterSpacing:"0.35em",color:"#1B2A4A"}}>TRADEFLOW ERA</span><span style={{fontSize:10,fontWeight:700,color:"#E4335A"}}>İ</span></div>
+      {hata&&<div style={{background:K.amberBg,borderRadius:14,padding:"13px 15px",fontSize:12.5,color:"#92600A",marginBottom:12}}>⚠️ {hata}</div>}
+      {!veri&&!hata&&<div style={{textAlign:"center",color:K.t3,padding:"40px 0"}}>Yükleniyor...</div>}
+      {veri&&(veri.isler||[]).length===0&&<div style={{textAlign:"center",color:K.t3,fontSize:13,padding:"30px 0"}}>Sana atanmış iş yok. Patronun iş atadığında burada görünecek. 💪</div>}
+      {veri&&(veri.isler||[]).map(j=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
+        <div onClick={()=>setSecili(secili===j.id?null:j.id)} style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}}>
+          <div style={{fontSize:24}}>{j.icon||"🔧"}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:K.t1}}>{j.baslik}</div>
+            <div style={{fontSize:11.5,color:K.t3}}>{j.musteri} · {j.tarih} · <b style={{color:j.durum==="tamamlandi"?K.green:P}}>{j.durum==="tamamlandi"?"✅ Bitti":ASAMALAR[j.asama||0]}</b></div>
+          </div>
+          <span style={{color:K.t3}}>{secili===j.id?"▴":"▾"}</span>
+        </div>
+        {secili===j.id&&<div style={{marginTop:12,borderTop:`1px solid ${K.border}`,paddingTop:12}}>
+          {j.isAdresi&&<div style={{display:"flex",gap:8,marginBottom:10}}>
+            <div style={{flex:1,background:K.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:K.t2}}>📍 {j.isAdresi}</div>
+            <button onClick={()=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.isAdresi),"_blank")} style={{background:K.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:12,fontWeight:700,color:K.t1,cursor:"pointer"}}>🗺️</button>
+            {j.musteriTelefon&&<button onClick={()=>window.open("tel:"+j.musteriTelefon)} style={{background:K.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:12,fontWeight:700,color:K.t1,cursor:"pointer"}}>📞</button>}
+          </div>}
+          {j.malzemeler&&<div style={{background:K.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:K.t2,whiteSpace:"pre-wrap",marginBottom:10}}>🧰 {j.malzemeler}</div>}
+          {j.not&&<div style={{background:"#FBF6EA",borderRadius:11,padding:"9px 11px",fontSize:11.5,color:"#92600A",whiteSpace:"pre-wrap",marginBottom:10}}>📝 {j.not}</div>}
+          {j.durum!=="tamamlandi"&&<div style={{display:"flex",gap:8}}>
+            <button onClick={()=>asamaIlerlet(j)} style={{flex:1.4,background:GRAD,border:"none",borderRadius:12,padding:"12px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Sonraki Aşama ›</button>
+            <button onClick={()=>setHarcamaAc(j.id)} style={{flex:1,background:K.amberBg,border:"none",borderRadius:12,padding:"12px 0",color:"#92600A",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>🧾 Harcama</button>
+          </div>}
+        </div>}
+      </Sh>)}
+      {sifreAc&&<BottomSheet onKapat={()=>setSifreAc(false)}>
+        <SifreDegistir onBitti={()=>setSifreAc(false)}/>
+      </BottomSheet>}
+      {harcamaAc&&<BottomSheet onKapat={()=>setHarcamaAc(null)}>
+        <UstaHarcama isId={harcamaAc} onBitti={()=>{setHarcamaAc(null);}}/>
+      </BottomSheet>}
+    </div>
+  </div>;
+}
+function SifreDegistir({onBitti}){
+  const [s1,setS1]=useState("");const [msg,setMsg]=useState("");
+  return <div>
+    <div style={{fontSize:16,fontWeight:800,color:C.t1,marginBottom:12}}>🔑 Şifre Değiştir</div>
+    <input type="password" value={s1} onChange={e=>setS1(e.target.value)} placeholder="Yeni şifre (en az 6 karakter)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
+    {msg&&<div style={{fontSize:12,color:msg.startsWith("✅")?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
+    <button onClick={async()=>{
+      if(s1.length<6){setMsg("Şifre en az 6 karakter olmalı");return;}
+      const {error}=await supabase.auth.updateUser({password:s1});
+      if(error){setMsg("Değiştirilemedi — tekrar deneyin");}else{setMsg("✅ Şifren değişti!");setTimeout(onBitti,1200);}
+    }} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Kaydet</button>
+  </div>;
+}
+function UstaHarcama({isId,onBitti}){
+  const [f,setF]=useState({ad:"",tutar:"",fisFoto:null});
+  const [msg,setMsg]=useState("");
+  const fotoSec=(e)=>{
+    const dosya=e.target.files&&e.target.files[0];if(!dosya)return;
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement("canvas");const oran=Math.min(1,900/img.width);
+        c.width=img.width*oran;c.height=img.height*oran;
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        setF(p=>({...p,fisFoto:c.toDataURL("image/jpeg",0.6)}));
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(dosya);
+  };
+  return <div>
+    <div style={{fontSize:16,fontWeight:800,color:C.t1,marginBottom:4}}>🧾 Harcama Bildir</div>
+    <div style={{fontSize:11,color:C.t3,marginBottom:12}}>Malzeme, yakıt, yemek... Fiş fotoğrafıyla patronunun onayına gider.</div>
+    <input value={f.ad} onChange={e=>setF(p=>({...p,ad:e.target.value}))} placeholder="Ne aldın? (örn: 2 torba çimento)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
+    <input type="number" value={f.tutar} onChange={e=>setF(p=>({...p,tutar:e.target.value}))} placeholder="Tutar (TL)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
+    <label style={{display:"block",background:f.fisFoto?C.greenBg:C.bg,border:`1.5px dashed ${f.fisFoto?C.green:C.border}`,borderRadius:12,padding:"13px 0",textAlign:"center",fontSize:13,fontWeight:700,color:f.fisFoto?C.green:C.t2,cursor:"pointer",marginBottom:12}}>
+      {f.fisFoto?"✅ Fiş fotoğrafı eklendi":"📷 Fiş fotoğrafı çek / seç"}
+      <input type="file" accept="image/*" capture="environment" onChange={fotoSec} style={{display:"none"}}/>
+    </label>
+    {msg&&<div style={{fontSize:12,color:msg.startsWith("✅")?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
+    <button onClick={async()=>{
+      if(!f.ad||!f.tutar){setMsg("Açıklama ve tutar gerekli");return;}
+      const {data,error}=await supabase.rpc("usta_harcama_ekle",{h:{ad:f.ad,tutar:parseFloat(f.tutar)||0,isId:isId===true?null:isId,fisFoto:f.fisFoto,tarih:new Date().toISOString().slice(0,10)}});
+      if(error||(data&&data.hata)){setMsg("Gönderilemedi — internet kontrolü yap");}else{setMsg("✅ Patronunun onayına gönderildi!");setTimeout(onBitti,1200);}
+    }} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Gönder</button>
+  </div>;
+}
 // ═══ KURUCU PANELİ ═══
 // ═══ DESTEK İLETİŞİM — tek yerden yönetilir ═══
 const DESTEK_EMAIL = ""; // Destek adresi belirlenince buraya yazılacak — boşsa satır gizlenir
@@ -1779,7 +1899,37 @@ function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitl
 }
 
 // ─── EKİP YÖNETİMİ ──────────────────────────────────────────────
-function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T}){
+function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T,kullaniciId}){
+  const [girisler,setGirisler]=useState({}); // ad -> kayıt
+  const [girisAc,setGirisAc]=useState(null); // hangi üye için form açık
+  const [gf,setGf]=useState({ka:"",sifre:""});
+  const [sonuc,setSonuc]=useState(null); // oluşturulan bilgiler
+  const girisleriYukle=async()=>{
+    try{const {data}=await supabase.from("ekip_girisleri").select("*");
+      if(Array.isArray(data)){const m={};data.forEach(g=>m[g.ad]=g);setGirisler(m);}
+    }catch(e){}
+  };
+  useEffect(()=>{girisleriYukle();},[]);
+  const girisOlustur=async(uye)=>{
+    const ka=gf.ka.trim().toLowerCase().replace(/[^a-z0-9._-]/g,"");
+    if(ka.length<3){goster("⚠️ Kullanıcı adı en az 3 karakter (harf/rakam)");return;}
+    if(gf.sifre.length<6){goster("⚠️ Şifre en az 6 karakter");return;}
+    try{
+      const {data,error}=await supabaseYan.auth.signUp({email:ka+USTA_EK,password:gf.sifre});
+      if(error){goster(error.message.includes("already")?"⚠️ Bu kullanıcı adı alınmış":"⚠️ Oluşturulamadı: "+error.message);return;}
+      const ustaId=data.user&&data.user.id;
+      if(!ustaId){goster("⚠️ Hesap açılamadı");return;}
+      const {error:e2}=await supabase.from("ekip_girisleri").insert({usta_id:ustaId,isveren_id:kullaniciId,kullanici_adi:ka,ad:uye.ad,rol:uye.rol||"Usta"});
+      if(e2){goster("⚠️ Kayıt bağlanamadı — SQL kurulumunu kontrol edin");return;}
+      setSonuc({ad:uye.ad,ka,sifre:gf.sifre});
+      setGirisAc(null);setGf({ka:"",sifre:""});
+      girisleriYukle();
+    }catch(e){goster("⚠️ Bağlantı hatası");}
+  };
+  const aktifDegistir=async(g)=>{
+    await supabase.from("ekip_girisleri").update({aktif:!g.aktif}).eq("usta_id",g.usta_id);
+    girisleriYukle();goster(g.aktif?"⏸️ Giriş donduruldu":"▶️ Giriş açıldı");
+  };
   const [ad,setAd]=useState("");
   const [rol,setRol]=useState("Usta");
   const ROLLER=[T.rolUsta,T.rolMuhasebe,T.rolSatis,T.rolSofor,T.rolYardimci];
@@ -1793,6 +1943,12 @@ function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T}){
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:MASAUSTU?640:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik={"👷 "+T.ekipYonetimi} onKapat={onKapat}/>
+      {sonuc&&<div style={{background:C.greenBg,border:`1px solid ${C.green}55`,borderRadius:14,padding:"13px 15px",marginBottom:14}}>
+        <div style={{fontSize:13,fontWeight:800,color:C.green,marginBottom:6}}>✅ {sonuc.ad} için giriş hazır — bu bilgileri ustana ver:</div>
+        <div style={{fontSize:13,color:C.t1}}>Kullanıcı adı: <b>{sonuc.ka}</b><br/>Şifre: <b>{sonuc.sifre}</b></div>
+        <div style={{fontSize:10.5,color:C.t3,marginTop:6}}>Usta, giriş ekranında "👷 Usta / Çalışan" sekmesinden bu bilgilerle girer; ilk girişten sonra şifresini kendisi değiştirebilir.</div>
+        <button onClick={()=>setSonuc(null)} style={{marginTop:8,background:"transparent",border:"none",fontSize:11,fontWeight:700,color:C.t3,cursor:"pointer",textDecoration:"underline"}}>Kapat</button>
+      </div>}
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px"}}>
         {/* Üye ekleme */}
         <Sh s={{padding:16,marginBottom:14}}>
@@ -1819,6 +1975,21 @@ function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T}){
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{u.ad}</div>
                 <div style={{fontSize:11,color:C.t3}}>{u.rol} · {uyeIsler.length} {T.isAtandiK} · {tamam} {T.tamamlandi.toLowerCase()}</div>
+                {/* 🔑 Usta girişi */}
+                {girisler[u.ad]
+                  ?<div style={{display:"flex",alignItems:"center",gap:8,marginTop:6,flexWrap:"wrap"}}>
+                    <span style={{fontSize:10.5,fontWeight:700,color:girisler[u.ad].aktif?C.green:C.t3,background:girisler[u.ad].aktif?C.greenBg:C.bg,borderRadius:7,padding:"3px 8px"}}>🔑 {girisler[u.ad].kullanici_adi}{girisler[u.ad].aktif?"":" · dondu"}</span>
+                    <button onClick={()=>aktifDegistir(girisler[u.ad])} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:7,padding:"3px 8px",fontSize:10,fontWeight:700,color:C.t2,cursor:"pointer"}}>{girisler[u.ad].aktif?"Dondur":"Aç"}</button>
+                  </div>
+                  :<button onClick={()=>{setGirisAc(u.ad);setGf({ka:"",sifre:""});}} style={{marginTop:6,background:C.purpleBg,border:"none",borderRadius:8,padding:"5px 10px",fontSize:10.5,fontWeight:700,color:P,cursor:"pointer"}}>🔑 Giriş Oluştur</button>}
+                {girisAc===u.ad&&<div style={{marginTop:8,background:C.bg,borderRadius:11,padding:"10px"}}>
+                  <input value={gf.ka} onChange={e=>setGf(p=>({...p,ka:e.target.value}))} placeholder="Kullanıcı adı (örn: mehmet35)" style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 11px",fontSize:12.5,outline:"none",marginBottom:7,color:C.t1}}/>
+                  <input value={gf.sifre} onChange={e=>setGf(p=>({...p,sifre:e.target.value}))} placeholder="Geçici şifre (usta sonra değiştirir)" style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 11px",fontSize:12.5,outline:"none",marginBottom:8,color:C.t1}}/>
+                  <div style={{display:"flex",gap:7}}>
+                    <button onClick={()=>setGirisAc(null)} style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 0",fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer"}}>Vazgeç</button>
+                    <button onClick={()=>girisOlustur(u)} style={{flex:1,background:P,border:"none",borderRadius:9,padding:"9px 0",fontSize:12,fontWeight:700,color:"#fff",cursor:"pointer"}}>Oluştur</button>
+                  </div>
+                </div>}
               </div>
               <button onClick={()=>{setEkip(p=>p.filter(x=>x.ad!==u.ad));goster(T.uyeCikarildi);}} style={{background:"none",border:"none",color:C.t3,fontSize:15,cursor:"pointer"}}>×</button>
             </div>
@@ -3334,6 +3505,7 @@ function GirisEkrani({onGiris}){
     hataGerekli:"Email and password required",hataKisa:"Password must be at least 6 characters",hataYanlis:"Invalid email or password",hataKayitli:"Email already registered, sign in",hataOnay:"Email confirmation required. Check your inbox.",hataGenel:"Something went wrong",
   };
   const [mod,setMod]=useState("giris"); // giris | kayit
+  const [tip,setTip]=useState("isveren"); // isveren | usta
   const [email,setEmail]=useState("");
   const [sifre,setSifre]=useState("");
   const [beniHatirla,setBeniHatirla]=useState(true); // varsayılan: açık kal
@@ -3343,9 +3515,19 @@ function GirisEkrani({onGiris}){
 
   const gonder=async()=>{
     setHata("");setBilgi("");
-    if(!email||!sifre){setHata(L.hataGerekli);return;}
+    if(!email||!sifre){setHata(tip==="usta"?"Kullanıcı adı ve şifre gerekli":L.hataGerekli);return;}
     if(sifre.length<6){setHata(L.hataKisa);return;}
     setYukleniyor(true);
+    if(tip==="usta"){ // 👷 Usta girişi: kullanıcı adı → dahili e-posta
+      try{
+        const ka=email.trim().toLowerCase().replace(/\s/g,"");
+        const {data,error}=await supabase.auth.signInWithPassword({email:ka+USTA_EK,password:sifre});
+        if(error)throw error;
+        onGiris(data.user);
+      }catch(e){setHata("Kullanıcı adı veya şifre hatalı. Patronunuzdan bilgilerinizi kontrol edin.");}
+      setYukleniyor(false);
+      return;
+    }
     try{
       try{ window.__tfBeniHatirla = true; }catch(e){} // Oturum her zaman açık kalır
       if(mod==="kayit"){
@@ -3386,13 +3568,16 @@ function GirisEkrani({onGiris}){
         </div>
         <div style={{fontSize:16,fontWeight:600,color:"#111827",letterSpacing:"0.12em"}}>TRADEFLOW</div>
         <div style={{fontSize:11,fontWeight:600,color:"#6B7280",letterSpacing:"0.34em",marginTop:1}}>ELITE</div>
-        <div style={{fontSize:13,color:"#6B7280",marginTop:10}}>{mod==="giris"?L.hesabaGiris:L.yeniHesap}</div>
+        <div style={{display:"flex",gap:6,margin:"14px auto 4px",background:"#EDF0F5",borderRadius:12,padding:4,maxWidth:290}}>
+          {[["isveren","💼 İşveren"],["usta","👷 Usta / Çalışan"]].map(([v,l])=><button key={v} onClick={()=>{setTip(v);setHata("");if(v==="usta")setMod("giris");}} style={{flex:1,background:tip===v?"#fff":"transparent",border:"none",borderRadius:9,padding:"9px 4px",fontSize:12.5,fontWeight:700,color:tip===v?"#1C4E60":"#6B7280",cursor:"pointer",boxShadow:tip===v?"0 1px 3px rgba(16,24,40,0.1)":"none"}}>{l}</button>)}
+        </div>
+        <div style={{fontSize:13,color:"#6B7280",marginTop:8}}>{tip==="usta"?"Patronunun verdiği bilgilerle gir":(mod==="giris"?L.hesabaGiris:L.yeniHesap)}</div>
       </div>
 
       {/* Form */}
       <div style={{marginBottom:14}}>
-        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{L.eposta}</div>
-        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ornek@mail.com"
+        <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{tip==="usta"?"Kullanıcı Adı":L.eposta}</div>
+        <input type={tip==="usta"?"text":"email"} value={email} onChange={e=>setEmail(e.target.value)} placeholder={tip==="usta"?"örn: mehmet35":"ornek@mail.com"}
           style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
       </div>
       <div style={{marginBottom:18}}>
@@ -3415,7 +3600,7 @@ function GirisEkrani({onGiris}){
       </button>
 
       <div style={{textAlign:"center",marginTop:18,fontSize:13,color:"#6B7280"}}>
-        {mod==="giris"?L.hesapYok:L.hesapVar}
+        {tip==="usta"?"":(mod==="giris"?L.hesapYok:L.hesapVar)}
         <span onClick={()=>{setMod(mod==="giris"?"kayit":"giris");setHata("");setBilgi("");}} style={{color:"#1C4E60",fontWeight:700,cursor:"pointer"}}>
           {mod==="giris"?L.kayitOl:L.girisYap}
         </span>
@@ -3489,6 +3674,7 @@ export default function TradeFlow(){
   const [kullanici,setKullanici]=useState(null);
   KURUCU_MU=((kullanici&&kullanici.email)||"").toLowerCase()===KURUCU_EMAIL;
   const [oturumKontrol,setOturumKontrol]=useState(true); // ilk açılışta oturum kontrol ediliyor
+  const USTA_MI=((kullanici&&kullanici.email)||"").endsWith(USTA_EK);
 
   // İnternet gidince/gelince yakala
   useEffect(()=>{
@@ -3526,6 +3712,7 @@ export default function TradeFlow(){
   useEffect(()=>{
     if(!kullanici){setVeriYuklendi(false);return;}
     let iptal=false;
+    if(USTA_MI){setVeriYuklendi(true);return;}
     (async()=>{
       let v=null,kaynakYerel=false;
       try{
@@ -3587,6 +3774,7 @@ export default function TradeFlow(){
   useEffect(()=>{
     if(!kullanici||!veriYuklendi)return;
     const zaman=setTimeout(async()=>{
+      if(USTA_MI)return;
       const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,karanlik,tema,sesEfekt,raporDonem,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
       await yerelKaydet(kullanici.id,paket); // 1) cihaza — her zaman
       if(!navigator.onLine){setSenkronBekliyor(true);return;} // internet yok: kuyrukta
@@ -3776,6 +3964,9 @@ export default function TradeFlow(){
   if(!kullanici){
     return <GirisEkrani onGiris={(u)=>setKullanici(u)}/>;
   }
+  if(USTA_MI){
+    return <UstaPanel kullanici={kullanici}/>;
+  }
   if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
     <div style={{width:64,height:64,borderRadius:20,background:P,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,animation:"tfPulse 1.2s ease-in-out infinite"}}>⚡</div>
     <div style={{fontSize:15,fontWeight:800,color:C.t1}}>TradeFlow</div>
@@ -3873,7 +4064,7 @@ export default function TradeFlow(){
         {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
         {ekran==="kasa"&&!kasaAcik&&<PinKapi kayitliPin={isletme.kasaPin} onPinAyarla={(p)=>{setIsletme(i=>({...i,kasaPin:p}));goster("🔐 PIN kaydedildi");}} onBasari={()=>setKasaAcik(true)} onKapat={()=>setEkran(null)}/>}
         {ekran==="kasa"&&kasaAcik&&<KasaEkrani onKapat={()=>{setEkran(null);setKasaAcik(false);}} cekSenetler={cekSenetler} setCekSenetler={setCekSenetler} jobs={jobs} giderler={giderler} goster={goster}/>}
-        {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T}/>}
+        {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T} kullaniciId={kullanici&&kullanici.id}/>}
         {ekran==="gizlilik"&&<GizlilikEkrani onKapat={()=>setEkran(null)}/>}
         {ekran==="degerlendir"&&<DegerlendirModal onKapat={()=>setEkran(null)} onGonder={(y,o)=>{goster("⭐".repeat(y)+" "+T.tesekkurler);bildirimEkle("⭐ Değerlendirme gönderildi",y+" yıldız"+(o?" + öneri":""),"is");}} T={T}/>}
         {ozellestirAc&&<OzellestirModal moduller={moduller} setModuller={setModuller} onKapat={()=>setOzellestirAc(false)} T={T}/>}
