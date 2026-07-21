@@ -8,13 +8,13 @@ import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, 
 
 
 const LIGHT = {
-  bg:"#E9EDF4",card:"#F5F7FB",border:"#E5E7EB",
+  bg:"#F1F3F7",card:"#FFFFFF",border:"#E5E7EB",
   t1:"#111827",t2:"#6B7280",t3:"#9CA3AF",
   green:"#10B981",greenBg:"#DCFCE7",amber:"#F59E0B",amberBg:"#FEF3C7",
   red:"#EF4444",redBg:"#FEE2E2",blue:"#3B82F6",blueBg:"#DBEAFE",
   purpleBg:"#DEE7F2",inputBg:"#FFFFFF",
   statP:"#1C4E60",statG:"#059669",statA:"#B45309",statR:"#DC2626",
-  sh:"6px 6px 14px rgba(163,177,198,0.35), -6px -6px 14px rgba(255,255,255,0.85)",
+  sh:"0 1px 3px rgba(16,24,40,0.07), 0 1px 2px rgba(16,24,40,0.04)",
   sh2:"0 8px 24px rgba(0,0,0,0.12)",
 };
 const DARK = {
@@ -400,10 +400,10 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const gelirD=degisim(tahsil,tahsilOnceki), giderD=degisim(gider,giderOnceki);
   const bugunIsler=jobs.filter(j=>j.durum!=="tamamlandi"&&((j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun))).sort((a,b)=>(a.hatirlatma||"z").localeCompare(b.hatirlatma||"z")).slice(0,3);
   const kartlar=[
-    {ic:"ti-briefcase",l:T.aktifIs,v:aktif,sub:T.devamEden,c:"#6D28D9",ibg:"#EEE9FB"},
-    {ic:"ti-circle-check",l:T.tahsilEdildi,v:fmt(tahsil),sub:T.buAyTahsilat,c:"#0E9F6E",ibg:"#DEF7EC"},
-    {ic:"ti-clock",l:T.bekleyenTahsilat,v:fmt(beklT),sub:T.toplam,c:"#F59E0B",ibg:"#FDF0D9"},
-    {ic:"ti-file-text",l:T.faturalar,v:beklFatSay,sub:T.beklemede,c:"#E74694",ibg:"#FCE8F3"},
+    {ic:"ti-briefcase",l:T.aktifIs,v:aktif,sub:T.devamEden,c:"#2563EB"},
+    {ic:"ti-shield-check",l:T.tahsilEdildi,v:fmt(tahsil),sub:T.buAy||"Bu ay",c:"#0E9F6E"},
+    {ic:"ti-clock",l:T.bekleyenTahsilat,v:fmt(beklT),sub:T.toplam,c:"#F59E0B"},
+    {ic:"ti-file-text",l:T.faturalar,v:beklFatSay,sub:T.beklemede,c:"#7C5CFC"},
   ];
   const hizli=[
     {ic:"ti-circle-plus",c:"#6D28D9",l:T.yeniIs,act:onYeniIs},
@@ -418,14 +418,26 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     {ic:"ti-dots",c:"#6B7280",l:T.dahaFazla,act:()=>setSekme("daha")},
   ];
   const cevre=2*Math.PI*44;
-  return <div style={{padding:"18px 16px 0"}}>
-    {/* Karşılama + illüstrasyon (tablette ERAİ) */}
-    <div style={{padding:"10px 2px 4px",marginBottom:18}}>
+  return <div style={{padding:"14px 16px 0"}}>
+    {/* Karşılama */}
+    <div style={{padding:"8px 2px 2px",marginBottom:14}}>
       <div style={{fontSize:27,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.25}}>{selam}{ad?", "+ad:""} 👋</div>
-      <div style={{fontSize:13.5,color:C.t3,marginTop:6,lineHeight:1.5}}>Harika işler başarmak için hazırsın.</div>
-      <button onClick={onYeniIs} style={{marginTop:16,background:GRAD,border:"none",borderRadius:22,padding:"14px 26px",color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.35)"}}><i className="ti ti-plus" style={{fontSize:16}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
+      <div style={{fontSize:13.5,color:C.t3,marginTop:5}}>Bugün harika işler başarabilirsin.</div>
     </div>
-    {/* Hızlı İşlemler */}
+    {/* Yeni İş + Bugün Ne Yapıyoruz? yan yana */}
+    <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"stretch"}}>
+      <button onClick={onYeniIs} style={{flex:"0 0 46%",background:GRAD,border:"none",borderRadius:18,padding:"16px 10px",color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.3)"}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
+      <div onClick={()=>bugunIsler.length>0?onIsSec(bugunIsler[0]):setSekme("isler")} style={{flex:1,background:C.card,borderRadius:18,padding:"12px 14px",cursor:"pointer",boxShadow:C.sh,display:"flex",alignItems:"center",gap:10}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:3}}>Bugün Ne Yapıyoruz?</div>
+          {bugunIsler.length===0
+            ?<div style={{fontSize:11,color:C.t3,lineHeight:1.45}}>Planlı işin yok — yeni iş ekleyerek gününü planla.</div>
+            :<div style={{fontSize:11,color:C.t2,lineHeight:1.45}}><b style={{color:P}}>{(bugunIsler[0].hatirlatma||"").slice(11,16)||"Bugün"}</b> · {bugunIsler[0].musteri} — {bugunIsler[0].baslik}{bugunIsler.length>1?" (+"+(bugunIsler.length-1)+" iş daha)":""}</div>}
+        </div>
+        <div style={{width:44,height:44,borderRadius:13,background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-calendar-event" style={{fontSize:21,color:P}} aria-hidden="true"/></div>
+      </div>
+    </div>
+    {/* Hızlı İşlemler — düz beyaz kutular */}
     <Sh s={{padding:"16px 12px",marginBottom:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 14px"}}>
         <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Hızlı İşlemler</div>
@@ -433,7 +445,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:9}}>
         {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
-          <div style={{width:"100%",aspectRatio:"1",borderRadius:16,background:C.card,boxShadow:"4px 4px 10px rgba(163,177,198,0.4), -4px -4px 10px rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+          <div style={{width:"100%",aspectRatio:"1",borderRadius:15,background:C.card,border:"1px solid #EDF0F4",boxShadow:"0 1px 2px rgba(16,24,40,0.05)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
             <i className={`ti ${m.ic}`} style={{fontSize:22,color:P}} aria-hidden="true"/>
             {m.nokta&&<span style={{position:"absolute",top:7,right:7,width:8,height:8,borderRadius:"50%",background:"#E74694"}}/>}
           </div>
@@ -459,64 +471,43 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         <div style={{flex:1,fontSize:12.5,color:"#92600A",lineHeight:1.5}}><b>{yak.length} çek/senet</b> için vade 3 gün içinde: {yak.slice(0,2).map(c=>c.kisi+" ("+fmt(c.tutar)+")").join(", ")}{yak.length>2?" +"+(yak.length-2):""}</div>
         <span style={{color:"#92600A",fontWeight:800}}>›</span>
       </div>;})()}
-    {/* Bugün Ne Yapıyoruz? — yan yana kartlar */}
-    <div style={{marginBottom:16}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:11,padding:"0 2px"}}>
-        <div style={{fontSize:15.5,fontWeight:800,color:C.t1,display:"flex",alignItems:"center",gap:8}}><i className="ti ti-calendar-event" style={{fontSize:18,color:P}} aria-hidden="true"/>Bugün Ne Yapıyoruz?</div>
-        <div onClick={()=>setSekme("isler")} style={{fontSize:12,fontWeight:700,color:P,cursor:"pointer"}}>Tümü ›</div>
+    {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
+    <Sh s={{padding:"14px 4px",marginBottom:16}}>
+      <div style={{display:"flex"}}>
+        {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{flex:1,padding:"2px 10px",cursor:"pointer",borderRight:i<3?`1px solid ${C.border}`:"none"}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
+            <i className={`ti ${k.ic}`} style={{fontSize:14,color:k.c}} aria-hidden="true"/>
+            <span style={{fontSize:9.5,fontWeight:700,color:C.t2,lineHeight:1.1}}>{k.l}</span>
+          </div>
+          <div style={{fontSize:15,fontWeight:800,color:C.t1,whiteSpace:"nowrap"}}>{k.v}</div>
+          <div style={{fontSize:9,color:C.t3,marginBottom:7}}>{k.sub}</div>
+          <div style={{height:3,borderRadius:2,background:k.c}}/>
+        </div>)}
       </div>
-      {bugunIsler.length===0&&<Sh s={{padding:"14px 16px"}}><div style={{fontSize:13,color:C.t3}}>Bugün planlı iş yok — yeni iş ekleyerek gününü planla 🎉</div></Sh>}
-      {bugunIsler.length>0&&<div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:4,WebkitOverflowScrolling:"touch"}}>
-        {bugunIsler.map(j=><Sh key={j.id} s={{minWidth:250,flex:"0 0 auto",padding:"14px 14px"}}>
-          <div onClick={()=>onIsSec(j)} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:9}}>
-            <div style={{background:GRAD,color:"#fff",borderRadius:11,padding:"8px 10px",fontSize:12.5,fontWeight:800,flexShrink:0}}>{(j.hatirlatma||"").slice(11,16)||"—"}</div>
-            <div style={{minWidth:0}}>
-              <div style={{fontSize:13.5,fontWeight:800,color:C.t1}}>{j.musteri}</div>
-              <div style={{fontSize:11.5,color:C.t3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.baslik}</div>
-            </div>
-          </div>
-          {j.isAdresi&&<div style={{background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11,color:C.t2,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><i className="ti ti-map-pin" style={{fontSize:13,color:P}} aria-hidden="true"/><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.isAdresi}</span></div>}
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>{if(j.musteriTelefon)window.open("tel:"+j.musteriTelefon);else onIsSec(j);}} style={{flex:1,background:C.bg,border:"none",borderRadius:11,padding:"9px 0",fontSize:12,fontWeight:700,color:C.t1,cursor:"pointer",boxShadow:C.sh}}>📞 Ara</button>
-            <button onClick={()=>j.isAdresi?window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.isAdresi)+"&travelmode=driving","_blank"):onIsSec(j)} style={{flex:1,background:C.bg,border:"none",borderRadius:11,padding:"9px 0",fontSize:12,fontWeight:700,color:C.t1,cursor:"pointer",boxShadow:C.sh}}>🗺️ Rota Çiz</button>
-          </div>
-        </Sh>)}
-      </div>}
-    </div>
-    {/* İstatistik kartları */}
-    <div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:6,marginBottom:16,WebkitOverflowScrolling:"touch"}}>
-      {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{minWidth:150,flex:"0 0 auto",background:C.card,borderRadius:18,padding:"15px 14px 10px",cursor:"pointer",boxShadow:C.sh}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:5}}>{k.l}</div>
-        <div style={{fontSize:22,fontWeight:800,color:k.c}}>{k.v}</div>
-        <div style={{fontSize:10.5,color:C.t3,marginBottom:4}}>{k.sub}</div>
-        <Spark renk={k.c}/>
-      </div>)}
-    </div>
-    {/* Gelir & Gider Özeti */}
-    <Sh s={{padding:"16px",marginBottom:14}}>
+    </Sh>
+    {/* Gelir - Gider Özeti */}
+    <Sh s={{padding:"16px",marginBottom:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>{T.gelirGider} Özeti</div>
+        <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Gelir - Gider Özeti</div>
         <div onClick={()=>setSekme("raporlar")} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer"}}>{T.buAy} ▾</div>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{flex:1,background:C.bg,borderRadius:14,padding:"12px 12px",boxShadow:"inset 3px 3px 7px rgba(163,177,198,0.35), inset -3px -3px 7px rgba(255,255,255,0.85)"}}>
+        <div style={{flex:1,background:"#F6F8FA",borderRadius:14,padding:"12px 12px"}}>
           <div style={{fontSize:11,color:C.t3}}>{T.toplamGelir}</div>
-          <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(tahsil)}</div>
-          {gelirD!==null&&<span style={{fontSize:10.5,fontWeight:800,color:"#0E9F6E",background:"#DEF7EC",borderRadius:7,padding:"2px 7px"}}>↑ %{Math.abs(gelirD)}</span>}
+          <div style={{fontSize:17,fontWeight:800,color:C.t1,margin:"2px 0 4px"}}>{fmt(tahsil)}</div>
+          {gelirD!==null&&<div><span style={{fontSize:10.5,fontWeight:800,color:"#0E9F6E"}}>↑ %{Math.abs(gelirD)}</span><div style={{fontSize:9,color:C.t3,marginTop:2}}>Geçen aya göre</div></div>}
         </div>
-        <div style={{position:"relative",width:104,height:104,flexShrink:0}}>
-          <svg width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="44" fill="none" stroke="#DDE3EE" strokeWidth="11"/><circle cx="52" cy="52" r="44" fill="none" stroke={P} strokeWidth="11" strokeLinecap="round" strokeDasharray={cevre} strokeDashoffset={cevre*(1-Math.max(Math.min(karOran,100),0)/100)} transform="rotate(-90 52 52)"/></svg>
-          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:18,fontWeight:800,color:C.t1}}>%{karOran}</span><span style={{fontSize:10,color:C.t3}}>Kâr Oranı</span></div>
+        <div style={{position:"relative",width:106,height:106,flexShrink:0}}>
+          <svg width="106" height="106" viewBox="0 0 106 106"><circle cx="53" cy="53" r="44" fill="none" stroke="#E8ECF1" strokeWidth="10"/><circle cx="53" cy="53" r="44" fill="none" stroke={P} strokeWidth="10" strokeLinecap="round" strokeDasharray={cevre} strokeDashoffset={cevre*(1-Math.max(Math.min(karOran,100),0)/100)} transform="rotate(-90 53 53)"/></svg>
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:19,fontWeight:800,color:C.t1}}>%{karOran}</span><span style={{fontSize:10,color:C.t3}}>Kâr Oranı</span></div>
         </div>
-        <div style={{flex:1,background:C.bg,borderRadius:14,padding:"12px 12px",textAlign:"right",boxShadow:"inset 3px 3px 7px rgba(163,177,198,0.35), inset -3px -3px 7px rgba(255,255,255,0.85)"}}>
+        <div style={{flex:1,background:"#F6F8FA",borderRadius:14,padding:"12px 12px",textAlign:"right"}}>
           <div style={{fontSize:11,color:C.t3}}>{T.toplamGider}</div>
-          <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(gider)}</div>
-          {giderD!==null&&<span style={{fontSize:10.5,fontWeight:800,color:"#E02424",background:"#FDE8E8",borderRadius:7,padding:"2px 7px"}}>↑ %{Math.abs(giderD)}</span>}
+          <div style={{fontSize:17,fontWeight:800,color:C.t1,margin:"2px 0 4px"}}>{fmt(gider)}</div>
+          {giderD!==null&&<div><span style={{fontSize:10.5,fontWeight:800,color:"#E02424"}}>↓ %{Math.abs(giderD)}</span><div style={{fontSize:9,color:C.t3,marginTop:2}}>Geçen aya göre</div></div>}
         </div>
       </div>
     </Sh>
-    {/* ERAİ imzası */}
-    <div style={{textAlign:"center",paddingBottom:8}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>
   </div>;
 });
 
@@ -3356,7 +3347,7 @@ function GirisEkrani({onGiris}){
     if(sifre.length<6){setHata(L.hataKisa);return;}
     setYukleniyor(true);
     try{
-      try{ window.__tfBeniHatirla = beniHatirla; }catch(e){}
+      try{ window.__tfBeniHatirla = true; }catch(e){} // Oturum her zaman açık kalır
       if(mod==="kayit"){
         const {data,error}=await supabase.auth.signUp({email,password:sifre});
         if(error)throw error;
@@ -3524,18 +3515,11 @@ export default function TradeFlow(){
       setOturumKontrol(false);
     });
     const {data:sub}=supabase.auth.onAuthStateChange((_e,session)=>{
+      // Çevrimdışıyken token yenilenemedi diye kullanıcıyı DÜŞÜRME — internet gelince toparlanır
+      if(!session&&!navigator.onLine)return;
       setKullanici(session?.user||null);
     });
-    // "Beni hatırla" işaretsizse: sekme/tarayıcı kapanırken oturumu kapat
-    const kapanisTemizle=()=>{
-      try{
-        if(window.__tfBeniHatirla===false){
-          supabase.auth.signOut();
-        }
-      }catch(e){}
-    };
-    window.addEventListener("beforeunload",kapanisTemizle);
-    return ()=>{sub.subscription.unsubscribe();window.removeEventListener("beforeunload",kapanisTemizle);};
+    return ()=>{sub.subscription.unsubscribe();};
   },[]);
 
   // Kullanıcı giriş yapınca bulut verisini yükle
@@ -3552,6 +3536,11 @@ export default function TradeFlow(){
         v=data?.veri;
       }catch(e){
         // Bulut erişilemedi — cihazdaki son yerel kopyadan yükle
+        const yerel=await yerelYukle(kullanici.id);
+        if(yerel&&yerel.paket){v=yerel.paket;kaynakYerel=true;setSenkronBekliyor(true);}
+      }
+      if(iptal)return;
+      if(!v){ // Bulut boş/hatalı döndüyse cihazdaki son kopyayı dene
         const yerel=await yerelYukle(kullanici.id);
         if(yerel&&yerel.paket){v=yerel.paket;kaynakYerel=true;setSenkronBekliyor(true);}
       }
@@ -3818,7 +3807,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/></>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f)setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
