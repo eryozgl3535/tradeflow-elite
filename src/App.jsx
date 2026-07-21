@@ -442,6 +442,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>
     </Sh>
     {/* Sektör mini seçici */}
+    <div style={{fontSize:11,color:C.t2,fontWeight:700,margin:"0 2px 6px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🔧 İş Kolunuz</div>
     <div style={{display:"flex",gap:8,marginBottom:16}}>
       <div style={{flex:1,position:"relative",background:C.card,borderRadius:14,padding:"10px 12px",display:"flex",alignItems:"center",gap:8,boxShadow:C.sh}}>
         <i className="ti ti-briefcase" style={{fontSize:15,color:P}} aria-hidden="true"/>
@@ -1294,7 +1295,7 @@ function TeklifMarjRozeti({tutar,maliyet}){
   }catch(e){return null;}
 }
 
-function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMusteri,ekip}){
+function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMusteri,ekip,onIsKolu}){
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   // Sektöre özel iş türü ikonları + birkaç genel ikon
   const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg,ad:t.ad,isler:t.isler})),
@@ -1324,7 +1325,18 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
   const TEKRAR_SECENEK=[["yok",T.tekSefer],["haftalik","🔁 "+T.haftalikL],["aylik","🔁 "+T.aylikL],["yillik","🔁 "+T.yillikL]];
   return <BottomSheet onKapat={onKapat} maxH="90vh">
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:4}}>{edit?"✏️ "+T.isDuzenle:T.yeniIs}</div>
-    {!edit&&<div style={{fontSize:11,color:P,fontWeight:600,marginBottom:14,display:"flex",alignItems:"center",gap:5}}>{sektor.icon} {isKolu} akışı</div>}
+    {!edit&&<div style={{marginBottom:16}}>
+      <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>🔧 Mesleğiniz / İş Kolu</div>
+      <div style={{position:"relative",background:C.bg,border:`1.5px solid ${P}33`,borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+        <span style={{fontSize:19}}>{sektor.icon}</span>
+        <span style={{flex:1,fontSize:14,fontWeight:700,color:C.t1}}>{isKolu}</span>
+        <span style={{fontSize:10.5,color:C.t3}}>değiştir ▾</span>
+        <select value={isKolu} onChange={e=>{const k=e.target.value;onIsKolu&&onIsKolu(k);const s=sektorBilgi(k);const t0=s.isTurleri[0];setIcon({e:t0.e,bg:t0.bg,ad:t0.ad,isler:t0.isler});setOneriGoster(false);}} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>
+          {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
+        </select>
+      </div>
+      <div style={{fontSize:10.5,color:C.t3,marginTop:5}}>İş önerileri ve ikonlar seçtiğin mesleğe göre gelir</div>
+    </div>}
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>{T.ikon}</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{icons.map(ic=><button key={ic.e} onClick={()=>{setIcon(ic);if(!edit&&ic.isler)setOneriGoster(true);}} title={ic.ad||""} style={{width:46,height:46,borderRadius:12,background:ic.bg,border:`2px solid ${icon.e===ic.e?P:"transparent"}`,fontSize:20,cursor:"pointer"}}>{ic.e}</button>)}</div>
@@ -3859,7 +3871,7 @@ export default function TradeFlow(){
         }}/>}
         {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T} giderler={giderler} onPatch={jobPatch}/>}
         {fatJob&&<FaturaModal job={fatJob} isletme={isletme} kdv={kdv} T={T} onKapat={()=>setFatJob(null)} onKesildi={faturaKesildi} gibAyar={gibAyar} onGibAc={(sekme)=>{setFatJob(null);setSekme("profil");setTimeout(()=>setGibAcSekme(sekme),100);}}/>}
-        {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip}/>}
+        {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} onIsKolu={isKoluSecS} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip}/>}
         {duzenlenecekJob&&<YeniIsModal onKapat={()=>setDuzenlenecekJob(null)} onEkle={jobGuncelle} T={T} duzenlenecek={duzenlenecekJob} isKolu={isKolu} jobs={jobs} ekip={ekip}/>}
         {sonSilinen&&<div style={{position:"fixed",bottom:160,left:"50%",transform:"translateX(-50%)",background:"#1F2937",color:"#fff",padding:"12px 18px",borderRadius:14,fontSize:13,fontWeight:600,zIndex:3000,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",display:"flex",alignItems:"center",gap:12,whiteSpace:"nowrap"}}>
           🗑️ İş silindi
