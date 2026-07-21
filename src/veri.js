@@ -11,6 +11,13 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 });
 
+
+// Usta hesabı açarken patron oturumunu bozmayan yan istemci
+export const supabaseYan = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, storageKey: "tradeflow-yan" },
+});
+export const USTA_EK = "@usta.tradeflow.app";
+
 // ─── ÇEVRİMDIŞI YEREL DEPO (IndexedDB) ──────────────────────────
 const IDB_AD="tradeflow-yerel",IDB_STORE="paketler";
 function idbAc(){return new Promise((res,rej)=>{
