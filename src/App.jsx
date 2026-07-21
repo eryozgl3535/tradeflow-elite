@@ -94,13 +94,13 @@ function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
 function UstaPanel({kullanici}){
   const [veri,setVeri]=useState(null);
   const [hata,setHata]=useState(null);
+  const [sekme,setSekme]=useState("isler"); // isler | biten | profil
   const [secili,setSecili]=useState(null);
-  const [sifreAc,setSifreAc]=useState(false);
-  const [harcamaAc,setHarcamaAc]=useState(null); // iş id ya da true
+  const [harcamaAc,setHarcamaAc]=useState(null);
   const yukle=async()=>{
     try{
       const {data,error}=await supabase.rpc("usta_isler");
-      if(error||!data||data.hata){setHata("Erişim yok. Patronunuz hesabınızı doğrulamalı veya SQL kurulumu eksik.");return;}
+      if(error||!data||data.hata){setHata("Erişim yok. Patronunuz hesabınızı doğrulamalı.");return;}
       setVeri(data);
     }catch(e){setHata("Bağlantı hatası — internet gerekli.");}
   };
@@ -112,59 +112,103 @@ function UstaPanel({kullanici}){
     await supabase.rpc("usta_is_guncelle",{is_id:j.id,yeni:patch});
     setSecili(null);yukle();
   };
-  const K=C;
-  return <div style={{minHeight:"100vh",background:K.bg,fontFamily:"-apple-system,sans-serif",display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:520,padding:"52px 14px 30px"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-        <div>
-          <div style={{fontSize:20,fontWeight:800,color:K.t1}}>👷 {veri?.ad||"Usta"} </div>
-          <div style={{fontSize:11,color:K.t3}}>{veri?.rol||""} · Usta Paneli</div>
+  const tum=(veri&&veri.isler)||[];
+  const acikIsler=tum.filter(j=>j.durum!=="tamamlandi");
+  const bitenler=tum.filter(j=>j.durum==="tamamlandi");
+  const bugun=new Date().toISOString().slice(0,10);
+  const bugunku=acikIsler.filter(j=>(j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)).length;
+  const bh=((veri&&veri.ad)||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+
+  const IsKart=(j)=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
+    <div onClick={()=>setSecili(secili===j.id?null:j.id)} style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}}>
+      <div style={{width:44,height:44,borderRadius:12,background:j.iconBg||C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{j.icon||"🔧"}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:14,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.baslik}</div>
+        <div style={{fontSize:11.5,color:C.t3}}>{j.musteri} · {j.tarih}</div>
+      </div>
+      <span style={{fontSize:10,fontWeight:800,color:j.durum==="tamamlandi"?C.green:P,background:j.durum==="tamamlandi"?C.greenBg:C.purpleBg,borderRadius:8,padding:"4px 9px",whiteSpace:"nowrap"}}>{j.durum==="tamamlandi"?"✅ Bitti":ASAMALAR[j.asama||0]}</span>
+    </div>
+    {secili===j.id&&<div style={{marginTop:12,borderTop:`1px solid ${C.border}`,paddingTop:12}}>
+      {j.isAdresi&&<div style={{display:"flex",gap:8,marginBottom:10}}>
+        <div style={{flex:1,background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2}}>📍 {j.isAdresi}</div>
+        <button onClick={()=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.isAdresi),"_blank")} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}>🗺️</button>
+        {j.musteriTelefon&&<button onClick={()=>window.open("tel:"+j.musteriTelefon)} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}>📞</button>}
+      </div>}
+      {j.malzemeler&&<div style={{background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2,whiteSpace:"pre-wrap",marginBottom:10}}>🧰 {j.malzemeler}</div>}
+      {j.not&&<div style={{background:"#FBF6EA",borderRadius:11,padding:"9px 11px",fontSize:11.5,color:"#92600A",whiteSpace:"pre-wrap",marginBottom:10}}>📝 {j.not}</div>}
+      {j.durum!=="tamamlandi"&&<>
+        <div style={{display:"flex",alignItems:"center",gap:4,margin:"4px 0 10px"}}>
+          {ASAMALAR.map((a,i)=><div key={a} style={{flex:1,height:6,borderRadius:4,background:i<=(j.asama||0)?P:C.border}}/>)}
         </div>
         <div style={{display:"flex",gap:8}}>
-          <button onClick={()=>setSifreAc(true)} style={{background:K.card,border:`1px solid ${K.border}`,borderRadius:11,padding:"9px 12px",fontSize:12,fontWeight:700,color:K.t2,cursor:"pointer"}}>🔑 Şifre</button>
-          <button onClick={()=>supabase.auth.signOut()} style={{background:K.redBg,border:"none",borderRadius:11,padding:"9px 12px",fontSize:12,fontWeight:700,color:K.red,cursor:"pointer"}}>Çıkış</button>
+          <button onClick={()=>asamaIlerlet(j)} style={{flex:1.4,background:GRAD,border:"none",borderRadius:12,padding:"12px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Sonraki Aşama ›</button>
+          <button onClick={()=>setHarcamaAc(j.id)} style={{flex:1,background:C.amberBg,border:"none",borderRadius:12,padding:"12px 0",color:"#92600A",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>🧾 Harcama</button>
         </div>
+      </>}
+    </div>}
+  </Sh>;
+
+  return <div style={{minHeight:"100vh",background:C.bg,fontFamily:"-apple-system,sans-serif",display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:520,padding:"48px 14px 96px"}}>
+      {/* Üst kimlik kartı */}
+      <Sh s={{padding:"16px",marginBottom:14,display:"flex",alignItems:"center",gap:13}}>
+        <div style={{width:52,height:52,borderRadius:"50%",background:GRAD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:"#fff",flexShrink:0}}>{bh}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{(veri&&veri.ad)||"Usta"}</div>
+          <div style={{fontSize:11,color:C.t3}}>👷 {(veri&&veri.rol)||"Usta"} · Usta Paneli</div>
+        </div>
+        <div style={{textAlign:"right"}}><span style={{fontSize:10,fontWeight:700,letterSpacing:"0.3em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:10,fontWeight:700,color:"#E4335A"}}>İ</span></div>
+      </Sh>
+      {/* Özet sayılar */}
+      <div style={{display:"flex",gap:10,marginBottom:16}}>
+        {[["Aktif İşim",acikIsler.length,P],["Bugünkü",bugunku,"#F59E0B"],["Bitirdiğim",bitenler.length,"#0E9F6E"]].map(([l,v,r])=><Sh key={l} s={{flex:1,padding:"12px 8px",textAlign:"center"}}>
+          <div style={{fontSize:20,fontWeight:800,color:r}}>{v}</div>
+          <div style={{fontSize:10,color:C.t3,marginTop:2}}>{l}</div>
+        </Sh>)}
       </div>
-      <div style={{textAlign:"center",margin:"2px 0 14px"}}><span style={{fontSize:10,fontWeight:700,letterSpacing:"0.35em",color:"#1B2A4A"}}>TRADEFLOW ERA</span><span style={{fontSize:10,fontWeight:700,color:"#E4335A"}}>İ</span></div>
-      {hata&&<div style={{background:K.amberBg,borderRadius:14,padding:"13px 15px",fontSize:12.5,color:"#92600A",marginBottom:12}}>⚠️ {hata}</div>}
-      {!veri&&!hata&&<div style={{textAlign:"center",color:K.t3,padding:"40px 0"}}>Yükleniyor...</div>}
-      {veri&&(veri.isler||[]).length===0&&<div style={{textAlign:"center",color:K.t3,fontSize:13,padding:"30px 0"}}>Sana atanmış iş yok. Patronun iş atadığında burada görünecek. 💪</div>}
-      {veri&&(veri.isler||[]).map(j=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
-        <div onClick={()=>setSecili(secili===j.id?null:j.id)} style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}}>
-          <div style={{fontSize:24}}>{j.icon||"🔧"}</div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:14,fontWeight:800,color:K.t1}}>{j.baslik}</div>
-            <div style={{fontSize:11.5,color:K.t3}}>{j.musteri} · {j.tarih} · <b style={{color:j.durum==="tamamlandi"?K.green:P}}>{j.durum==="tamamlandi"?"✅ Bitti":ASAMALAR[j.asama||0]}</b></div>
-          </div>
-          <span style={{color:K.t3}}>{secili===j.id?"▴":"▾"}</span>
-        </div>
-        {secili===j.id&&<div style={{marginTop:12,borderTop:`1px solid ${K.border}`,paddingTop:12}}>
-          {j.isAdresi&&<div style={{display:"flex",gap:8,marginBottom:10}}>
-            <div style={{flex:1,background:K.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:K.t2}}>📍 {j.isAdresi}</div>
-            <button onClick={()=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.isAdresi),"_blank")} style={{background:K.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:12,fontWeight:700,color:K.t1,cursor:"pointer"}}>🗺️</button>
-            {j.musteriTelefon&&<button onClick={()=>window.open("tel:"+j.musteriTelefon)} style={{background:K.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:12,fontWeight:700,color:K.t1,cursor:"pointer"}}>📞</button>}
-          </div>}
-          {j.malzemeler&&<div style={{background:K.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:K.t2,whiteSpace:"pre-wrap",marginBottom:10}}>🧰 {j.malzemeler}</div>}
-          {j.not&&<div style={{background:"#FBF6EA",borderRadius:11,padding:"9px 11px",fontSize:11.5,color:"#92600A",whiteSpace:"pre-wrap",marginBottom:10}}>📝 {j.not}</div>}
-          {j.durum!=="tamamlandi"&&<div style={{display:"flex",gap:8}}>
-            <button onClick={()=>asamaIlerlet(j)} style={{flex:1.4,background:GRAD,border:"none",borderRadius:12,padding:"12px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Sonraki Aşama ›</button>
-            <button onClick={()=>setHarcamaAc(j.id)} style={{flex:1,background:K.amberBg,border:"none",borderRadius:12,padding:"12px 0",color:"#92600A",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>🧾 Harcama</button>
-          </div>}
-        </div>}
-      </Sh>)}
-      {sifreAc&&<BottomSheet onKapat={()=>setSifreAc(false)}>
-        <SifreDegistir onBitti={()=>setSifreAc(false)}/>
-      </BottomSheet>}
+      {hata&&<div style={{background:C.amberBg,borderRadius:14,padding:"13px 15px",fontSize:12.5,color:"#92600A",marginBottom:12}}>⚠️ {hata}</div>}
+      {!veri&&!hata&&<div style={{textAlign:"center",color:C.t3,padding:"40px 0"}}>Yükleniyor...</div>}
+
+      {sekme==="isler"&&<>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>📋 İşlerim</div>
+        {veri&&acikIsler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Şu an atanmış açık işin yok. Patronun iş atadığında burada görünecek. 💪</div></Sh>}
+        {acikIsler.map(IsKart)}
+      </>}
+      {sekme==="biten"&&<>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>✅ Bitirdiklerim</div>
+        {veri&&bitenler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Henüz tamamlanan işin yok — ilk işini bitirince burada listelenecek.</div></Sh>}
+        {bitenler.map(IsKart)}
+      </>}
+      {sekme==="profil"&&<>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>👤 Hesabım</div>
+        <Sh s={{padding:"6px 0",marginBottom:12}}>
+          <SifreDegistir onBitti={()=>{}} gomulu/>
+        </Sh>
+        <button onClick={()=>supabase.auth.signOut()} style={{width:"100%",background:C.redBg,border:"none",borderRadius:14,padding:"14px 0",color:C.red,fontSize:14,fontWeight:700,cursor:"pointer"}}>🚪 Çıkış Yap</button>
+        <div style={{textAlign:"center",marginTop:16,fontSize:11,color:C.t3}}>TradeFlow Elite · Usta Sürümü</div>
+      </>}
+
+      {/* Alt menü */}
+      <div style={{position:"fixed",bottom:10,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 24px)",maxWidth:496,background:C.card,display:"flex",alignItems:"center",padding:"9px 8px",borderRadius:24,boxShadow:"0 10px 30px rgba(80,60,140,0.16)",border:`1px solid ${C.border}`,zIndex:100}}>
+        {[["isler","📋","İşlerim"],["harcama","🧾","Harcama"],["biten","✅","Bitenler"],["profil","👤","Hesabım"]].map(([id,ik,l])=>{
+          const aktif=sekme===id&&id!=="harcama";
+          return <div key={id} onClick={()=>id==="harcama"?setHarcamaAc(true):setSekme(id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"7px 0 5px",background:aktif?"#DCE7F8":"transparent",borderRadius:15,margin:"0 3px"}}>
+            <span style={{fontSize:19}}>{ik}</span>
+            <span style={{fontSize:10.5,fontWeight:700,color:aktif?"#2563EB":C.t3}}>{l}</span>
+          </div>;
+        })}
+      </div>
+
       {harcamaAc&&<BottomSheet onKapat={()=>setHarcamaAc(null)}>
         <UstaHarcama isId={harcamaAc} onBitti={()=>{setHarcamaAc(null);}}/>
       </BottomSheet>}
     </div>
   </div>;
 }
-function SifreDegistir({onBitti}){
+function SifreDegistir({onBitti,gomulu}){
   const [s1,setS1]=useState("");const [msg,setMsg]=useState("");
-  return <div>
-    <div style={{fontSize:16,fontWeight:800,color:C.t1,marginBottom:12}}>🔑 Şifre Değiştir</div>
+  return <div style={{padding:gomulu?"0 14px 14px":0}}>
+    <div style={{fontSize:gomulu?13:16,fontWeight:800,color:C.t1,marginBottom:12,padding:gomulu?"12px 14px 0":0}}>🔑 Şifre Değiştir</div>
     <input type="password" value={s1} onChange={e=>setS1(e.target.value)} placeholder="Yeni şifre (en az 6 karakter)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
     {msg&&<div style={{fontSize:12,color:msg.startsWith("✅")?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
     <button onClick={async()=>{
