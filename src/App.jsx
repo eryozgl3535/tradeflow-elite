@@ -3263,16 +3263,16 @@ function RaporlarTab({jobs,giderler,T,ekip}){
   </div>;
 }
 
-function BildirimlerTab({bildirimler,onOkundu,T}){
+function BildirimlerTab({bildirimler,onOkundu,T,onGit}){
   return <div style={{padding:"16px 14px"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
       <div style={{fontSize:18,fontWeight:700,color:C.t1}}>{T.bildirimlerT}</div>
       {bildirimler.some(b=>!b.okundu)&&<span onClick={onOkundu} style={{fontSize:12,color:P,fontWeight:600,cursor:"pointer"}}>{T.tumunuOkundu}</span>}
     </div>
     {bildirimler.length===0&&<Sh s={{padding:34,textAlign:"center"}}><div style={{fontSize:40,marginBottom:10}}>🔔</div><div style={{fontSize:14,color:C.t2}}>{T.bosBildirim}</div></Sh>}
-    {bildirimler.map(b=><Sh key={b.id} s={{padding:"14px 16px",marginBottom:8,display:"flex",gap:12,alignItems:"flex-start",opacity:b.okundu?0.6:1}}>
+    {bildirimler.map(b=><Sh key={b.id} onClick={()=>b.hedef&&onGit&&onGit(b)} s={{padding:"14px 16px",marginBottom:8,display:"flex",gap:12,alignItems:"flex-start",opacity:b.okundu?0.6:1,cursor:b.hedef?"pointer":"default"}}>
       <div style={{width:40,height:40,borderRadius:11,background:b.tip==="hatirlatma"?C.amberBg:b.tip==="fatura"?C.blueBg:C.greenBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{b.tip==="hatirlatma"?"⏰":b.tip==="fatura"?"🧾":"✅"}</div>
-      <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{b.baslik}</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{b.mesaj}</div><div style={{fontSize:10,color:C.t3,marginTop:4}}>{b.zaman}</div></div>
+      <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{b.baslik}</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{b.mesaj}</div><div style={{fontSize:10,color:C.t3,marginTop:4}}>{b.zaman}{b.hedef?" · dokun ›":""}</div></div>
       {!b.okundu&&<div style={{width:8,height:8,borderRadius:"50%",background:P,marginTop:6}}/>}
     </Sh>)}
   </div>;
@@ -3282,6 +3282,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
   const items=[
     {icon:"🤖",label:T.asistan,alt:T.asistanSub,act:()=>onAc("asistan")},
     {icon:"💼",label:"Çek · Senet",alt:"🔐 PIN korumalı",act:()=>onAc("kasa")},
+    {icon:"👷",label:T.ekipYonetimi,alt:"Usta ekle, giriş oluştur, iş ata",act:()=>onAc("ekip")},
     {icon:"📅",label:"Takvim",alt:"İşlerini ay görünümünde planla",act:()=>onAc("takvim")},
     {icon:"🗑️",label:"Çöp Kutusu",alt:"Silinenler 30 gün geri alınabilir",act:()=>onAc("cop")},
     {icon:"📈",label:"Muhasebe Raporu (PDF)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
@@ -3991,7 +3992,7 @@ export default function TradeFlow(){
     const uc=new Date(Date.now()+3*86400000).toISOString().slice(0,10);
     const uyarilacak=cekSenetler.filter(c=>c.durum==="bekliyor"&&c.vade<=uc&&!c.uyarildi);
     if(uyarilacak.length===0)return;
-    uyarilacak.forEach(c=>bildirimEkle("⏰ Vade yaklaşıyor",(c.tip==="cek"?"Çek":"Senet")+" · "+c.kisi+" — "+fmt(c.tutar)+" · Vade: "+c.vade,"is"));
+    uyarilacak.forEach(c=>bildirimEkle("⏰ Vade yaklaşıyor",(c.tip==="cek"?"Çek":"Senet")+" · "+c.kisi+" — "+fmt(c.tutar)+" · Vade: "+c.vade,"is",{tur:"kasa"}));
     setCekSenetler(p=>p.map(c=>uyarilacak.some(u=>u.id===c.id)?{...c,uyarildi:true}:c));
   },[veriYuklendi,cekSenetler.length]);
 
@@ -4011,7 +4012,7 @@ export default function TradeFlow(){
             const varIdler=new Set(p.map(h=>h.id));
             const yeniler=bulut.ustaHarcamalar.filter(h=>!varIdler.has(h.id));
             if(yeniler.length>0){
-              yeniler.filter(h=>h.durum==="bekliyor").forEach(h=>bildirimEkle("🧾 Usta harcaması",(h.usta||"Usta")+": "+h.ad+" — "+fmt(h.tutar),"gider"));
+              yeniler.filter(h=>h.durum==="bekliyor").forEach(h=>bildirimEkle("🧾 Usta harcaması",(h.usta||"Usta")+": "+h.ad+" — "+fmt(h.tutar),"gider",{tur:"sekme",sekme:"giderler"}));
             }
             return yeniler.length>0?[...p,...yeniler]:p;
           });
@@ -4061,14 +4062,14 @@ export default function TradeFlow(){
       if(tahsilat>0)m+=", "+fmt(tahsilat)+" tahsilat";
       if(bugunGider>0)m+=", "+fmt(bugunGider)+" gider";
       m+=". "+(yarinki>0?"Yarın "+yarinki+" randevun var. 💪":"Yarın için planlı işin yok — yarını planla! 🗓️");
-      bildirimEkle("🌙 Gün Sonu Özeti",m,"is");
+      bildirimEkle("🌙 Gün Sonu Özeti",m,"is",{tur:"sekme",sekme:"raporlar"});
       goster("🌙 Gün sonu özetin hazır — Bildirimler'de");
     };
     kontrol();
     const t=setInterval(kontrol,30000);
     return ()=>clearInterval(t);
   },[veriYuklendi,ozetSaat,jobs,giderler]);
-  const bildirimEkle=(baslik,mesaj,tip)=>setBildirimler(p=>[{id:Date.now()+Math.random(),baslik,mesaj,tip,okundu:false,zaman:new Date().toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})},...p]);
+  const bildirimEkle=(baslik,mesaj,tip,hedef)=>setBildirimler(p=>[{id:Date.now()+Math.random(),baslik,mesaj,tip,hedef:hedef||null,okundu:false,zaman:new Date().toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})},...p]);
   const bannerGoster=(baslik,mesaj)=>{setBanner({baslik,mesaj});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
 
   useEffect(()=>{
@@ -4115,7 +4116,7 @@ export default function TradeFlow(){
   useEffect(()=>{
     const iv=setInterval(()=>{
       const simdi=Date.now();
-      setJobs(prev=>{let deg=false;const yeni=prev.map(j=>{if(j.hatirlatma&&!j.hatirlatildi&&new Date(j.hatirlatma).getTime()<=simdi){deg=true;bildirimEkle("⏰ Hatırlatma: "+j.baslik,j.musteri+" - "+fmt(j.tutar),"hatirlatma");bannerGoster("⏰ İş Hatırlatması",j.baslik+" ("+j.musteri+")");return {...j,hatirlatildi:true};}return j;});return deg?yeni:prev;});
+      setJobs(prev=>{let deg=false;const yeni=prev.map(j=>{if(j.hatirlatma&&!j.hatirlatildi&&new Date(j.hatirlatma).getTime()<=simdi){deg=true;bildirimEkle("⏰ Hatırlatma: "+j.baslik,j.musteri+" - "+fmt(j.tutar),"hatirlatma",{tur:"is",id:j.id});bannerGoster("⏰ İş Hatırlatması",j.baslik+" ("+j.musteri+")");return {...j,hatirlatildi:true};}return j;});return deg?yeni:prev;});
     },20000);
     return ()=>clearInterval(iv);
   },[]);
@@ -4284,7 +4285,14 @@ export default function TradeFlow(){
           onExcelFatura={()=>{if(proKilit(T.pdfRaporlarL||"PDF raporlar"))return;excelFaturalar(faturalar,isletme);goster("📊 PDF hazır");}}
           onPdf={()=>pdfMuhasebeRaporu(jobs,giderler,isletme)}
           onAc={setEkran} onSifirla={verileriSifirla} onExport={disaAktar} onImport={iceAktar} T={T}/>}
-          {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}/>}
+          {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}
+            onGit={(b)=>{
+              setBildirimler(p=>p.map(x=>x.id===b.id?{...x,okundu:true}:x));
+              const h=b.hedef;if(!h)return;
+              if(h.tur==="is"){const j=jobs.find(x=>x.id===h.id);if(j){setSecili(j);}else{goster("Bu iş silinmiş olabilir");}}
+              else if(h.tur==="kasa"){setEkran("kasa");}
+              else if(h.tur==="sekme"){setIslerFiltre(null);setTahsilatFiltre(null);setSekme(h.sekme);}
+            }}/>}
           {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} ozetSaat={ozetSaat} setOzetSaat={(v)=>{setOzetSaat(v);if(v)goster("🌙 Gün sonu özeti: "+v);}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
         </div>
 
