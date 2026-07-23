@@ -393,6 +393,7 @@ function KurucuPanel({onKapat}){
   return <BottomSheet onKapat={onKapat} maxH="92vh">
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:2}}>👑 Kurucu Paneli</div>
     <div style={{fontSize:11,color:GOLD,fontWeight:700,marginBottom:16}}>TradeFlow Elite — Yalnızca kurucu görebilir</div>
+    {mod==="giris"&&<div onClick={sifremiUnuttum} style={{fontSize:12,fontWeight:700,color:"#2E7490",cursor:"pointer",textAlign:"right",marginBottom:10}}>Şifremi unuttum</div>}
     {hata&&<div style={{background:C.amberBg,borderRadius:12,padding:"12px 14px",fontSize:12,color:"#92600A",marginBottom:14}}>⚠️ {hata}</div>}
     {!veri&&!hata&&<div style={{textAlign:"center",padding:"30px 0",color:C.t3,fontSize:13}}>Yükleniyor...</div>}
     {veri&&<>
@@ -2083,6 +2084,19 @@ function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T,kullaniciId}){
       girisleriYukle();
     }catch(e){goster("⚠️ Bağlantı hatası");}
   };
+  const [sifreSifirla,setSifreSifirla]=useState(null);
+  const [yeniSifre,setYeniSifre]=useState("");
+  const sifreyiUygula=async(g)=>{
+    if(yeniSifre.length<6){goster("⚠️ Şifre en az 6 karakter");return;}
+    try{
+      const {data:{session}}=await supabase.auth.getSession();
+      const r=await fetch("/api/usta-sifre",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(session&&session.access_token)},body:JSON.stringify({usta_id:g.usta_id,yeni:yeniSifre})});
+      const d=await r.json();
+      if(d&&d.ok){setSonuc({ad:g.ad,ka:g.kullanici_adi,sifre:yeniSifre});setSifreSifirla(null);setYeniSifre("");goster("✅ Şifre sıfırlandı");}
+      else if(r.status===501){goster("⚠️ Sunucu anahtarı kurulmamış — Vercel ayarı gerekli");}
+      else{goster("⚠️ Sıfırlanamadı");}
+    }catch(e){goster("⚠️ Bağlantı hatası");}
+  };
   const aktifDegistir=async(g)=>{
     await supabase.from("ekip_girisleri").update({aktif:!g.aktif}).eq("usta_id",g.usta_id);
     girisleriYukle();goster(g.aktif?"⏸️ Giriş donduruldu":"▶️ Giriş açıldı");
@@ -2137,8 +2151,16 @@ function EkipEkrani({onKapat,ekip,setEkip,jobs,goster,T,kullaniciId}){
                   ?<div style={{display:"flex",alignItems:"center",gap:8,marginTop:6,flexWrap:"wrap"}}>
                     <span style={{fontSize:10.5,fontWeight:700,color:girisler[u.ad].aktif?C.green:C.t3,background:girisler[u.ad].aktif?C.greenBg:C.bg,borderRadius:7,padding:"3px 8px"}}>🔑 {girisler[u.ad].kullanici_adi}{girisler[u.ad].aktif?"":" · dondu"}</span>
                     <button onClick={()=>aktifDegistir(girisler[u.ad])} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:7,padding:"3px 8px",fontSize:10,fontWeight:700,color:C.t2,cursor:"pointer"}}>{girisler[u.ad].aktif?"Dondur":"Aç"}</button>
+                    <button onClick={()=>{setSifreSifirla(sifreSifirla===u.ad?null:u.ad);setYeniSifre("");}} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:7,padding:"3px 8px",fontSize:10,fontWeight:700,color:C.t2,cursor:"pointer"}}>🔁 Şifre</button>
                   </div>
                   :<button onClick={()=>{setGirisAc(u.ad);setGf({ka:"",sifre:""});}} style={{marginTop:6,background:C.purpleBg,border:"none",borderRadius:8,padding:"5px 10px",fontSize:10.5,fontWeight:700,color:P,cursor:"pointer"}}>🔑 Giriş Oluştur</button>}
+                {sifreSifirla===u.ad&&<div style={{marginTop:8,background:C.bg,borderRadius:11,padding:"10px"}}>
+                  <input value={yeniSifre} onChange={e=>setYeniSifre(e.target.value)} placeholder="Yeni şifre (en az 6 karakter)" style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 11px",fontSize:12.5,outline:"none",marginBottom:8,color:C.t1}}/>
+                  <div style={{display:"flex",gap:7}}>
+                    <button onClick={()=>setSifreSifirla(null)} style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 0",fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer"}}>Vazgeç</button>
+                    <button onClick={()=>sifreyiUygula(girisler[u.ad])} style={{flex:1,background:P,border:"none",borderRadius:9,padding:"9px 0",fontSize:12,fontWeight:700,color:"#fff",cursor:"pointer"}}>Sıfırla</button>
+                  </div>
+                </div>}
                 {girisAc===u.ad&&<div style={{marginTop:8,background:C.bg,borderRadius:11,padding:"10px"}}>
                   <input value={gf.ka} onChange={e=>setGf(p=>({...p,ka:e.target.value}))} placeholder="Kullanıcı adı (örn: mehmet35)" style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 11px",fontSize:12.5,outline:"none",marginBottom:7,color:C.t1}}/>
                   <input value={gf.sifre} onChange={e=>setGf(p=>({...p,sifre:e.target.value}))} placeholder="Geçici şifre (usta sonra değiştirir)" style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1px solid ${C.border}`,borderRadius:9,padding:"9px 11px",fontSize:12.5,outline:"none",marginBottom:8,color:C.t1}}/>
@@ -3682,6 +3704,15 @@ function GirisEkrani({onGiris}){
   const [hata,setHata]=useState("");
   const [bilgi,setBilgi]=useState("");
 
+  const sifremiUnuttum=async()=>{
+    setHata("");setBilgi("");
+    if(tip==="usta"){setHata("Usta şifreni patronun sıfırlar — Ekip Yönetimi'nden.");return;}
+    if(!email){setHata("Önce yukarıya e-posta adresini yaz, sonra tekrar dokun.");return;}
+    try{
+      await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+      setBilgi("📧 Sıfırlama bağlantısı "+email+" adresine gönderildi. Gelen kutunu (ve spam klasörünü) kontrol et — bağlantıya tıklayınca yeni şifre ekranı açılacak.");
+    }catch(e){setHata("Gönderilemedi — e-posta adresini kontrol edip tekrar dene.");}
+  };
   const gonder=async()=>{
     setHata("");setBilgi("");
     if(!email||!sifre){setHata(tip==="usta"?"Kullanıcı adı ve şifre gerekli":L.hataGerekli);return;}
@@ -3847,6 +3878,8 @@ export default function TradeFlow(){
   const [kullanici,setKullanici]=useState(null);
   KURUCU_MU=((kullanici&&kullanici.email)||"").toLowerCase()===KURUCU_EMAIL;
   const [oturumKontrol,setOturumKontrol]=useState(true); // ilk açılışta oturum kontrol ediliyor
+  useEffect(()=>{const s=document.getElementById("tfsplash");if(s)s.remove();},[]);
+  const [sifreKurtarma,setSifreKurtarma]=useState(false);
   const USTA_MI=((kullanici&&kullanici.email)||"").endsWith(USTA_EK);
 
   // İnternet gidince/gelince yakala
@@ -3874,6 +3907,7 @@ export default function TradeFlow(){
       setOturumKontrol(false);
     });
     const {data:sub}=supabase.auth.onAuthStateChange((_e,session)=>{
+      if(_e==="PASSWORD_RECOVERY"){setSifreKurtarma(true);}
       // Çevrimdışıyken token yenilenemedi diye kullanıcıyı DÜŞÜRME — internet gelince toparlanır
       if(!session&&!navigator.onLine)return;
       setKullanici(session?.user||null);
@@ -4214,6 +4248,16 @@ export default function TradeFlow(){
   }
   if(!kullanici){
     return <GirisEkrani onGiris={(u)=>setKullanici(u)}/>;
+  }
+  if(sifreKurtarma){
+    return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:380,background:C.card,borderRadius:20,padding:"26px 22px",boxShadow:C.sh}}>
+        <div style={{fontSize:38,textAlign:"center",marginBottom:10}}>🔐</div>
+        <div style={{fontSize:17,fontWeight:800,color:C.t1,textAlign:"center",marginBottom:4}}>Yeni Şifre Belirle</div>
+        <div style={{fontSize:12,color:C.t3,textAlign:"center",marginBottom:16}}>Sıfırlama bağlantısı doğrulandı — yeni şifreni yaz, kaydet, devam et.</div>
+        <SifreDegistir onBitti={()=>setSifreKurtarma(false)}/>
+      </div>
+    </div>;
   }
   if(USTA_MI){
     return <UstaPanel kullanici={kullanici}/>;
