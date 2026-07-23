@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#1B2A4A" />
+    <meta name="theme-color" content="#F1F3F7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="description" content="TradeFlow Elite — Esnaf ve teknik servisler için iş, fatura ve tahsilat yönetimi" />
@@ -12,8 +12,18 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" href="/icon-192.png" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" />
+  <style>
+      body{background:#F1F3F7;margin:0}
+      #tfsplash{position:fixed;inset:0;background:#F1F3F7;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:-apple-system,sans-serif}
+      #tfsplash .tfm{font-family:Georgia,serif;font-size:44px;font-weight:800;color:#2E7490}
+      #tfsplash .tfa{font-size:13px;font-weight:800;letter-spacing:0.25em;color:#1B2A4A;margin-top:8px}
+      #tfsplash .tfe{color:#E4335A}
+      #tfsplash .tfs{width:26px;height:26px;border:3px solid #DDE3EE;border-top-color:#2E7490;border-radius:50%;margin-top:18px;animation:tfd 0.8s linear infinite}
+      @keyframes tfd{to{transform:rotate(360deg)}}
+    </style>
   </head>
   <body style="margin:0">
+    <div id="tfsplash"><div class="tfm">T/F</div><div class="tfa">TRADEFLOW ERA<span class="tfe">İ</span></div><div class="tfs"></div></div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
