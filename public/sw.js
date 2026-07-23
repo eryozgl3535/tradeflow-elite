@@ -1,5 +1,5 @@
 // TradeFlow Elite — Service Worker v3 (güçlendirilmiş çevrimdışı)
-const CACHE = "tradeflow-v3";
+const CACHE = "tradeflow-v4";
 const CORE = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
@@ -21,21 +21,18 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return; // Supabase/AI istekleri SW'ye takılmasın
 
-  // Sayfa açılışları: önbellek → ağ → ana sayfa kopyası (asla boş ekran kalmasın)
+  // Sayfa açılışları: AĞ öncelikli (hep güncel sürüm) → çevrimdışıysa önbellek
   if (e.request.mode === "navigate") {
     e.respondWith(
-      caches.match(e.request).then((cached) => {
-        const agdan = fetch(e.request)
-          .then((res) => {
-            if (res && res.ok) {
-              const kopya = res.clone();
-              caches.open(CACHE).then((c) => c.put(e.request, kopya));
-            }
-            return res;
-          })
-          .catch(() => cached || caches.match("/"));
-        return cached || agdan;
-      })
+      fetch(e.request)
+        .then((res) => {
+          if (res && res.ok) {
+            const kopya = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, kopya));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request).then((r) => r || caches.match("/")))
     );
     return;
   }
