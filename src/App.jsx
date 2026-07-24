@@ -659,8 +659,8 @@ const Sh=({children,s,onClick})=><div onClick={onClick} style={{background:C.car
 const Badge=({durum})=>{const d=DURUM[durum]||{label:durum,color:C.t3,bg:C.bg};return <span style={{fontSize:11,fontWeight:600,color:d.color,background:d.bg,borderRadius:20,padding:"4px 10px",whiteSpace:"nowrap"}}>{d.label}</span>;};
 const Toggle=({on,set})=><div onClick={()=>set(!on)} style={{width:46,height:26,borderRadius:13,background:on?P:"#9CA3AF",position:"relative",cursor:"pointer",transition:"background 0.2s",flexShrink:0}}><div style={{width:22,height:22,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:on?22:2,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/></div>;
 function TFLogo(){return <div style={{display:"flex",alignItems:"baseline",gap:1}}><span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:20,fontWeight:700,color:P,lineHeight:1}}>T</span><span style={{fontSize:15,color:GOLD,fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -2px"}}>/</span><span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:20,fontWeight:700,color:C.t2,lineHeight:1}}>F</span><span style={{fontSize:13,fontWeight:600,color:C.t1,letterSpacing:"0.06em",marginLeft:6}}>TRADEFLOW <span style={{color:GOLD,fontSize:10,letterSpacing:"0.2em"}}>ELITE</span></span></div>;}
-function GeriBaslik({baslik,onKapat}){return <div style={{display:"flex",alignItems:"center",gap:12,padding:"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:60}}><button onClick={onKapat} style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",color:C.t1}}>←</button><div style={{fontSize:18,fontWeight:800,color:C.t1}}>{baslik}</div></div>;}
-function BottomSheet({children,onKapat,maxH}){return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.42)",display:"flex",alignItems:MASAUSTU?"center":"flex-end",zIndex:1000}} onClick={onKapat}><div onClick={e=>e.stopPropagation()} style={{background:C.card,borderRadius:MASAUSTU?24:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:MASAUSTU?560:APP_W,margin:"0 auto",maxHeight:maxH||"88vh",overflowY:"auto",boxShadow:MASAUSTU?C.sh2:"none"}}><div style={{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 20px"}}/>{children}</div></div>;}
+function GeriBaslik({baslik,onKapat}){return <div style={{display:"flex",alignItems:"center",gap:12,padding:"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:60}}><button onClick={onKapat} style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",color:C.t1}}>←</button><div style={{flex:1,fontSize:18,fontWeight:800,color:C.t1}}>{baslik}</div><button onClick={onKapat} aria-label="Kapat" style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:18,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button></div>;}
+function BottomSheet({children,onKapat,maxH}){return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.42)",display:"flex",alignItems:MASAUSTU?"center":"flex-end",zIndex:1000}} onClick={onKapat}><div onClick={e=>e.stopPropagation()} style={{position:"relative",background:C.card,borderRadius:MASAUSTU?24:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:MASAUSTU?560:APP_W,margin:"0 auto",maxHeight:maxH||"88vh",overflowY:"auto",boxShadow:MASAUSTU?C.sh2:"none"}}><button onClick={onKapat} aria-label="Kapat" style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:10,background:C.bg,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>✕</button><div style={{width:40,height:4,background:C.border,borderRadius:2,margin:"0 auto 20px"}}/>{children}</div></div>;}
 // Maliyet Bekçisi: tutar + maliyet girilince anlık kâr/zarar analizi
 function BenzerIsIpucu({baslik,jobs,edit,duzenlenecekId,T}){
   try{
@@ -3613,7 +3613,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
       <Row icon="🔒" label="Otomatik Kilit" sub="Hareketsizlikte oturumu kapat" value={(kilitSure>0?kilitSure+" dk":"Kapalı")+" ›"} onClick={()=>setModal("kilit")}/>
       <Row icon="💾" label="Yedek İndir" sub="Tüm verini JSON dosyası olarak kaydet" onClick={onYedekAl}/>
       <Row icon="♻️" label="Yedeği Geri Yükle" sub="Daha önce indirdiğin dosyadan geri dön" onClick={()=>document.getElementById("tfYedekDosya").click()}/>
-      <Row icon="🛡️" label="Yasal Uyarı & Sorumluluk" sub="Uygulama neyi yapar, neyi yapmaz" onClick={()=>onAc("gib")}/>
+      <Row icon="🛡️" label="Yasal Uyarı & Sorumluluk" sub="Uygulama neyi yapar, neyi yapmaz" onClick={()=>setModal("gib")}/>
     </Sh>
     <input id="tfYedekDosya" type="file" accept="application/json,.json" onChange={e=>{const d=e.target.files&&e.target.files[0];e.target.value="";onYedekYukle(d);}} style={{display:"none"}}/>
 
@@ -3694,8 +3694,8 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     {modal==="banka"&&<BankaEkrani onKapat={()=>setModal(null)} isletme={isletme} setIsletme={setIsletme} goster={goster}/>}
     {modal==="kilit"&&<BottomSheet onKapat={()=>setModal(null)}>
       <div style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:4}}>🔒 Otomatik Kilit</div>
-      <div style={{fontSize:12,color:C.t2,marginBottom:16,lineHeight:1.6}}>Uygulamaya belirtilen süre boyunca dokunulmazsa oturum kendiliğinden kapanır. Telefonun başkasının eline geçerse verilerin korunur.</div>
-      {[[0,"Kapalı"],[5,"5 dakika"],[15,"15 dakika (önerilen)"],[30,"30 dakika"],[60,"1 saat"]].map(([v,l])=>
+      <div style={{fontSize:12,color:C.t2,marginBottom:16,lineHeight:1.6}}>Uygulamaya belirtilen süre boyunca dokunulmazsa oturum kendiliğinden kapanır. "Kapalı" seçilirse oturum hep açık kalır (önerilen, kişisel cihaz için). Telefonu başkalarıyla paylaşıyorsan bir süre seç.</div>
+      {[[0,"Kapalı — hep açık kalsın (önerilen)"],[15,"15 dakika"],[30,"30 dakika"],[60,"1 saat"],[240,"4 saat"]].map(([v,l])=>
         <div key={v} onClick={()=>{onKilitAyarla(v);setModal(null);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 4px",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
           <span style={{fontSize:14,color:C.t1,fontWeight:kilitSure===v?700:400}}>{l}</span>
           {kilitSure===v&&<span style={{color:P,fontSize:16,fontWeight:700}}>✓</span>}
@@ -4223,7 +4223,7 @@ export default function TradeFlow(){
 
   // 🔒 GÜVENLİK — Hareketsizlikte otomatik oturum kapatma
   // Ustanın telefonu şantiyede açık kalırsa veri başkasının eline geçmesin.
-  const [kilitSure,setKilitSure]=useState(()=>Number(localStorage.getItem("tf_kilit")||15));
+  const [kilitSure,setKilitSure]=useState(()=>{const v=localStorage.getItem("tf_kilit");return v==null?0:Number(v);});
   useEffect(()=>{
     if(!kullanici||kilitSure<=0)return;
     let zaman;
