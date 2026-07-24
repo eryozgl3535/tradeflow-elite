@@ -2342,6 +2342,69 @@ export function ibanGecerli(ham){
 }
 export const ibanBicim=(ham)=>(ham||"").replace(/\s/g,"").toUpperCase().replace(/(.{4})/g,"$1 ").trim();
 
+// ─── YASAL UYARI & SORUMLULUK ───────────────────────────────────
+function YasalEkrani({onKapat}){
+  const link=(u)=>window.open(u,"_blank","noopener,noreferrer");
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
+      <GeriBaslik baslik="🛡️ Yasal Uyarı" onKapat={onKapat}/>
+      <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
+
+        <Sh s={{padding:16,marginBottom:14}}>
+          <div style={{fontSize:14,fontWeight:800,color:C.t1,marginBottom:8}}>TradeFlow Elite nedir?</div>
+          <div style={{fontSize:12.5,color:C.t2,lineHeight:1.8}}>
+            TradeFlow Elite bir <b>iş ve muhasebe takip aracıdır</b>. Müşterilerini, işlerini, gelir-giderini ve tekliflerini tek yerden yönetmene yardımcı olur.{"\n\n"}
+            Uygulama; mali müşavirlik, e-fatura entegratörlüğü, bankacılık veya ödeme hizmeti <b>değildir</b>.
+          </div>
+        </Sh>
+
+        <Sh s={{padding:16,marginBottom:14,background:C.greenBg}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.green,marginBottom:8}}>✅ Uygulama NE YAPAR</div>
+          <div style={{fontSize:12,color:C.t1,lineHeight:1.9}}>
+            • İş, müşteri, gelir-gider ve teklif kaydı tutar{"\n"}
+            • Fatura ve teklif <b>taslağı</b> (PDF) hazırlar{"\n"}
+            • WhatsApp'tan bilgi paylaşmanı kolaylaştırır{"\n"}
+            • Verilerini şifreli bulutta ve cihazında saklar{"\n"}
+            • Kendi IBAN'ını müşterine iletmene yardımcı olur
+          </div>
+        </Sh>
+
+        <Sh s={{padding:16,marginBottom:14,background:C.redBg}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.red,marginBottom:8}}>⛔ Uygulama NE YAPMAZ</div>
+          <div style={{fontSize:12,color:C.t1,lineHeight:1.9}}>
+            • <b>Para transferi yapmaz, tahsilat almaz</b>, hiçbir tutarı elinde tutmaz{"\n"}
+            • <b>GİB'e fatura göndermez</b> — oluşturulan belgeler resmî fatura değildir{"\n"}
+            • Vergi beyanı vermez, mali danışmanlık yapmaz{"\n"}
+            • Banka/GİB şifreni istemez ve saklamaz
+          </div>
+        </Sh>
+
+        <Sh s={{padding:16,marginBottom:14,background:C.amberBg}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#92400E",marginBottom:8}}>⚠️ Sorumluluk Reddi</div>
+          <div style={{fontSize:12,color:"#78350F",lineHeight:1.85}}>
+            Resmî fatura kesme, e-Fatura/e-Arşiv gönderimi, vergi beyanı ve tüm yasal yükümlülükler <b>tamamen kullanıcının sorumluluğundadır</b>.{"\n\n"}
+            Uygulamadaki hesaplamalar bilgilendirme amaçlıdır; kesin işlemler için mali müşavirine danışmalısın.{"\n\n"}
+            TradeFlow Elite, kullanımdan doğabilecek vergisel, mali veya hukuki sonuçlardan sorumlu tutulamaz.
+          </div>
+        </Sh>
+
+        <Sh s={{padding:16}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:10}}>🏛️ Resmî Kaynaklar</div>
+          {[
+            ["GİB e-Arşiv Portalı","https://earsivportal.efatura.gov.tr"],
+            ["GİB e-Belge","https://ebelge.gib.gov.tr"],
+            ["İnteraktif Vergi Dairesi","https://ivd.gib.gov.tr"],
+            ["TÜRMOB — Mali Müşavir Bul","https://www.turmob.org.tr"],
+          ].map(([ad,u])=><div key={ad} onClick={()=>link(u)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"11px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
+            <span style={{fontSize:13,fontWeight:600,color:C.t1}}>{ad}</span>
+            <span style={{fontSize:13,color:P,fontWeight:700}}>↗</span>
+          </div>)}
+        </Sh>
+      </div>
+    </div>
+  </div>;
+}
+
 function BankaEkrani({onKapat,isletme,setIsletme,goster}){
   const [iban,setIban]=useState(isletme?.iban||"");
   const [banka,setBanka]=useState(isletme?.bankaAd||"");
@@ -3613,7 +3676,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
       <Row icon="🔒" label="Otomatik Kilit" sub="Hareketsizlikte oturumu kapat" value={(kilitSure>0?kilitSure+" dk":"Kapalı")+" ›"} onClick={()=>setModal("kilit")}/>
       <Row icon="💾" label="Yedek İndir" sub="Tüm verini JSON dosyası olarak kaydet" onClick={onYedekAl}/>
       <Row icon="♻️" label="Yedeği Geri Yükle" sub="Daha önce indirdiğin dosyadan geri dön" onClick={()=>document.getElementById("tfYedekDosya").click()}/>
-      <Row icon="🛡️" label="Yasal Uyarı & Sorumluluk" sub="Uygulama neyi yapar, neyi yapmaz" onClick={()=>setModal("gib")}/>
+      <Row icon="🛡️" label="Yasal Uyarı & Sorumluluk" sub="Uygulama neyi yapar, neyi yapmaz" onClick={()=>setModal("yasal")}/>
     </Sh>
     <input id="tfYedekDosya" type="file" accept="application/json,.json" onChange={e=>{const d=e.target.files&&e.target.files[0];e.target.value="";onYedekYukle(d);}} style={{display:"none"}}/>
 
@@ -3691,6 +3754,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     {modal==="para"&&<SecimModal baslik={T.paraBirimiB+" · "+kurKaynakAd()} secenekler={[{value:"TL",label:"Türk Lirası",icon:"₺"},{value:"USD",label:"Dolar ($"+KURLAR.USD+" TL)",icon:"$"},{value:"EUR",label:"Euro (€"+KURLAR.EUR+" TL)",icon:"€"}]} secili={para} onSec={(v)=>{setPara(v);goster("Para birimi: "+v);}} onKapat={()=>setModal(null)}/>}
     {modal==="kdv"&&<KdvModal kdv={kdv} onSec={(v)=>{setKdv(v);goster("KDV: %"+v);}} onKapat={()=>setModal(null)}/>}
     {modal==="isletme"&&<IsletmeModal bilgi={isletme} onKaydet={(f)=>{setIsletme(f);goster("Kaydedildi ✓");}} onKapat={()=>setModal(null)}/>}
+    {modal==="yasal"&&<YasalEkrani onKapat={()=>setModal(null)}/>}
     {modal==="banka"&&<BankaEkrani onKapat={()=>setModal(null)} isletme={isletme} setIsletme={setIsletme} goster={goster}/>}
     {modal==="kilit"&&<BottomSheet onKapat={()=>setModal(null)}>
       <div style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:4}}>🔒 Otomatik Kilit</div>
