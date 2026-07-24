@@ -518,7 +518,31 @@ function PinKapi({kayitliPin,onBasari,onPinAyarla,onKapat}){
 // ── 💼 Çek · Senet · Kasa ──
 function KasaEkrani({onKapat,cekSenetler,setCekSenetler,jobs,giderler,goster}){
   const [yeniAc,setYeniAc]=useState(false);
-  const [f,setF]=useState({tip:"cek",yon:"alacak",kisi:"",tutar:"",vade:new Date().toISOString().slice(0,10),banka:"",not:""});
+  const [f,setF]=useState({tip:"cek",yon:"alacak",kisi:"",tutar:"",vade:new Date().toISOString().slice(0,10),banka:"",not:"",foto:null});
+  const [fotoAc,setFotoAc]=useState(null); // tam ekran foto görüntüleme
+  const ekFotoRef=useRef(null); // mevcut kayda sonradan foto eklemek için
+  // 📷 Fotoğrafı sıkıştırıp base64'e çevir (max 1100px, jpeg 0.65 — çek üzerindeki yazılar okunur kalsın)
+  const fotoIsle=(dosya,cb)=>{
+    if(!dosya)return;
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement("canvas");const oran=Math.min(1,1100/img.width);
+        c.width=img.width*oran;c.height=img.height*oran;
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        cb(c.toDataURL("image/jpeg",0.65));
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(dosya);
+  };
+  const ekFotoSec=(e)=>{
+    const id=ekFotoRef.current;const dosya=e.target.files&&e.target.files[0];
+    e.target.value="";
+    if(!id||!dosya)return;
+    fotoIsle(dosya,(b64)=>{setCekSenetler(p=>p.map(x=>x.id===id?{...x,foto:b64}:x));goster("📷 Fotoğraf eklendi");});
+  };
   const bekleyenAlacakCS=cekSenetler.filter(c=>c.durum==="bekliyor"&&c.yon==="alacak").reduce((s,c)=>s+c.tutar,0);
   const bekleyenBorcCS=cekSenetler.filter(c=>c.durum==="bekliyor"&&c.yon==="borc").reduce((s,c)=>s+c.tutar,0);
   const bugun=new Date();const yediGun=new Date(Date.now()+7*86400000);
@@ -528,8 +552,8 @@ function KasaEkrani({onKapat,cekSenetler,setCekSenetler,jobs,giderler,goster}){
   const ekle=()=>{
     if(!f.kisi||!f.tutar)return;
     setCekSenetler(p=>[...p,{...f,id:Date.now(),tutar:parseFloat(f.tutar)||0,durum:"bekliyor"}]);
-    setYeniAc(false);setF({tip:"cek",yon:"alacak",kisi:"",tutar:"",vade:new Date().toISOString().slice(0,10),banka:"",not:""});
-    goster("💼 Kayıt eklendi");
+    setYeniAc(false);setF({tip:"cek",yon:"alacak",kisi:"",tutar:"",vade:new Date().toISOString().slice(0,10),banka:"",not:"",foto:null});
+    goster("💼 Kayıt eklendi"+(f.foto?" 📷":""));
   };
   const Kut=({l,v,renk})=><div style={{flex:1,minWidth:140,background:C.card,borderRadius:14,padding:"13px 14px",borderLeft:`3px solid ${renk}`}}>
     <div style={{fontSize:11,color:C.t3}}>{l}</div><div style={{fontSize:17,fontWeight:800,color:renk}}>{v}</div></div>;
@@ -550,10 +574,15 @@ function KasaEkrani({onKapat,cekSenetler,setCekSenetler,jobs,giderler,goster}){
       <button onClick={()=>setYeniAc(true)} style={{width:"100%",background:P,border:"none",borderRadius:14,padding:"14px 0",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:14}}>+ Çek / Senet Ekle</button>
       {cekSenetler.length===0&&<div style={{textAlign:"center",color:C.t3,fontSize:13,padding:"20px 0"}}>Henüz kayıt yok. Aldığın/verdiğin çek ve senetleri buraya işle.</div>}
       {[...cekSenetler].sort((a,b)=>a.vade.localeCompare(b.vade)).map(c=><Sh key={c.id} s={{padding:"13px 15px",marginBottom:9,display:"flex",alignItems:"center",gap:11,opacity:c.durum==="bekliyor"?1:0.55}}>
-        <div style={{fontSize:22}}>{c.tip==="cek"?"🏦":"📜"}</div>
+        {c.foto
+          ?<img src={c.foto} onClick={()=>setFotoAc(c.foto)} alt="" style={{width:48,height:48,borderRadius:11,objectFit:"cover",cursor:"pointer",flexShrink:0,border:`1px solid ${C.border}`}}/>
+          :<div onClick={()=>{ekFotoRef.current=c.id;document.getElementById("csEkFoto").click();}} style={{width:48,height:48,borderRadius:11,background:C.bg,border:`1.5px dashed ${C.border}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,gap:1}} title="Fotoğraf ekle">
+            <i className="ti ti-camera" style={{fontSize:17,color:C.t3}} aria-hidden="true"/>
+            <span style={{fontSize:7.5,fontWeight:700,color:C.t3}}>EKLE</span>
+          </div>}
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:13.5,fontWeight:700,color:C.t1}}>{c.kisi} <span style={{fontSize:10,fontWeight:800,color:c.yon==="alacak"?"#0E9F6E":"#E02424"}}>{c.yon==="alacak"?"ALACAK":"BORÇ"}</span></div>
-          <div style={{fontSize:11,color:C.t3}}>{c.tip==="cek"?"Çek":"Senet"}{c.banka?" · "+c.banka:""} · Vade: {c.vade}{c.not?" · "+c.not:""}</div>
+          <div style={{fontSize:13.5,fontWeight:700,color:C.t1}}>{c.tip==="cek"?"🏦":"📜"} {c.kisi} <span style={{fontSize:10,fontWeight:800,color:c.yon==="alacak"?"#0E9F6E":"#E02424"}}>{c.yon==="alacak"?"ALACAK":"BORÇ"}</span></div>
+          <div style={{fontSize:11,color:C.t3}}>{c.tip==="cek"?"Çek":"Senet"}{c.banka?" · "+c.banka:""} · Vade: {c.vade}{c.not?" · "+c.not:""}{c.foto?" · 📷 fotoğrafa dokun":""}</div>
         </div>
         <div style={{textAlign:"right"}}>
           <div style={{fontSize:14,fontWeight:800,color:c.yon==="alacak"?"#0E9F6E":"#E02424"}}>{fmt(c.tutar)}</div>
@@ -576,9 +605,27 @@ function KasaEkrani({onKapat,cekSenetler,setCekSenetler,jobs,giderler,goster}){
           <input type="date" value={f.vade} onChange={e=>setF(p=>({...p,vade:e.target.value}))} style={{flex:1,minWidth:0,background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 10px",color:C.t1,fontSize:13,outline:"none"}}/>
         </div>
         <input value={f.banka} onChange={e=>setF(p=>({...p,banka:e.target.value}))} placeholder="Banka (opsiyonel)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none",marginBottom:10}}/>
-        <input value={f.not} onChange={e=>setF(p=>({...p,not:e.target.value}))} placeholder="Not (opsiyonel)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none",marginBottom:14}}/>
+        <input value={f.not} onChange={e=>setF(p=>({...p,not:e.target.value}))} placeholder="Not (opsiyonel)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none",marginBottom:10}}/>
+        {/* 📷 Çek/senet fotoğrafı */}
+        <label style={{display:"flex",alignItems:"center",gap:11,background:f.foto?C.greenBg:C.bg,border:`1.5px dashed ${f.foto?C.green:C.border}`,borderRadius:12,padding:"11px 13px",cursor:"pointer",marginBottom:14}}>
+          {f.foto
+            ?<img src={f.foto} alt="" style={{width:44,height:44,borderRadius:9,objectFit:"cover",flexShrink:0}}/>
+            :<div style={{width:44,height:44,borderRadius:9,background:"#EAF0FA",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-camera" style={{fontSize:21,color:"#2563EB"}} aria-hidden="true"/></div>}
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:700,color:f.foto?C.green:C.t1}}>{f.foto?"✅ Fotoğraf eklendi":"Çek/senet fotoğrafı çek veya seç"}</div>
+            <div style={{fontSize:10.5,color:C.t3}}>{f.foto?"Değiştirmek için dokun":"Kamerayla çek ya da galeriden yükle"}</div>
+          </div>
+          <input type="file" accept="image/*" capture="environment" onChange={e=>{const d=e.target.files&&e.target.files[0];e.target.value="";fotoIsle(d,(b64)=>setF(p=>({...p,foto:b64})));}} style={{display:"none"}}/>
+        </label>
         <button onClick={ekle} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:14,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Kaydet</button>
       </BottomSheet>}
+      {/* Gizli input: mevcut kayda sonradan foto ekleme */}
+      <input id="csEkFoto" type="file" accept="image/*" capture="environment" onChange={ekFotoSec} style={{display:"none"}}/>
+      {/* Tam ekran foto görüntüleyici */}
+      {fotoAc&&<div onClick={()=>setFotoAc(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,cursor:"pointer"}}>
+        <img src={fotoAc} alt="" style={{maxWidth:"100%",maxHeight:"92vh",borderRadius:14,boxShadow:"0 12px 40px rgba(0,0,0,0.5)"}}/>
+        <div style={{position:"absolute",top:"max(20px, env(safe-area-inset-top))",right:20,width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:18,fontWeight:700}}>✕</div>
+      </div>}
     </div>
   </div>;
 }
@@ -684,35 +731,53 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     {ic:"ti-file-text",l:T.faturalar,v:beklFatSay,sub:T.beklemede,c:"#7C5CFC"},
   ];
   const hizli=[
-    {ic:"ti-circle-plus",c:"#6D28D9",l:T.yeniIs,act:onYeniIs},
-    {ic:"ti-user",c:"#0E9F6E",l:T.musteriler,act:()=>setSekme("musteriler")},
-    {ic:"ti-file-text",c:"#E74694",l:T.faturalar,act:()=>setSekme("faturalar")},
+    {ic:"ti-circle-plus",c:"#2563EB",l:T.yeniIs,act:onYeniIs},
+    {ic:"ti-user",c:"#2563EB",l:T.musteriler,act:()=>setSekme("musteriler")},
+    {ic:"ti-file-text",c:"#6366F1",l:T.faturalar,act:()=>setSekme("faturalar")},
     {ic:"ti-wallet",c:"#0E9F6E",l:T.tahsilatlar,act:()=>setSekme("tahsilatlar")},
     {ic:"ti-sitemap",c:"#3B82F6",l:T.isAkislari,act:()=>setSekme("isler")},
-    {ic:"ti-file-pencil",c:"#F59E0B",l:T.teklifler,act:()=>setSekme("teklifler")},
-    {ic:"ti-chart-bar",c:"#6D28D9",l:T.raporlar,act:()=>setSekme("raporlar")},
-    {ic:"ti-folder",c:"#3B82F6",l:T.giderler,act:()=>setSekme("giderler")},
-    {ic:"ti-cash",c:"#0E9F6E",l:"Çek · Senet",act:onKasa},
+    {ic:"ti-file-pencil",c:"#7C3AED",l:T.teklifler,act:()=>setSekme("teklifler")},
+    {ic:"ti-chart-bar",c:"#F97316",l:T.raporlar,act:()=>setSekme("raporlar")},
+    {ic:"ti-folder",c:"#14B8A6",l:T.giderler,act:()=>setSekme("giderler")},
+    {ic:"ti-camera",c:"#F59E0B",l:"Çek · Senet",act:onKasa},
     {ic:"ti-dots",c:"#6B7280",l:T.dahaFazla,act:()=>setSekme("daha")},
   ];
   const cevre=2*Math.PI*44;
+  // 💡 İpucu carousel — 3 ipucu, otomatik döner
+  const [ipucuIx,setIpucuIx]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setIpucuIx(i=>(i+1)%3),6000);return ()=>clearInterval(t);},[]);
+  const ipuclari=[
+    {ic:"ti-calendar-event",metin:bugunIsler.length===0?"Planlı işin yok — yeni iş ekleyerek gününü planla.":((bugunIsler[0].hatirlatma||"").slice(11,16)||"Bugün")+" · "+bugunIsler[0].musteri+" — "+bugunIsler[0].baslik+(bugunIsler.length>1?" (+"+(bugunIsler.length-1)+" iş daha)":""),act:onTakvim},
+    {ic:"ti-camera",metin:"Çek ve senetlerini fotoğraflayarak kaydet — vadesini asla kaçırma.",act:onKasa},
+    {ic:"ti-file-pencil",metin:"Teklifini PDF hazırla, WhatsApp'tan tek dokunuşla müşterine gönder.",act:()=>setSekme("teklifler")},
+  ];
+  const ipucu=ipuclari[ipucuIx];
   return <div style={{padding:"14px 16px 0"}}>
     {/* Karşılama */}
     <div style={{padding:"8px 2px 2px",marginBottom:14}}>
       <div style={{fontSize:27,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.25}}>{selam}{ad?", "+ad:""} 👋</div>
       <div style={{fontSize:13.5,color:C.t3,marginTop:5}}>Bugün harika işler başarabilirsin.</div>
     </div>
-    {/* Yeni İş + Bugün Ne Yapıyoruz? yan yana */}
-    <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"stretch"}}>
-      <button onClick={onYeniIs} style={{flex:"0 0 46%",background:GRAD,border:"none",borderRadius:18,padding:"16px 10px",color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 8px 18px rgba(31,78,96,0.3)"}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/>{T.yeniIs} Ekle</button>
-      <div onClick={onTakvim} style={{flex:1,background:C.card,borderRadius:18,padding:"12px 14px",cursor:"pointer",boxShadow:C.sh,display:"flex",alignItems:"center",gap:10}}>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:3}}>Bugün Ne Yapıyoruz?</div>
-          {bugunIsler.length===0
-            ?<div style={{fontSize:11,color:C.t3,lineHeight:1.45}}>Planlı işin yok — yeni iş ekleyerek gününü planla.</div>
-            :<div style={{fontSize:11,color:C.t2,lineHeight:1.45}}><b style={{color:P}}>{(bugunIsler[0].hatirlatma||"").slice(11,16)||"Bugün"}</b> · {bugunIsler[0].musteri} — {bugunIsler[0].baslik}{bugunIsler.length>1?" (+"+(bugunIsler.length-1)+" iş daha)":""}</div>}
+    {/* Yeni İş Ekle + İpucu kartları — yan yana */}
+    <div style={{display:"flex",gap:12,marginBottom:18,alignItems:"stretch"}}>
+      <button onClick={onYeniIs} style={{flex:"0 0 46%",background:GRAD,border:"none",borderRadius:20,padding:"18px 16px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:9}}>
+          <div style={{width:32,height:32,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/></div>
+          <span style={{fontSize:17.5,fontWeight:800,letterSpacing:"-0.01em"}}>{T.yeniIs} Ekle</span>
         </div>
-        <div style={{width:44,height:44,borderRadius:13,background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-calendar-event" style={{fontSize:21,color:P}} aria-hidden="true"/></div>
+        <div style={{fontSize:12.5,color:"rgba(255,255,255,0.85)",lineHeight:1.45,fontWeight:500}}>Yeni iş ekleyerek gününü planla.</div>
+      </button>
+      <div onClick={ipucu.act} style={{flex:1,background:C.card,borderRadius:20,padding:"14px 14px 10px",cursor:"pointer",boxShadow:C.sh,display:"flex",flexDirection:"column"}}>
+        <div style={{display:"flex",gap:10,flex:1}}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:"#2563EB",marginBottom:4}}>İpucu:</div>
+            <div style={{fontSize:12.5,color:C.t2,lineHeight:1.5}}>{ipucu.metin}</div>
+          </div>
+          <div style={{width:48,height:48,borderRadius:13,background:"#EAF0FA",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ${ipucu.ic}`} style={{fontSize:23,color:"#2563EB"}} aria-hidden="true"/></div>
+        </div>
+        <div style={{display:"flex",justifyContent:"center",gap:6,paddingTop:8}}>
+          {[0,1,2].map(i=><span key={i} onClick={e=>{e.stopPropagation();setIpucuIx(i);}} style={{width:i===ipucuIx?7:6,height:i===ipucuIx?7:6,borderRadius:"50%",background:i===ipucuIx?"#2563EB":"#C9D4E4",transition:"background 0.2s"}}/>)}
+        </div>
       </div>
     </div>
     {/* Hızlı İşlemler — düz beyaz kutular */}
@@ -724,23 +789,27 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:9}}>
         {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
           <div style={{width:"100%",aspectRatio:"1",borderRadius:15,background:C.card,border:"1px solid #EDF0F4",boxShadow:"0 1px 2px rgba(16,24,40,0.05)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
-            <i className={`ti ${m.ic}`} style={{fontSize:22,color:P}} aria-hidden="true"/>
+            <i className={`ti ${m.ic}`} style={{fontSize:23,color:m.c}} aria-hidden="true"/>
             {m.nokta&&<span style={{position:"absolute",top:7,right:7,width:8,height:8,borderRadius:"50%",background:"#E74694"}}/>}
           </div>
           <div style={{fontSize:10,fontWeight:600,color:C.t1,textAlign:"center",lineHeight:1.2}}>{m.l}</div>
+          <div style={{width:22,height:3,borderRadius:2,background:m.c,marginTop:-2}}/>
         </div>)}
       </div>
     </Sh>
     {/* Sektör mini seçici */}
-    <div style={{fontSize:11,color:C.t2,fontWeight:700,margin:"0 2px 6px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🔧 İş Kolunuz</div>
-    <div style={{display:"flex",gap:8,marginBottom:16}}>
-      <div style={{flex:1,position:"relative",background:C.card,borderRadius:14,padding:"10px 12px",display:"flex",alignItems:"center",gap:8,boxShadow:C.sh}}>
-        <i className="ti ti-briefcase" style={{fontSize:15,color:P}} aria-hidden="true"/>
-        <span style={{flex:1,fontSize:12.5,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</span>
-        <i className="ti ti-chevron-down" style={{fontSize:13,color:C.t3}} aria-hidden="true"/>
+    <div style={{display:"flex",alignItems:"center",gap:7,margin:"0 2px 8px"}}>
+      <i className="ti ti-tool" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
+      <span style={{fontSize:11.5,color:C.t3,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.14em"}}>İş Kolunuz</span>
+    </div>
+    <div style={{display:"flex",gap:10,marginBottom:18}}>
+      <div style={{flex:1,position:"relative",background:C.card,borderRadius:16,padding:"11px 14px",display:"flex",alignItems:"center",gap:11,boxShadow:C.sh}}>
+        <div style={{width:36,height:36,borderRadius:11,background:"#EAF0FA",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-briefcase" style={{fontSize:17,color:"#2563EB"}} aria-hidden="true"/></div>
+        <span style={{flex:1,fontSize:15,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</span>
+        <i className="ti ti-chevron-down" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
         <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>{IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}</select>
       </div>
-      <button onClick={onOzellestir} style={{width:42,background:C.card,border:"none",borderRadius:14,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:C.sh}}><i className="ti ti-settings" style={{fontSize:16}} aria-hidden="true"/></button>
+      <button onClick={onOzellestir} style={{width:52,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:C.sh}}><i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/></button>
     </div>
     {/* ⏰ Yaklaşan çek/senet */}
     {(()=>{const uc=new Date(Date.now()+3*86400000).toISOString().slice(0,10);const yak=cekSenetler.filter(c=>c.durum==="bekliyor"&&c.vade<=uc);
@@ -758,8 +827,8 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
             <span style={{fontSize:9.5,fontWeight:700,color:C.t2,lineHeight:1.1}}>{k.l}</span>
           </div>
           <div style={{fontSize:15,fontWeight:800,color:C.t1,whiteSpace:"nowrap"}}>{k.v}</div>
-          <div style={{fontSize:9,color:C.t3,marginBottom:7}}>{k.sub}</div>
-          <div style={{height:3,borderRadius:2,background:k.c}}/>
+          <div style={{fontSize:9,color:C.t3,marginBottom:8}}>{k.sub}</div>
+          <div style={{height:4,borderRadius:3,background:k.c}}/>
         </div>)}
       </div>
     </Sh>
@@ -946,14 +1015,31 @@ const MODUL_VARSAYILAN=[
   {id:"daha",icon:"⊞",bg:"#F3F4F6",aktif:true,aciklama:T=>T.mDahaA,label:T=>T.dahaFazla},
 ];
 
+const MODUL_GORUNUM={
+  isler:{ic:"ti-sitemap",c:"#3B82F6"},
+  faturalar:{ic:"ti-file-text",c:"#6366F1"},
+  tahsilatlar:{ic:"ti-wallet",c:"#0E9F6E"},
+  musteriler:{ic:"ti-user",c:"#2563EB"},
+  teklifler:{ic:"ti-file-pencil",c:"#7C3AED"},
+  raporlar:{ic:"ti-chart-bar",c:"#F97316"},
+  giderler:{ic:"ti-folder",c:"#14B8A6"},
+  daha:{ic:"ti-dots",c:"#6B7280"},
+};
 const QuickActions=memo(function QuickActions({setSekme,T,moduller,onDuzenle}){
   const gorununler=moduller.filter(m=>m.aktif);
-  return <Sh s={{margin:"0 14px 14px",padding:"16px"}}>
-    <div style={{display:"grid",gridTemplateColumns:MASAUSTU?"repeat(8,1fr)":"repeat(4,1fr)",gap:10}}>
-      {gorununler.map(a=><div key={a.id} onClick={()=>setSekme(a.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
-        <div style={{width:50,height:50,borderRadius:14,background:a.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{a.icon}</div>
-        <span style={{fontSize:10,fontWeight:500,color:C.t1,textAlign:"center",lineHeight:1.2}}>{typeof a.label==="function"?a.label(T):(a.label||a.id)}</span>
-      </div>)}
+  return <Sh s={{margin:MASAUSTU?"0 28px 20px":"0 14px 14px",padding:"18px 16px"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 14px"}}>
+      <div style={{fontSize:16,fontWeight:800,color:C.t1}}>Hızlı İşlemler</div>
+      <div onClick={onDuzenle} style={{fontSize:12.5,fontWeight:700,color:"#2563EB",cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>{T.duzenle} <i className="ti ti-pencil" style={{fontSize:13}} aria-hidden="true"/></div>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:MASAUSTU?"repeat(8,1fr)":"repeat(4,1fr)",gap:12}}>
+      {gorununler.map(a=>{const g=MODUL_GORUNUM[a.id]||{ic:null,c:P};return <div key={a.id} onClick={()=>setSekme(a.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
+        <div style={{width:"100%",maxWidth:84,aspectRatio:"1",borderRadius:15,background:C.card,border:"1px solid #EDF0F4",boxShadow:"0 1px 2px rgba(16,24,40,0.05)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          {g.ic?<i className={`ti ${g.ic}`} style={{fontSize:25,color:g.c}} aria-hidden="true"/>:<span style={{fontSize:23}}>{a.icon}</span>}
+        </div>
+        <span style={{fontSize:11,fontWeight:600,color:C.t1,textAlign:"center",lineHeight:1.2}}>{typeof a.label==="function"?a.label(T):(a.label||a.id)}</span>
+        <div style={{width:22,height:3,borderRadius:2,background:g.c,marginTop:-2}}/>
+      </div>;})}
     </div>
     {gorununler.length<8&&<div style={{textAlign:"center",marginTop:10}}>
       <span onClick={onDuzenle} style={{fontSize:11,color:P,fontWeight:600,cursor:"pointer"}}>{T.modulEkle}</span>
@@ -3652,29 +3738,63 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   </div>;
 }
 
+// 🖥️ Masaüstü hero — mobildeki Yeni İş Ekle + İpucu kartlarının geniş ekran uyarlaması
+const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs}){
+  const bugun=new Date().toISOString().slice(0,10);
+  const bugunIsler=jobs.filter(j=>j.durum!=="tamamlandi"&&((j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)));
+  const [ix,setIx]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setIx(i=>(i+1)%3),6000);return ()=>clearInterval(t);},[]);
+  const ipuclari=[
+    {ic:"ti-calendar-event",metin:bugunIsler.length===0?"Planlı işin yok — yeni iş ekleyerek gününü planla.":((bugunIsler[0].hatirlatma||"").slice(11,16)||"Bugün")+" · "+bugunIsler[0].musteri+" — "+bugunIsler[0].baslik+(bugunIsler.length>1?" (+"+(bugunIsler.length-1)+" iş daha)":""),act:onTakvim},
+    {ic:"ti-camera",metin:"Çek ve senetlerini fotoğraflayarak kaydet — vadesini asla kaçırma.",act:onKasa},
+    {ic:"ti-file-pencil",metin:"Teklifini PDF hazırla, WhatsApp'tan tek dokunuşla müşterine gönder.",act:()=>setSekme("teklifler")},
+  ];
+  const ip=ipuclari[ix];
+  return <div style={{display:"grid",gridTemplateColumns:"1fr 1.4fr",gap:16,padding:"20px 28px 20px"}}>
+    <button onClick={onYeniIs} style={{background:GRAD,border:"none",borderRadius:20,padding:"22px 24px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.28)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10,transition:"transform 0.15s"}}
+      onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="none"}>
+      <div style={{display:"flex",alignItems:"center",gap:11}}>
+        <div style={{width:36,height:36,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:19}} aria-hidden="true"/></div>
+        <span style={{fontSize:20,fontWeight:800,letterSpacing:"-0.01em"}}>{T.yeniIs} Ekle</span>
+      </div>
+      <div style={{fontSize:13.5,color:"rgba(255,255,255,0.85)",lineHeight:1.45,fontWeight:500}}>Yeni iş ekleyerek gününü planla.</div>
+    </button>
+    <div onClick={ip.act} style={{background:C.card,borderRadius:20,padding:"18px 20px 12px",cursor:"pointer",boxShadow:C.sh,display:"flex",flexDirection:"column"}}>
+      <div style={{display:"flex",gap:14,flex:1,alignItems:"center"}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:15,fontWeight:800,color:"#2563EB",marginBottom:5}}>İpucu:</div>
+          <div style={{fontSize:13.5,color:C.t2,lineHeight:1.55}}>{ip.metin}</div>
+        </div>
+        <div style={{width:54,height:54,borderRadius:14,background:"#EAF0FA",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ${ip.ic}`} style={{fontSize:25,color:"#2563EB"}} aria-hidden="true"/></div>
+      </div>
+      <div style={{display:"flex",justifyContent:"center",gap:6,paddingTop:9}}>
+        {[0,1,2].map(i=><span key={i} onClick={e=>{e.stopPropagation();setIx(i);}} style={{width:i===ix?7:6,height:i===ix?7:6,borderRadius:"50%",background:i===ix?"#2563EB":"#C9D4E4",transition:"background 0.2s"}}/>)}
+      </div>
+    </div>
+  </div>;
+})
 const DesktopStats=memo(function DesktopStats({jobs,faturalar,T,onStatClick}){
   const aktif=jobs.filter(j=>j.durum==="aktif").length;
   const tahsil=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
   const beklT=jobs.filter(j=>j.durum==="bekliyor").reduce((s,j)=>s+j.tutar,0);
   const beklFat=jobs.filter(j=>!j.faturalandi&&!(faturalar||[]).some(f=>f.jobRef===j.ref)).reduce((s,j)=>s+j.tutar,0);
   const kartlar=[
-    {icon:"ti-activity",l:T.aktifIs,sub:T.devamEden,v:aktif,c:"#1C4E60",bg:C.blueBg,ic:"#1C4E60",go:"stat-aktif"},
-    {icon:"ti-square-check",l:T.tahsilEdildi,sub:T.buAyTahsilat,v:fmt(tahsil),c:"#059669",bg:C.greenBg,ic:"#10B981",go:"stat-tahsil"},
-    {icon:"ti-hourglass",l:T.bekleyenTahsilat,sub:T.toplam,v:fmt(beklT),c:"#D97706",bg:C.amberBg,ic:"#F59E0B",go:"stat-btahsilat"},
-    {icon:"ti-file-invoice",l:T.faturalar,sub:T.beklemede,v:fmt(beklFat),c:"#DC2626",bg:C.redBg,ic:"#EF4444",go:"stat-bekleyen"},
+    {icon:"ti-briefcase",l:T.aktifIs,sub:T.devamEden,v:aktif,c:"#2563EB",go:"stat-aktif"},
+    {icon:"ti-shield-check",l:T.tahsilEdildi,sub:T.buAyTahsilat,v:fmt(tahsil),c:"#0E9F6E",go:"stat-tahsil"},
+    {icon:"ti-clock",l:T.bekleyenTahsilat,sub:T.toplam,v:fmt(beklT),c:"#F59E0B",go:"stat-btahsilat"},
+    {icon:"ti-file-text",l:T.faturalar,sub:T.beklemede,v:fmt(beklFat),c:"#7C5CFC",go:"stat-bekleyen"},
   ];
   return <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,padding:"0 28px 20px"}}>
-    {kartlar.map(k=><div key={k.l} onClick={()=>onStatClick(k.go)} style={{background:k.bg,borderRadius:18,padding:"18px 18px 16px",cursor:"pointer",border:`1px solid ${k.ic}22`,transition:"transform 0.15s"}}
+    {kartlar.map(k=><div key={k.l} onClick={()=>onStatClick(k.go)} style={{background:C.card,borderRadius:18,padding:"16px 18px 14px",cursor:"pointer",boxShadow:C.sh,transition:"transform 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
       onMouseLeave={e=>e.currentTarget.style.transform="none"}>
-      <div style={{display:"flex",alignItems:"center",gap:11,marginBottom:12}}>
-        <div style={{width:42,height:42,borderRadius:12,background:k.ic,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 10px ${k.ic}44`}}><i className={`ti ${k.icon}`} style={{fontSize:19,color:"#fff"}} aria-hidden="true"/></div>
-        <div>
-          <div style={{fontSize:13,fontWeight:700,color:k.c}}>{k.l}</div>
-          <div style={{fontSize:11,color:C.t3}}>{k.sub}</div>
-        </div>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <i className={`ti ${k.icon}`} style={{fontSize:17,color:k.c}} aria-hidden="true"/>
+        <span style={{fontSize:12,fontWeight:700,color:C.t2,lineHeight:1.2}}>{k.l}</span>
       </div>
-      <div style={{fontSize:String(k.v).length>10?20:26,fontWeight:900,color:k.c,letterSpacing:"-0.02em"}}>{k.v}</div>
+      <div style={{fontSize:String(k.v).length>10?21:26,fontWeight:900,color:C.t1,letterSpacing:"-0.02em"}}>{k.v}</div>
+      <div style={{fontSize:11,color:C.t3,margin:"2px 0 11px"}}>{k.sub}</div>
+      <div style={{height:4,borderRadius:3,background:k.c}}/>
     </div>)}
   </div>;
 })
@@ -4293,7 +4413,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
