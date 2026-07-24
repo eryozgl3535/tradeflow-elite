@@ -25,32 +25,34 @@ async function pdfVer(doc,dosyaAdi){
   setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
 function pdfBaslik(doc,baslik,isletme){
-  doc.setFillColor(91,33,182);doc.rect(0,0,210,26,"F");
-  doc.setFont("TR","bold");doc.setFontSize(15);doc.setTextColor(255,255,255);
+  // Sade beyaz başlık — açık gri zemin + ince ayırıcı çizgi
+  doc.setFillColor(248,249,250);doc.rect(0,0,210,26,"F");
+  doc.setDrawColor(214,217,222);doc.setLineWidth(0.4);doc.line(0,26,210,26);
+  doc.setFont("TR","bold");doc.setFontSize(15);doc.setTextColor(32,36,44);
   doc.text(baslik,14,12);
-  doc.setFont("TR","normal");doc.setFontSize(9);doc.setTextColor(200,205,215);
+  doc.setFont("TR","normal");doc.setFontSize(9);doc.setTextColor(122,128,138);
   doc.text((isletme?.ad||"TradeFlow")+(isletme?.yetkili?" · "+isletme.yetkili:"")+" · "+new Date().toLocaleDateString("tr-TR"),14,19);
-  doc.setFontSize(10);doc.setTextColor(201,162,75);doc.setFont("TR","bold");
+  doc.setFontSize(9.5);doc.setTextColor(70,76,86);doc.setFont("TR","bold");
   doc.text("T/F TRADEFLOW ELITE",196,12,{align:"right"});
-  doc.setTextColor(0,0,0);
+  doc.setTextColor(0,0,0);doc.setLineWidth(0.2);
 }
 function ozetKutulari(doc,y,kutular){
   const gen=(182-(kutular.length-1)*4)/kutular.length;
   kutular.forEach((k,i)=>{
     const x=14+i*(gen+4);
-    doc.setDrawColor(220,218,210);doc.setFillColor(250,250,248);
+    doc.setDrawColor(222,225,230);doc.setFillColor(252,252,253);
     doc.roundedRect(x,y,gen,16,2,2,"FD");
-    doc.setFillColor(201,162,75);doc.rect(x,y,1.2,16,"F");
-    doc.setFont("TR","normal");doc.setFontSize(7.5);doc.setTextColor(110,110,105);
+    const cb=k[2]||[120,126,136];doc.setFillColor(cb[0],cb[1],cb[2]);doc.rect(x,y,1.2,16,"F");
+    doc.setFont("TR","normal");doc.setFontSize(7.5);doc.setTextColor(122,128,138);
     doc.text(k[0],x+4,y+6);
     doc.setFont("TR","bold");doc.setFontSize(10.5);
-    const rgb=k[2]||[17,17,17];doc.setTextColor(rgb[0],rgb[1],rgb[2]);
+    const rgb=k[2]||[32,36,44];doc.setTextColor(rgb[0],rgb[1],rgb[2]);
     doc.text(String(k[1]),x+4,y+12.5);
   });
   doc.setTextColor(0,0,0);
   return y+22;
 }
-const TABLO_STIL={styles:{font:"TR",fontSize:8,cellPadding:2.2},headStyles:{fillColor:[91,33,182],textColor:[255,255,255],font:"TR",fontStyle:"bold",fontSize:8},alternateRowStyles:{fillColor:[247,247,244]},margin:{left:14,right:14}};
+const TABLO_STIL={styles:{font:"TR",fontSize:8,cellPadding:2.4,textColor:[45,50,58],lineColor:[228,231,236],lineWidth:0.1},headStyles:{fillColor:[240,242,245],textColor:[45,50,58],font:"TR",fontStyle:"bold",fontSize:8,lineColor:[214,217,222],lineWidth:0.1},alternateRowStyles:{fillColor:[250,250,251]},margin:{left:14,right:14}};
 function altBilgi(doc){
   const s=doc.internal.getNumberOfPages();
   for(let i=1;i<=s;i++){doc.setPage(i);doc.setFont("TR","normal");doc.setFontSize(7);doc.setTextColor(160,160,155);
@@ -225,17 +227,17 @@ export function pdfMuhasebeRaporu(jobs,giderler,isletme){
     musteriler[j.musteri].toplam+=j.tutar;musteriler[j.musteri].adet++;
     if(j.durum==="tamamlandi")musteriler[j.musteri].tahsil+=j.tutar;
   });
-  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(91,33,182);
+  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(32,36,44);
   doc.text("Müşteri Bazlı Tahsilat",14,y+3);
   autoTable(doc,{...TABLO_STIL,startY:y+6,head:[["Müşteri","İş Adedi","Toplam","Tahsil Edilen","Bekleyen"]],
     body:Object.entries(musteriler).map(([ad,m])=>[ad,m.adet,fTL(m.toplam),fTL(m.tahsil),fTL(m.toplam-m.tahsil)]),
     columnStyles:{2:{halign:"right"},3:{halign:"right"},4:{halign:"right"}}});
-  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(91,33,182);
+  doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(32,36,44);
   doc.text("İşler ("+jobs.length+")",14,doc.lastAutoTable.finalY+10);
   autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+13,head:[["Ref","İş","Müşteri","Tarih","Durum","Tutar"]],
     body:jobs.map(j=>[j.ref||"",j.baslik,j.musteri,j.tarih,durumAd(j.durum),fTL(j.tutar)]),columnStyles:{5:{halign:"right"}}});
   if((giderler||[]).length>0){
-    doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(91,33,182);
+    doc.setFont("TR","bold");doc.setFontSize(10);doc.setTextColor(32,36,44);
     doc.text("Giderler ("+giderler.length+")",14,doc.lastAutoTable.finalY+10);
     autoTable(doc,{...TABLO_STIL,startY:doc.lastAutoTable.finalY+13,head:[["Gider","Kategori","Tarih","Tutar"]],
       body:giderler.map(g=>[g.ad,g.kategori,g.tarih,fTL(g.tutar)]),columnStyles:{3:{halign:"right"}}});
