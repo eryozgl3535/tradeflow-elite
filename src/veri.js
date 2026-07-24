@@ -5,9 +5,11 @@ const SUPABASE_URL = "https://xnxxormjtzjhjamzqfjh.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhueHhvcm1qdHpqaGphbXpxZmpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNTQzNTcsImV4cCI6MjA5ODkzMDM1N30.5onyGAnfYJ8YHgXqlfsOMAdIml2OAGFFtpt_57H9kjo";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
-    persistSession: true,      // oturumu tarayıcıda sakla
-    autoRefreshToken: true,    // süresi dolunca otomatik yenile
+    persistSession: true,       // oturumu tarayıcıda sakla
+    autoRefreshToken: true,     // süresi dolunca otomatik yenile
+    detectSessionInUrl: true,   // e-posta onay linkinden dönünce oturumu yakala
     storageKey: "tradeflow-oturum",
+    storage: typeof window!=="undefined" ? window.localStorage : undefined, // kalıcı depolama (sekme kapansa da kalır)
   },
 });
 
