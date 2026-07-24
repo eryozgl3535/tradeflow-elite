@@ -393,7 +393,6 @@ function KurucuPanel({onKapat}){
   return <BottomSheet onKapat={onKapat} maxH="92vh">
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:2}}>👑 Kurucu Paneli</div>
     <div style={{fontSize:11,color:GOLD,fontWeight:700,marginBottom:16}}>TradeFlow Elite — Yalnızca kurucu görebilir</div>
-    {mod==="giris"&&<div onClick={sifremiUnuttum} style={{fontSize:12,fontWeight:700,color:"#2E7490",cursor:"pointer",textAlign:"right",marginBottom:10}}>Şifremi unuttum</div>}
     {hata&&<div style={{background:C.amberBg,borderRadius:12,padding:"12px 14px",fontSize:12,color:"#92600A",marginBottom:14}}>⚠️ {hata}</div>}
     {!veri&&!hata&&<div style={{textAlign:"center",padding:"30px 0",color:C.t3,fontSize:13}}>Yükleniyor...</div>}
     {veri&&<>
@@ -1477,7 +1476,6 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   const [kalemler,setKalemler]=useState([{tanim:job.baslik,miktar:1,birim:job.tutar}]);
   const [alici,setAlici]=useState({ad:job.musteri,vkn:"",adres:""});
   const [preview,setPreview]=useState(false);
-  const [gibGonder,setGibGonder]=useState(false); // GİB gönderim animasyonu
   const [tevkifat,setTevkifat]=useState(0); // 0 | 5 | 7 | 9  (x/10)
   const [iskonto,setIskonto]=useState(""); // % müşteri indirimi
   const ara=kalemler.reduce((s,k)=>s+k.miktar*k.birim,0);
@@ -1489,8 +1487,6 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   const belgeNo="TFE"+new Date().getFullYear()+String(fatNo).padStart(9,"0");
   const ettn=("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx").replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&0x3|0x8)).toString(16);});
   const simdi=new Date();
-  const gibAktif=gibAyar?.canliAktif;
-  const gibBekliyor=gibAyar?.apiKey&&!gibAyar?.canliAktif;
 
   const whatsappPaylas=()=>{
     const metin=`🧾 *FATURA — ${isletme.ad}*\n\nSayın ${alici.ad},\n\nFatura No: ${belgeNo}\nTarih: ${simdi.toLocaleDateString("tr-TR")}\n\n${kalemler.map(k=>`• ${k.tanim}: ${(k.miktar*k.birim).toLocaleString("tr-TR")} TL`).join("\n")}\n\nToplam: ${ara.toLocaleString("tr-TR")} TL${iskontoT>0?`\nİskonto (%${iskonto}): -${iskontoT.toLocaleString("tr-TR")} TL`:""}\nKDV (%${kdv}): ${kdvT.toLocaleString("tr-TR")} TL${tevkifatT>0?`\nTevkifat (${tevkifat}/10): -${tevkifatT.toLocaleString("tr-TR")} TL`:""}\n*ÖDENECEK: ${genel.toLocaleString("tr-TR")} TL*\n\n${isletme.telefon||""}`;
@@ -1502,38 +1498,16 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
     const fatura={no:belgeNo,jobRef:job.ref,musteri:alici.ad,tutar:genel,tarih:simdi.toLocaleDateString("tr-TR"),ettn,alici,kalemler,kdv,ara,iskonto:Number(iskonto)||0,iskontoT,kdvT,tevkifat,tevkifatT};
     onKesildi(fatura);
     fatNo++;
-    if(gibAktif){
-      // GİB aktifse gönderim animasyonu göster
-      setGibGonder(true);
-      setTimeout(()=>{onKapat();onGibAc&&onGibAc("test");},1800);
-    } else {
-      // GİB kurulmamışsa kesildi + GİB ekranına yönlendir
-      onKapat();
-      onGibAc&&onGibAc("bilgi");
-    }
+    // TradeFlow GİB'e fatura GÖNDERMEZ. Belge kaydedilir, kullanıcı resmî
+    // beyanı kendi e-Fatura/e-Arşiv sağlayıcısı üzerinden yapar.
+    onKapat();
   };
-
-  // GİB gönderim animasyonu
-  if(gibGonder) return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000}}>
-    <div style={{background:C.card,borderRadius:20,padding:36,textAlign:"center",maxWidth:300,width:"90%"}}>
-      <div style={{fontSize:48,marginBottom:12}}>🚀</div>
-      <div style={{fontSize:16,fontWeight:800,color:C.t1,marginBottom:6}}>GİB'e Gönderiliyor…</div>
-      <div style={{fontSize:12,color:C.t2,marginBottom:20}}>{belgeNo} · {alici.ad}</div>
-      <div style={{background:C.border,borderRadius:4,height:6,overflow:"hidden"}}>
-        <div style={{width:"100%",background:`linear-gradient(90deg,${P},#34D399)`,height:"100%",borderRadius:4,animation:"none",transition:"width 1.5s"}}/>
-      </div>
-      <div style={{fontSize:11,color:C.t3,marginTop:10}}>e-Arşiv fatura iletiliyor…</div>
-    </div>
-  </div>;
 
   if(preview) return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1001,padding:12}}>
     <div style={{background:"#fff",borderRadius:14,width:"100%",maxWidth:APP_W,maxHeight:"92vh",overflowY:"auto",padding:"22px 20px",color:"#111",fontSize:12}}>
       <div style={{textAlign:"center",marginBottom:14}}>
         <div style={{fontSize:15,fontWeight:900,letterSpacing:"0.05em"}}>e-ARŞİV FATURA</div>
-        {gibAktif
-          ?<div style={{fontSize:9,background:"#DCFCE7",color:"#059669",padding:"3px 10px",borderRadius:20,display:"inline-block",marginTop:4,fontWeight:700}}>✅ GİB Entegrasyonu Aktif — Kesilince otomatik gönderilecek</div>
-          :<div style={{fontSize:9,color:"#888",marginTop:2}}>GÖRSEL ŞABLON – Resmi belge için GİB e-Fatura entegrasyonu gereklidir</div>
-        }
+        <div style={{fontSize:9,color:"#888",marginTop:2}}>BELGE TASLAĞI – Resmî geçerlilik için GİB e-Fatura/e-Arşiv sistemi kullanılmalıdır</div>
       </div>
       <div style={{display:"flex",gap:10,marginBottom:12}}>
         <div style={{flex:1,border:"1px solid #ccc",borderRadius:8,padding:10}}>
@@ -1571,24 +1545,19 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
         <button onClick={yazdir} style={{flex:1,background:"#EFF6FF",border:"none",borderRadius:10,padding:"10px 0",color:"#1C4E60",fontSize:12,fontWeight:700,cursor:"pointer"}}>🖨️ {T.yazdirPdf}</button>
       </div>
 
-      {/* GİB durum banner */}
-      {gibAktif
-        ?<div style={{background:"#DCFCE7",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:18}}>✅</span>
-          <div><div style={{fontSize:12,fontWeight:700,color:"#059669"}}>GİB e-Arşiv — Fatura otomatik gönderilecek</div><div style={{fontSize:10,color:"#047857"}}>Onaylandıktan sonra GİB sistemine iletilir, ETTN atanır.</div></div>
+      {/* Yasal bilgilendirme */}
+      <div style={{background:"#FEF3C7",borderRadius:10,padding:"11px 14px",marginBottom:12,display:"flex",alignItems:"flex-start",gap:9,cursor:"pointer"}} onClick={()=>{onKapat();onGibAc&&onGibAc("bilgi");}}>
+        <span style={{fontSize:17,lineHeight:1.2}}>ℹ️</span>
+        <div style={{flex:1}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#B45309"}}>Bu belge resmî fatura değildir</div>
+          <div style={{fontSize:10,color:"#92400E",lineHeight:1.55}}>TradeFlow Elite belgeyi GİB'e göndermez. Resmî beyanı kendi e-Fatura/e-Arşiv sağlayıcın üzerinden yapmalısın. <u>Nasıl yapılır? →</u></div>
         </div>
-        :<div style={{background:"#FEF3C7",borderRadius:10,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,cursor:"pointer"}} onClick={()=>{onKapat();onGibAc&&onGibAc("bilgi");}}>
-          <span style={{fontSize:18}}>⚠️</span>
-          <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:"#B45309"}}>GİB entegrasyonu kurulmadı</div><div style={{fontSize:10,color:"#92400E"}}>Yasal geçerlilik için GİB bağlantısı gerekli. <u>Şimdi kur →</u></div></div>
-        </div>
-      }
+      </div>
 
-      <div style={{fontSize:8,color:"#999",textAlign:"center",marginBottom:12,lineHeight:1.5}}>Bu belge TradeFlow Elite ile oluşturulmuş fatura şablonudur.{!gibAktif&&" Yasal geçerlilik için GİB onaylı e-Fatura/e-Arşiv sistemi kullanılmalıdır."}</div>
+      <div style={{fontSize:8,color:"#999",textAlign:"center",marginBottom:12,lineHeight:1.5}}>Bu belge TradeFlow Elite ile oluşturulmuş bir muhasebe takip belgesidir; resmî fatura yerine geçmez. Yasal geçerlilik için GİB onaylı e-Fatura/e-Arşiv sistemi kullanılmalıdır.</div>
       <div style={{display:"flex",gap:8}}>
         <button onClick={()=>setPreview(false)} style={{flex:1,background:"#f4f4f4",border:"1px solid #ddd",borderRadius:10,padding:12,fontSize:12,cursor:"pointer",fontWeight:600}}>← Düzenle</button>
-        <button onClick={faturaKes} style={{flex:2,background:gibAktif?"#059669":"#111",border:"none",borderRadius:10,padding:12,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-          {gibAktif?"🚀 Kes & GİB'e Gönder":"✓ Faturayı Kes"}
-        </button>
+        <button onClick={faturaKes} style={{flex:2,background:"#111",border:"none",borderRadius:10,padding:12,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>✓ Belgeyi Kaydet</button>
       </div>
     </div>
   </div>;
@@ -1597,10 +1566,7 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
     <div style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:4}}>{T.faturaKes}</div>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
       <div style={{fontSize:12,color:C.t2}}>{job.ref} · KDV %{kdv}</div>
-      {gibAktif
-        ?<span style={{fontSize:10,background:C.greenBg,color:C.green,padding:"3px 10px",borderRadius:20,fontWeight:700}}>✅ GİB Aktif</span>
-        :<span onClick={()=>{onKapat();onGibAc&&onGibAc("bilgi");}} style={{fontSize:10,background:C.amberBg,color:C.amber,padding:"3px 10px",borderRadius:20,fontWeight:700,cursor:"pointer"}}>⚠️ GİB Kur →</span>
-      }
+      <span onClick={()=>{onKapat();onGibAc&&onGibAc("bilgi");}} style={{fontSize:10,background:C.amberBg,color:C.amber,padding:"3px 10px",borderRadius:20,fontWeight:700,cursor:"pointer"}}>ℹ️ e-Fatura rehberi →</span>
     </div>
     <Inp value={alici.ad} onChange={e=>setAlici(a=>({...a,ad:e.target.value}))} placeholder={T.aliciAdiPh}/>
     <div style={{display:"flex",gap:10}}><div style={{flex:1}}><Inp value={alici.vkn} onChange={e=>setAlici(a=>({...a,vkn:e.target.value}))} placeholder="VKN / TCKN"/></div><div style={{flex:1}}><Inp value={alici.adres} onChange={e=>setAlici(a=>({...a,adres:e.target.value}))} placeholder="Adres"/></div></div>
@@ -2344,6 +2310,110 @@ function DilSecimModal({secili,onSec,onKapat}){
   </BottomSheet>;
 }
 
+// ─── BANKA & TAHSİLAT YÖNLENDİRME ───────────────────────────────
+// ÖNEMLİ: TradeFlow para transferi YAPMAZ. Sadece kullanıcının kendi
+// IBAN bilgisini müşterisine iletir ve bankanın resmî sitesine yönlendirir.
+export const BANKALAR=[
+  {ad:"Ziraat Bankası",url:"https://www.ziraatbank.com.tr"},
+  {ad:"İş Bankası",url:"https://www.isbank.com.tr"},
+  {ad:"Garanti BBVA",url:"https://www.garantibbva.com.tr"},
+  {ad:"Yapı Kredi",url:"https://www.yapikredi.com.tr"},
+  {ad:"Akbank",url:"https://www.akbank.com"},
+  {ad:"VakıfBank",url:"https://www.vakifbank.com.tr"},
+  {ad:"Halkbank",url:"https://www.halkbank.com.tr"},
+  {ad:"QNB",url:"https://www.qnb.com.tr"},
+  {ad:"DenizBank",url:"https://www.denizbank.com"},
+  {ad:"TEB",url:"https://www.teb.com.tr"},
+  {ad:"ING",url:"https://www.ing.com.tr"},
+  {ad:"Kuveyt Türk",url:"https://www.kuveytturk.com.tr"},
+  {ad:"Albaraka Türk",url:"https://www.albaraka.com.tr"},
+  {ad:"Türkiye Finans",url:"https://www.turkiyefinans.com.tr"},
+  {ad:"Enpara",url:"https://www.enpara.com"},
+  {ad:"Diğer / Belirtmek istemiyorum",url:""},
+];
+// IBAN doğrulama (TR + 24 hane, mod-97 kontrolü)
+export function ibanGecerli(ham){
+  const s=(ham||"").replace(/\s/g,"").toUpperCase();
+  if(!/^TR\d{24}$/.test(s))return false;
+  const cev=(s.slice(4)+s.slice(0,4)).replace(/[A-Z]/g,c=>c.charCodeAt(0)-55);
+  let kalan=0;
+  for(const k of cev)kalan=(kalan*10+Number(k))%97;
+  return kalan===1;
+}
+export const ibanBicim=(ham)=>(ham||"").replace(/\s/g,"").toUpperCase().replace(/(.{4})/g,"$1 ").trim();
+
+function BankaEkrani({onKapat,isletme,setIsletme,goster}){
+  const [iban,setIban]=useState(isletme?.iban||"");
+  const [banka,setBanka]=useState(isletme?.bankaAd||"");
+  const [hesapAd,setHesapAd]=useState(isletme?.hesapAd||isletme?.yetkili||"");
+  const temiz=iban.replace(/\s/g,"").toUpperCase();
+  const gecerli=ibanGecerli(temiz);
+  const kaydet=()=>{
+    if(temiz&&!gecerli){goster("⚠️ IBAN geçersiz — kontrol et");return;}
+    setIsletme(p=>({...p,iban:temiz,bankaAd:banka,hesapAd}));
+    goster("🏦 Banka bilgisi kaydedildi");
+    onKapat();
+  };
+  const seciliBanka=BANKALAR.find(b=>b.ad===banka);
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
+      <GeriBaslik baslik="🏦 Banka Hesabı" onKapat={onKapat}/>
+      <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
+
+        {/* Sorumluluk bilgilendirmesi */}
+        <Sh s={{padding:15,marginBottom:16,background:C.blueBg}}>
+          <div style={{fontSize:13,fontWeight:800,color:P,marginBottom:7}}>ℹ️ Bu bilgi ne için kullanılır?</div>
+          <div style={{fontSize:11.5,color:C.t1,lineHeight:1.75}}>
+            IBAN bilgin <b>yalnızca</b> müşterine gönderdiğin teklif, fatura ve tahsilat mesajlarına eklenir.{"\n"}
+            <b>TradeFlow Elite para transferi yapmaz, tahsilat almaz, hiçbir tutarı elinde tutmaz.</b>{"\n"}
+            Ödeme müşterin ile bankan arasında gerçekleşir; uygulama bu işlemin tarafı değildir.
+          </div>
+        </Sh>
+
+        <Sh s={{padding:16,marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:6}}>Hesap Sahibi</div>
+          <input value={hesapAd} onChange={e=>setHesapAd(e.target.value)} placeholder="Ad Soyad / Firma Ünvanı"
+            style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none",marginBottom:14}}/>
+
+          <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:6}}>Banka</div>
+          <select value={banka} onChange={e=>setBanka(e.target.value)}
+            style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none",marginBottom:14}}>
+            <option value="">Banka seç…</option>
+            {BANKALAR.map(b=><option key={b.ad} value={b.ad}>{b.ad}</option>)}
+          </select>
+
+          <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:6}}>IBAN</div>
+          <input value={ibanBicim(iban)} onChange={e=>setIban(e.target.value)} placeholder="TR00 0000 0000 0000 0000 0000 00"
+            style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1.5px solid ${temiz?(gecerli?C.green:C.red):C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:14,outline:"none",letterSpacing:"0.04em",fontFamily:"monospace"}}/>
+          {temiz&&<div style={{fontSize:11,fontWeight:700,color:gecerli?C.green:C.red,marginTop:7}}>
+            {gecerli?"✅ IBAN geçerli":"❌ IBAN hatalı — TR ile başlamalı ve 26 hane olmalı"}
+          </div>}
+
+          <button onClick={kaydet} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:14,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",marginTop:16}}>Kaydet</button>
+        </Sh>
+
+        {/* Bankaya yönlendirme */}
+        {seciliBanka?.url&&<Sh s={{padding:16,marginBottom:16}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:6}}>🔗 {seciliBanka.ad} İnternet Şubesi</div>
+          <div style={{fontSize:11.5,color:C.t3,lineHeight:1.6,marginBottom:12}}>Hesap hareketlerini görmek veya ödeme yapmak için bankanın resmî sitesine gidersin. Giriş bilgilerin uygulamaya hiçbir zaman girilmez.</div>
+          <button onClick={()=>window.open(seciliBanka.url,"_blank","noopener,noreferrer")}
+            style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:P,fontSize:13,fontWeight:700,cursor:"pointer"}}>
+            {seciliBanka.ad} sitesini aç ↗
+          </button>
+        </Sh>}
+
+        <Sh s={{padding:15,background:C.amberBg}}>
+          <div style={{fontSize:12,fontWeight:800,color:"#92400E",marginBottom:6}}>⚠️ Güvenlik Uyarısı</div>
+          <div style={{fontSize:11,color:"#78350F",lineHeight:1.7}}>
+            TradeFlow Elite senden <b>asla</b> internet bankacılığı şifresi, kart numarası, CVV veya SMS onay kodu istemez.{"\n"}
+            Böyle bir istekle karşılaşırsan bu bir dolandırıcılıktır — hiçbir bilgi verme.
+          </div>
+        </Sh>
+      </div>
+    </div>
+  </div>;
+}
+
 // ─── GİB ENTEGRASYON EKRANI ─────────────────────────────────────
 function GibEkrani({onKapat,isletme,gibAyar,setGibAyar,goster}){
   const [sekme,setSekme]=useState("bilgi"); // bilgi | basvuru | test | ayar
@@ -2353,9 +2423,9 @@ function GibEkrani({onKapat,isletme,gibAyar,setGibAyar,goster}){
   const adimlar=[
     {no:1,baslik:"Entegratör Seç",durum:gibAyar.entegrator?"ok":"bekliyor"},
     {no:2,baslik:"GİB Başvurusu",durum:gibAyar.basvuruDurumu||"bekliyor"},
-    {no:3,baslik:"API Bağlantısı",durum:gibAyar.apiKey?"ok":"bekliyor"},
-    {no:4,baslik:"Test Faturası",durum:gibAyar.testOk?"ok":"bekliyor"},
-    {no:5,baslik:"Canlı Ortam",durum:gibAyar.canliAktif?"ok":"bekliyor"},
+    {no:3,baslik:"Entegratör Sözleşmesi",durum:"bekliyor"},
+    {no:4,baslik:"Test Ortamı",durum:"bekliyor"},
+    {no:5,baslik:"Canlı Kullanım",durum:"bekliyor"},
   ];
   const durumRenk={ok:C.green,bekliyor:C.t3,islemde:C.amber,hata:C.red};
   const durumIkon={ok:"✅",bekliyor:"⭕",islemde:"🔄",hata:"❌"};
@@ -2375,7 +2445,7 @@ function GibEkrani({onKapat,isletme,gibAyar,setGibAyar,goster}){
 
       {/* Sekme */}
       <div style={{display:"flex",background:C.card,borderBottom:`1px solid ${C.border}`,padding:"0 14px"}}>
-        {[["bilgi","Nedir?"],["basvuru","Başvuru"],["ayar","API Ayarı"],["test","Test"]].map(([k,l])=><div key={k} onClick={()=>setSekme(k)} style={{flex:1,padding:"12px 0",textAlign:"center",fontSize:12,fontWeight:sekme===k?700:400,color:sekme===k?P:C.t3,borderBottom:sekme===k?`2px solid ${P}`:"2px solid transparent",cursor:"pointer"}}>{l}</div>)}
+        {[["bilgi","Nedir?"],["basvuru","Başvuru"],["ayar","Resmî Kaynaklar"],["test","Sorumluluk"]].map(([k,l])=><div key={k} onClick={()=>setSekme(k)} style={{flex:1,padding:"12px 0",textAlign:"center",fontSize:12,fontWeight:sekme===k?700:400,color:sekme===k?P:C.t3,borderBottom:sekme===k?`2px solid ${P}`:"2px solid transparent",cursor:"pointer"}}>{l}</div>)}
       </div>
 
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
@@ -2441,50 +2511,56 @@ function GibEkrani({onKapat,isletme,gibAyar,setGibAyar,goster}){
 
         {/* API AYARI */}
         {sekme==="ayar"&&<>
-          <Sh s={{padding:16,marginBottom:16}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:12}}>🔑 API Bağlantı Bilgileri</div>
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>Entegratör</div>
-              <div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",fontSize:13,color:form.entegrator?C.t1:C.t3}}>{form.entegrator||"Henüz seçilmedi — Nedir? sekmesinden seçin"}</div>
+          <Sh s={{padding:16,marginBottom:16,background:C.blueBg}}>
+            <div style={{fontSize:13,fontWeight:800,color:P,marginBottom:8}}>🔐 Neden burada şifre istemiyoruz?</div>
+            <div style={{fontSize:11.5,color:C.t1,lineHeight:1.75}}>
+              e-Fatura entegratör şifren, mali mühür bilgin ve GİB giriş bilgilerin <b>yalnızca sana aittir</b>.{"\n"}
+              TradeFlow Elite bu bilgileri istemez, saklamaz ve hiçbir sisteme iletmez.{"\n"}
+              Faturanı entegratörünün kendi paneli veya GİB portalı üzerinden keser, buraya sadece takip için kaydedersin.
             </div>
-            {[["API Key / Token","apiKey","API anahtarınızı girin...","password"],["Kullanıcı Adı","apiUser","VKN veya kullanıcı adı","text"],["Kullanıcı Şifresi","apiPass","Entegratör şifresi","password"]].map(([l,k,ph,t])=><div key={k} style={{marginBottom:12}}>
-              <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{l}</div>
-              <input type={t} value={form[k]||""} onChange={e=>set(k,e.target.value)} placeholder={ph} style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.t1,fontSize:13,outline:"none"}}/>
-            </div>)}
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:8,textTransform:"uppercase"}}>Ortam</div>
-              <div style={{display:"flex",gap:8}}>
-                {[["test","🧪 Test"],["prod","🟢 Canlı"]].map(([v,l])=><button key={v} onClick={()=>set("ortam",v)} style={{flex:1,padding:"10px 0",borderRadius:10,border:`2px solid ${form.ortam===v?P:C.border}`,background:form.ortam===v?C.purpleBg:C.bg,color:form.ortam===v?P:C.t2,fontSize:13,fontWeight:600,cursor:"pointer"}}>{l}</button>)}
-              </div>
-            </div>
-            <button onClick={()=>{setGibAyar({...gibAyar,...form});goster("API ayarları kaydedildi ✓");}} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>💾 Ayarları Kaydet</button>
           </Sh>
-          <Sh s={{padding:14,background:C.amberBg}}>
-            <div style={{fontSize:11,fontWeight:700,color:C.amber,marginBottom:4}}>⚠️ Güvenlik Notu</div>
-            <div style={{fontSize:11,color:C.t1,lineHeight:1.6}}>API bilgileriniz cihazınızda saklanır. Pro sürümde şifreli bulut yedekleme ile korunur. Bilgileri kimseyle paylaşmayın.</div>
+          <Sh s={{padding:16,marginBottom:16}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:10}}>🏛️ Resmî Kaynaklar</div>
+            {[
+              ["GİB e-Arşiv Portalı","Faturayı doğrudan GİB üzerinden kes","https://earsivportal.efatura.gov.tr"],
+              ["GİB e-Belge Ana Sayfa","Başvuru, duyuru ve mevzuat","https://ebelge.gib.gov.tr"],
+              ["İnteraktif Vergi Dairesi","Mükellefiyet ve borç sorgulama","https://ivd.gib.gov.tr"],
+            ].map(([ad,alt,u])=><div key={ad} onClick={()=>window.open(u,"_blank","noopener,noreferrer")}
+              style={{display:"flex",alignItems:"center",gap:11,padding:"11px 0",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{ad}</div>
+                <div style={{fontSize:10.5,color:C.t3}}>{alt}</div>
+              </div>
+              <span style={{fontSize:13,color:P,fontWeight:700}}>↗</span>
+            </div>)}
+          </Sh>
+          <Sh s={{padding:16}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:8}}>📝 Entegratörünü Not Et</div>
+            <div style={{fontSize:11,color:C.t3,marginBottom:10,lineHeight:1.6}}>Hangi firmayla çalıştığını kaydet — sadece hatırlatma amaçlıdır, hiçbir bağlantı kurulmaz.</div>
+            <input value={form.entegrator||""} onChange={e=>set("entegrator",e.target.value)} placeholder="Örn: Uyumsoft, Parasut, IziBiz…"
+              style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px 14px",color:C.t1,fontSize:13,outline:"none",marginBottom:12}}/>
+            <button onClick={()=>{setGibAyar({entegrator:form.entegrator||""});goster("Kaydedildi ✓");}} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>💾 Kaydet</button>
           </Sh>
         </>}
 
-        {/* TEST */}
+        {/* SORUMLULUK */}
         {sekme==="test"&&<>
-          <Sh s={{padding:16,marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:4}}>🧪 Test Faturası Gönder</div>
-            <div style={{fontSize:11,color:C.t2,marginBottom:14}}>GİB test ortamına örnek fatura gönderir. Gerçek bir işlem değildir.</div>
-            <div style={{background:C.bg,borderRadius:10,padding:12,marginBottom:12}}>
-              {[["Entegratör",gibAyar.entegrator||"—"],["Ortam",(gibAyar.ortam||"test")==="test"?"🧪 Test":"🟢 Canlı"],["API Key",gibAyar.apiKey?"●●●●●●●●●●●":"—"],["İşletme VKN",isletme.vergiNo||"—"]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:`1px solid ${C.border}`}}>
-                <span style={{fontSize:12,color:C.t2}}>{l}</span>
-                <span style={{fontSize:12,fontWeight:600,color:C.t1}}>{v}</span>
-              </div>)}
+          <Sh s={{padding:16,marginBottom:14,background:C.amberBg}}>
+            <div style={{fontSize:13,fontWeight:800,color:"#92400E",marginBottom:8}}>⚠️ Sorumluluk Reddi</div>
+            <div style={{fontSize:11.5,color:"#78350F",lineHeight:1.8}}>
+              TradeFlow Elite bir <b>muhasebe takip aracıdır</b>; mali müşavirlik, e-fatura entegratörlüğü veya ödeme hizmeti değildir.{"\n\n"}
+              • Uygulamada oluşturulan fatura ve teklifler <b>resmî belge değildir</b>.{"\n"}
+              • Vergi beyanı, e-Fatura/e-Arşiv gönderimi ve yasal yükümlülükler tamamen <b>kullanıcının sorumluluğundadır</b>.{"\n"}
+              • Uygulama para transferi yapmaz, tahsilat almaz, hiçbir tutarı elinde tutmaz.{"\n"}
+              • Hesaplamalar bilgilendirme amaçlıdır; kesin işlemler için mali müşavirine danış.
             </div>
-            {!gibAyar.apiKey
-              ?<div style={{background:C.redBg,borderRadius:10,padding:12,fontSize:12,color:C.red,textAlign:"center"}}>❌ Önce API ayarlarını yapın</div>
-              :<button onClick={()=>{setGibAyar({...gibAyar,testOk:true});goster("🧪 Test faturası gönderildi ✓");}} style={{width:"100%",background:C.greenBg,border:`1px solid ${C.green}33`,borderRadius:12,padding:13,color:C.green,fontSize:14,fontWeight:700,cursor:"pointer"}}>{gibAyar.testOk?"✅ Test Başarılı — Tekrar Test Et":"🚀 Test Faturası Gönder"}</button>}
           </Sh>
-          {gibAyar.testOk&&<Sh s={{padding:16,background:C.greenBg}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.green,marginBottom:6}}>✅ Test Başarılı!</div>
-            <div style={{fontSize:11,color:C.t1,lineHeight:1.6,marginBottom:10}}>Test ortamında fatura başarıyla gönderildi. Canlı ortama geçmek için API Ayarı'nda "Canlı" ortamını seçin ve kaydedin.</div>
-            <button onClick={()=>{setGibAyar({...gibAyar,canliAktif:true});goster("🎉 Canlı e-Fatura aktif!");}} style={{width:"100%",background:C.green,border:"none",borderRadius:10,padding:11,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>🟢 Canlı Ortama Geç</button>
-          </Sh>}
+          <Sh s={{padding:16}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:8}}>👨‍💼 Mali Müşavir Bul</div>
+            <div style={{fontSize:11,color:C.t3,lineHeight:1.6,marginBottom:12}}>Bölgendeki yeminli mali müşavirlere TÜRMOB üzerinden ulaşabilirsin.</div>
+            <button onClick={()=>window.open("https://www.turmob.org.tr","_blank","noopener,noreferrer")}
+              style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:13,color:P,fontSize:13,fontWeight:700,cursor:"pointer"}}>TÜRMOB sitesini aç ↗</button>
+          </Sh>
         </>}
 
       </div>
@@ -3425,7 +3501,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
 }
 
 // ─── PROFİL ─────────────────────────────────────────────────────
-function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,sesEfekt,setSesEfekt,raporDonemAd,onRaporDonem,ozetSaat,setOzetSaat,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne}){
+function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,sesEfekt,setSesEfekt,raporDonemAd,onRaporDonem,ozetSaat,setOzetSaat,para,setPara,kdv,setKdv,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne,kilitSure,onKilitAyarla,onYedekAl,onYedekYukle}){
   const [bildirimIzin,setBildirimIzin]=useState(false);
   const [kompaktMod,setKompaktMod]=useState(false);
   const logo=isletme?.logo||null;
@@ -3464,7 +3540,7 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     </div>
   );
   const dilAd=DIL_LISTESI.find(d=>d.code===dil);
-  const gibDurum=gibAyar?.canliAktif?"ok":gibAyar?.apiKey?"bekliyor":null;
+  const gibDurum=gibAyar?.entegrator?"ok":null;
 
   return <div style={{padding:"16px 14px"}}>
     {/* Avatar + karne */}
@@ -3528,8 +3604,18 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
       <Row icon="💰" label={T.paraBirimi} sub={kurKaynakAd()} value={para+" ("+fmt(1)+")"} onClick={()=>setModal("para")}/>
       <Row icon="📊" label={T.raporlamaDonemi} sub={T.donemSub||"Raporlar bu döneme göre hesaplanır"} value={raporDonemAd+" ›"} onClick={onRaporDonem}/>
-      <Row icon="🏦" label={T.bankaHesabi} sub={T.ibanSub} onClick={()=>goster("Pro! ⚡")}/>
+      <Row icon="🏦" label={T.bankaHesabi} sub={isletme?.iban?ibanBicim(isletme.iban):"IBAN ekle — ödeme yönlendirmesi için"} onClick={()=>setModal("banka")}/>
     </Sh>
+
+    {/* Güvenlik & Yedek */}
+    <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>GÜVENLİK & YEDEK</div>
+    <Sh s={{marginBottom:14,overflow:"hidden"}}>
+      <Row icon="🔒" label="Otomatik Kilit" sub="Hareketsizlikte oturumu kapat" value={(kilitSure>0?kilitSure+" dk":"Kapalı")+" ›"} onClick={()=>setModal("kilit")}/>
+      <Row icon="💾" label="Yedek İndir" sub="Tüm verini JSON dosyası olarak kaydet" onClick={onYedekAl}/>
+      <Row icon="♻️" label="Yedeği Geri Yükle" sub="Daha önce indirdiğin dosyadan geri dön" onClick={()=>document.getElementById("tfYedekDosya").click()}/>
+      <Row icon="🛡️" label="Yasal Uyarı & Sorumluluk" sub="Uygulama neyi yapar, neyi yapmaz" onClick={()=>onAc("gib")}/>
+    </Sh>
+    <input id="tfYedekDosya" type="file" accept="application/json,.json" onChange={e=>{const d=e.target.files&&e.target.files[0];e.target.value="";onYedekYukle(d);}} style={{display:"none"}}/>
 
     {/* Uygulama */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.uygulama}</div>
@@ -3605,6 +3691,16 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
     {modal==="para"&&<SecimModal baslik={T.paraBirimiB+" · "+kurKaynakAd()} secenekler={[{value:"TL",label:"Türk Lirası",icon:"₺"},{value:"USD",label:"Dolar ($"+KURLAR.USD+" TL)",icon:"$"},{value:"EUR",label:"Euro (€"+KURLAR.EUR+" TL)",icon:"€"}]} secili={para} onSec={(v)=>{setPara(v);goster("Para birimi: "+v);}} onKapat={()=>setModal(null)}/>}
     {modal==="kdv"&&<KdvModal kdv={kdv} onSec={(v)=>{setKdv(v);goster("KDV: %"+v);}} onKapat={()=>setModal(null)}/>}
     {modal==="isletme"&&<IsletmeModal bilgi={isletme} onKaydet={(f)=>{setIsletme(f);goster("Kaydedildi ✓");}} onKapat={()=>setModal(null)}/>}
+    {modal==="banka"&&<BankaEkrani onKapat={()=>setModal(null)} isletme={isletme} setIsletme={setIsletme} goster={goster}/>}
+    {modal==="kilit"&&<BottomSheet onKapat={()=>setModal(null)}>
+      <div style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:4}}>🔒 Otomatik Kilit</div>
+      <div style={{fontSize:12,color:C.t2,marginBottom:16,lineHeight:1.6}}>Uygulamaya belirtilen süre boyunca dokunulmazsa oturum kendiliğinden kapanır. Telefonun başkasının eline geçerse verilerin korunur.</div>
+      {[[0,"Kapalı"],[5,"5 dakika"],[15,"15 dakika (önerilen)"],[30,"30 dakika"],[60,"1 saat"]].map(([v,l])=>
+        <div key={v} onClick={()=>{onKilitAyarla(v);setModal(null);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 4px",borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
+          <span style={{fontSize:14,color:C.t1,fontWeight:kilitSure===v?700:400}}>{l}</span>
+          {kilitSure===v&&<span style={{color:P,fontSize:16,fontWeight:700}}>✓</span>}
+        </div>)}
+    </BottomSheet>}
     {modal==="gib"&&<GibEkrani onKapat={()=>setModal(null)} isletme={isletme} gibAyar={gibAyar||{}} setGibAyar={setGibAyar} goster={goster}/>}
   </div>;
 }
@@ -3904,6 +4000,7 @@ function GirisEkrani({onGiris}){
         <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{L.sifre}</div>
         <input type="password" value={sifre} onChange={e=>setSifre(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")gonder();}} placeholder={L.sifrePh}
           style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
+        {mod==="giris"&&tip!=="usta"&&<div onClick={sifremiUnuttum} style={{fontSize:12,fontWeight:700,color:"#2E7490",cursor:"pointer",textAlign:"right",marginTop:8}}>Şifremi unuttum</div>}
       </div>
 
       {/* Beni hatırla */}
@@ -3984,7 +4081,7 @@ export default function TradeFlow(){
   const [islerFiltre,setIslerFiltre]=useState(null);
   const [moduller,setModuller]=useState(MODUL_VARSAYILAN);
   const [ozellestirAc,setOzellestirAc]=useState(false);
-  const [gibAyar,setGibAyar]=useState({entegrator:"",apiKey:"",apiUser:"",apiPass:"",ortam:"test",testOk:false,canliAktif:false});
+  const [gibAyar,setGibAyar]=useState({entegrator:""});
   const [gibAcSekme,setGibAcSekme]=useState(null); // GİB ekranını hangi sekmede açacak
   const [tahsilatFiltre,setTahsilatFiltre]=useState(null);
   const [sonSilinen,setSonSilinen]=useState(null); // silme geri al
@@ -4122,6 +4219,53 @@ export default function TradeFlow(){
     setKullanici(null);
     // Ekranı ilk haline döndür
     setJobs(initJobs);setTeklifler([]);setGiderler([]);setFaturalar([]);setMusteriKayitlari([]);
+  };
+
+  // 🔒 GÜVENLİK — Hareketsizlikte otomatik oturum kapatma
+  // Ustanın telefonu şantiyede açık kalırsa veri başkasının eline geçmesin.
+  const [kilitSure,setKilitSure]=useState(()=>Number(localStorage.getItem("tf_kilit")||15));
+  useEffect(()=>{
+    if(!kullanici||kilitSure<=0)return;
+    let zaman;
+    const sifirla=()=>{
+      clearTimeout(zaman);
+      zaman=setTimeout(()=>{goster("🔒 Güvenlik için oturum kapatıldı");cikisYap();},kilitSure*60*1000);
+    };
+    const olaylar=["click","keydown","touchstart","scroll"];
+    olaylar.forEach(o=>window.addEventListener(o,sifirla,{passive:true}));
+    sifirla();
+    return ()=>{clearTimeout(zaman);olaylar.forEach(o=>window.removeEventListener(o,sifirla));};
+  },[kullanici,kilitSure]);
+  const kilitAyarla=(dk)=>{setKilitSure(dk);localStorage.setItem("tf_kilit",String(dk));goster(dk>0?("🔒 "+dk+" dakikada otomatik kilit"):"🔓 Otomatik kilit kapalı");};
+
+  // 💾 YEDEKLEME — Kullanıcı kendi verisini dosya olarak indirir
+  const yedekAl=()=>{
+    const paket={surum:1,tarih:new Date().toISOString(),isletme,jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,cekSenetler,ustaHarcamalar,gibAyar,dil,kdv,para};
+    const blob=new Blob([JSON.stringify(paket,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="tradeflow-yedek-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    goster("💾 Yedek indirildi");
+  };
+  const yedekYukle=(dosya)=>{
+    if(!dosya)return;
+    const fr=new FileReader();
+    fr.onload=()=>{
+      try{
+        const d=JSON.parse(fr.result);
+        if(!d||typeof d!=="object"||!Array.isArray(d.jobs))throw new Error("bicim");
+        if(!window.confirm("Yedek geri yüklenecek.\n\nMevcut veriler yedekteki verilerle DEĞİŞTİRİLECEK. Devam edilsin mi?"))return;
+        if(d.isletme)setIsletme(d.isletme);
+        setJobs(d.jobs||[]);setTeklifler(d.teklifler||[]);setGiderler(d.giderler||[]);
+        setFaturalar(d.faturalar||[]);setMusteriKayitlari(d.musteriKayitlari||[]);
+        setEkip(d.ekip||[]);setCekSenetler(d.cekSenetler||[]);
+        if(d.dil)setDil(d.dil);if(d.kdv!=null)setKdv(d.kdv);if(d.para)setPara(d.para);
+        goster("✅ Yedek geri yüklendi");
+      }catch(e){goster("❌ Dosya okunamadı — geçerli bir yedek dosyası seç");}
+    };
+    fr.readAsText(dosya);
   };
 
   C=karanlik?DARK:(TEMALAR[tema]||LIGHT);
@@ -4457,7 +4601,7 @@ export default function TradeFlow(){
               else if(h.tur==="kasa"){setEkran("kasa");}
               else if(h.tur==="sekme"){setIslerFiltre(null);setTahsilatFiltre(null);setSekme(h.sekme);}
             }}/>}
-          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} ozetSaat={ozetSaat} setOzetSaat={(v)=>{setOzetSaat(v);if(v)goster("🌙 Gün sonu özeti: "+v);}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick}/>}
+          {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} ozetSaat={ozetSaat} setOzetSaat={(v)=>{setOzetSaat(v);if(v)goster("🌙 Gün sonu özeti: "+v);}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick} kilitSure={kilitSure} onKilitAyarla={kilitAyarla} onYedekAl={yedekAl} onYedekYukle={yedekYukle}/>}
         </div>
 
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1C4E60",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
