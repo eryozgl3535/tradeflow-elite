@@ -19,12 +19,16 @@ export function EglenceKosesi({onKapat,C,P,GRAD,APP_W,GeriBaslik,Sh}){
     {id:"hafiza",ad:"Hafıza — Aletler",emoji:"🧰",renk:"#3B82F6",aciklama:"Alet çiftlerini eşleştir"},
     {id:"asmaca",ad:"Adam Asmaca",emoji:"🔤",renk:"#7C3AED",aciklama:"Türkçe kelimeyi harf harf bul"},
     {id:"dino",  ad:"Zıpzıp Dino", emoji:"🦕",renk:"#4B5563",aciklama:"Zıpla, engellere çarpma — sonsuz koşu"},
+    {id:"araba", ad:"Trafik Yarışı",emoji:"🏎️",renk:"#EF4444",aciklama:"Sağa sola geç, trafikten kaç"},
+    {id:"tetris",ad:"Tetris",       emoji:"🧱",renk:"#6366F1",aciklama:"Blokları diz, satırları temizle"},
   ];
   if(oyun==="2048")   return <Oyun2048   onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="yilan")  return <OyunYilan  onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="hafiza") return <OyunHafiza onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="asmaca") return <OyunAsmaca onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="dino")   return <OyunDino   onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
+  if(oyun==="araba")  return <OyunAraba  onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
+  if(oyun==="tetris") return <OyunTetris onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik="🎮 Eğlence Köşesi" onKapat={onKapat}/>
@@ -419,33 +423,48 @@ function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
       S.gecen++;
       // Skor
       if(S.gecen%6===0){S.skor++;setSkor(S.skor);}
-      // Hızlanma
-      S.hiz=4.2+S.skor*0.0025;
+      // Kademeli hızlanma — her 100 puanda bir kademe artar, yumuşak
+      S.hiz=4.2+Math.min(S.skor*0.004,5.5);
 
       // Dino zıplama fiziği
       S.dino.vy+=yerCekimi;S.dino.y+=S.dino.vy;
       if(S.dino.y>=ZEMIN){S.dino.y=ZEMIN;S.dino.vy=0;S.dino.ziplama=false;}
       S.dino.ayak=(S.dino.ayak+1)%20;
 
-      // Engel üretimi (kaktüs)
+      // Engel üretimi — kaktüs (yerde) veya kuş (havada, ama zıplayınca geçilir)
       S.sonEngel--;
       if(S.sonEngel<=0){
-        const yuk=[18,26,34][Math.floor(Math.random()*3)];
-        S.engeller.push({x:W+10,w:12+Math.random()*8,h:yuk});
-        S.sonEngel=Math.floor(60+Math.random()*60-S.skor*0.05);
-        if(S.sonEngel<32)S.sonEngel=32;
+        // 200 puandan sonra kuşlar da çıkmaya başlar
+        const kusSans=S.skor>200?0.32:0;
+        if(Math.random()<kusSans){
+          // Kuş: alçak uçar ki zıplayınca altından/üstünden geçilebilsin
+          S.engeller.push({tur:"kus",x:W+10,w:20,h:16,y:ZEMIN-34,kanat:0});
+        }else{
+          const yuk=[18,26,34][Math.floor(Math.random()*3)];
+          S.engeller.push({tur:"kaktus",x:W+10,w:12+Math.random()*8,h:yuk});
+        }
+        // Boşluk: hız arttıkça biraz daralır ama zıplamaya hep yetecek kadar
+        const taban=Math.max(48,72-S.skor*0.03);
+        S.sonEngel=Math.floor(taban+Math.random()*45);
       }
-      S.engeller.forEach(e=>e.x-=S.hiz);
+      S.engeller.forEach(e=>{e.x-=S.hiz;if(e.tur==="kus")e.kanat=(e.kanat+1)%24;});
       S.engeller=S.engeller.filter(e=>e.x+e.w>0);
       // Bulutlar
       S.bulutlar.forEach(b=>{b.x-=S.hiz*0.3;if(b.x<-30)b.x=W+20;});
 
       // Çarpışma
       const dx=S.dino.x,dw=22,dh=24;
+      const dinoUst=S.dino.y-24;
       for(const e of S.engeller){
-        if(dx+dw-4>e.x&&dx+4<e.x+e.w&&S.dino.y>ZEMIN-e.h+4){
-          S.calisiyor=false;
-          skorYaz("dino",S.skor);setRekor(skorAl("dino"));setBitti(true);
+        if(e.tur==="kus"){
+          // Kuş çarpışması: dino kutusu ile kuş kutusu kesişiyor mu
+          if(dx+dw-5>e.x&&dx+4<e.x+e.w&&dinoUst<e.y+e.h&&S.dino.y>e.y){
+            S.calisiyor=false;skorYaz("dino",S.skor);setRekor(skorAl("dino"));setBitti(true);
+          }
+        }else{
+          if(dx+dw-4>e.x&&dx+4<e.x+e.w&&S.dino.y>ZEMIN-e.h+4){
+            S.calisiyor=false;skorYaz("dino",S.skor);setRekor(skorAl("dino"));setBitti(true);
+          }
         }
       }
 
@@ -458,12 +477,26 @@ function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
       // Bulutlar
       ctx.fillStyle=koyu?"#374151":"#D1D5DB";
       S.bulutlar.forEach(b=>{ctx.beginPath();ctx.ellipse(b.x,b.y,16,7,0,0,7);ctx.fill();});
-      // Engeller (kaktüs)
-      ctx.fillStyle=koyu?"#6EE7B7":"#059669";
+      // Engeller
       S.engeller.forEach(e=>{
-        ctx.fillRect(e.x,ZEMIN-e.h,e.w,e.h);
-        ctx.fillRect(e.x-4,ZEMIN-e.h*0.6,4,e.h*0.35);
-        ctx.fillRect(e.x+e.w,ZEMIN-e.h*0.7,4,e.h*0.4);
+        if(e.tur==="kus"){
+          ctx.fillStyle=koyu?"#FCA5A5":"#B91C1C";
+          const ky=e.y+e.h/2;
+          // gövde
+          ctx.beginPath();ctx.ellipse(e.x+10,ky,10,6,0,0,7);ctx.fill();
+          // kanat (çırpma animasyonu)
+          ctx.beginPath();
+          if(e.kanat<12){ctx.moveTo(e.x+8,ky);ctx.lineTo(e.x+2,ky-9);ctx.lineTo(e.x+14,ky-2);}
+          else{ctx.moveTo(e.x+8,ky);ctx.lineTo(e.x+2,ky+9);ctx.lineTo(e.x+14,ky+2);}
+          ctx.closePath();ctx.fill();
+          // gaga
+          ctx.fillRect(e.x+19,ky-1,4,2);
+        }else{
+          ctx.fillStyle=koyu?"#6EE7B7":"#059669";
+          ctx.fillRect(e.x,ZEMIN-e.h,e.w,e.h);
+          ctx.fillRect(e.x-4,ZEMIN-e.h*0.6,4,e.h*0.35);
+          ctx.fillRect(e.x+e.w,ZEMIN-e.h*0.7,4,e.h*0.4);
+        }
       });
       // Dino
       ctx.fillStyle=cizgi;
@@ -511,5 +544,279 @@ function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
       </div>}
     </div>
     <div style={{fontSize:11,color:C.t3,marginTop:16,textAlign:"center"}}>Dokun veya Boşluk tuşu ile zıpla 🦕</div>
+  </OyunKabuk>;
+}
+
+// ═══════════════════ TRAFİK YARIŞI ═══════════════════
+// Brick Game tarzı modern araba — sürekli sağ-sol, hızlanan trafik
+function OyunAraba({onKapat,C,P,APP_W,GeriBaslik}){
+  const [skor,setSkor]=useState(0);
+  const [rekor,setRekor]=useState(skorAl("araba"));
+  const [bitti,setBitti]=useState(false);
+  const [basladi,setBasladi]=useState(false);
+  const canvasRef=useRef(null);
+  const durumRef=useRef(null);
+  const SERIT=3;
+
+  useEffect(()=>{
+    const cv=canvasRef.current;if(!cv)return;
+    const ctx=cv.getContext("2d");
+    const W=cv.width,H=cv.height;
+    const koyu=(()=>{const h=(C.bg||"#fff").replace("#","");if(h.length<6)return false;const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*0.299+g*0.587+b*0.114)<128;})();
+    const yolBg=koyu?"#1F2937":"#374151";
+    const seritGen=W/SERIT;
+    const arabaW=seritGen*0.56,arabaH=arabaW*1.7;
+
+    const S={
+      serit:1,                 // 0,1,2
+      hedefX:seritGen*1+seritGen/2,
+      x:seritGen*1+seritGen/2,
+      dusman:[],
+      seritCizgi:0,
+      hiz:3.2,
+      skor:0,
+      gecen:0,
+      sonDusman:0,
+      calisiyor:true,
+      raf:0,
+    };
+    durumRef.current=S;
+
+    const gec=(yon)=>{ // -1 sol, +1 sağ
+      if(!S.calisiyor)return;
+      S.serit=Math.max(0,Math.min(SERIT-1,S.serit+yon));
+      S.hedefX=seritGen*S.serit+seritGen/2;
+    };
+    S.gec=gec;
+
+    const arabaCiz=(cx,cyMerkez,renk)=>{
+      const x=cx-arabaW/2,y=cyMerkez-arabaH/2;
+      ctx.fillStyle=renk;
+      // gövde (yuvarlatılmış — roundRect desteklenmiyorsa düz)
+      if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,arabaW,arabaH,6);ctx.fill();}
+      else{ctx.fillRect(x,y,arabaW,arabaH);}
+      // cam
+      ctx.fillStyle="rgba(255,255,255,0.5)";
+      ctx.fillRect(x+arabaW*0.18,y+arabaH*0.18,arabaW*0.64,arabaH*0.22);
+      ctx.fillRect(x+arabaW*0.18,y+arabaH*0.6,arabaW*0.64,arabaH*0.18);
+      // tekerler
+      ctx.fillStyle=koyu?"#111827":"#0B0F1A";
+      ctx.fillRect(x-3,y+arabaH*0.15,4,arabaH*0.22);
+      ctx.fillRect(x+arabaW-1,y+arabaH*0.15,4,arabaH*0.22);
+      ctx.fillRect(x-3,y+arabaH*0.62,4,arabaH*0.22);
+      ctx.fillRect(x+arabaW-1,y+arabaH*0.62,4,arabaH*0.22);
+    };
+
+    const ciz=()=>{
+      if(!S.calisiyor)return;
+      S.gecen++;
+      if(S.gecen%4===0){S.skor++;setSkor(S.skor);}
+      S.hiz=3.2+Math.min(S.skor*0.006,6);
+
+      // Kendi arabayı hedefe yumuşak kaydır
+      S.x+=(S.hedefX-S.x)*0.25;
+
+      // Şerit çizgisi kaydır
+      S.seritCizgi=(S.seritCizgi+S.hiz)%40;
+
+      // Düşman araç üret
+      S.sonDusman--;
+      if(S.sonDusman<=0){
+        const ser=Math.floor(Math.random()*SERIT);
+        S.dusman.push({serit:ser,y:-arabaH,renk:["#F59E0B","#3B82F6","#EC4899","#10B981","#F97316"][Math.floor(Math.random()*5)]});
+        const taban=Math.max(46,80-S.skor*0.04);
+        S.sonDusman=Math.floor(taban+Math.random()*40);
+      }
+      S.dusman.forEach(d=>d.y+=S.hiz);
+      S.dusman=S.dusman.filter(d=>d.y<H+arabaH);
+
+      // Çarpışma
+      const benimY=H-arabaH/2-14;
+      for(const d of S.dusman){
+        if(d.serit===S.serit){
+          const dy=d.y;
+          if(Math.abs(dy-benimY)<arabaH*0.85){
+            S.calisiyor=false;skorYaz("araba",S.skor);setRekor(skorAl("araba"));setBitti(true);
+          }
+        }
+      }
+
+      // ── ÇİZİM ──
+      ctx.fillStyle=yolBg;ctx.fillRect(0,0,W,H);
+      // Kenar şeritleri
+      ctx.fillStyle=koyu?"#4B5563":"#6B7280";
+      ctx.fillRect(0,0,4,H);ctx.fillRect(W-4,0,4,H);
+      // Şerit ayırıcı kesikli çizgiler
+      ctx.fillStyle="#FBBF24";
+      for(let s=1;s<SERIT;s++){
+        const lx=seritGen*s-2;
+        for(let y=-40+S.seritCizgi;y<H;y+=40){ctx.fillRect(lx,y,4,22);}
+      }
+      // Düşman araçlar
+      S.dusman.forEach(d=>arabaCiz(seritGen*d.serit+seritGen/2,d.y,d.renk));
+      // Kendi araba
+      arabaCiz(S.x,benimY,"#EF4444");
+
+      S.raf=requestAnimationFrame(ciz);
+    };
+    S.raf=requestAnimationFrame(ciz);
+    return ()=>{S.calisiyor=false;cancelAnimationFrame(S.raf);};
+  },[basladi,C.bg]);
+
+  const gec=(y)=>{if(durumRef.current&&durumRef.current.gec)durumRef.current.gec(y);};
+  useEffect(()=>{
+    const t=(e)=>{
+      if(e.key==="ArrowLeft"){e.preventDefault();if(basladi&&!bitti)gec(-1);}
+      if(e.key==="ArrowRight"){e.preventDefault();if(basladi&&!bitti)gec(1);}
+    };
+    window.addEventListener("keydown",t);return ()=>window.removeEventListener("keydown",t);
+  },[basladi,bitti]);
+
+  const yeniden=()=>{setBitti(false);setSkor(0);setBasladi(false);setTimeout(()=>setBasladi(true),20);};
+  const dokunRef=useRef(null);
+  const dokunBas=(e)=>{const t=e.touches[0];dokunRef.current=t.clientX;};
+  const dokunBit=(e)=>{
+    if(!basladi){setBasladi(true);setBitti(false);return;}
+    if(bitti){yeniden();return;}
+    if(dokunRef.current==null)return;
+    const dx=e.changedTouches[0].clientX-dokunRef.current;
+    if(Math.abs(dx)>18)gec(dx>0?1:-1);
+    dokunRef.current=null;
+  };
+
+  return <OyunKabuk baslik="🏎️ Trafik Yarışı" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={onKapat} renk="#EF4444"
+    altBar={<button onClick={yeniden} style={{background:"#EF4444",border:"none",borderRadius:12,padding:"0 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Yeni</button>}>
+    <div onTouchStart={dokunBas} onTouchEnd={dokunBit} style={{position:"relative",width:"min(70vw,240px)",touchAction:"none"}}>
+      <canvas ref={canvasRef} width={240} height={400} style={{width:"100%",borderRadius:12,display:"block",border:`1px solid ${C.border}`}}/>
+      {!basladi&&!bitti&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,background:"rgba(0,0,0,0.35)",borderRadius:12}}>
+        <div style={{fontSize:34}}>🏎️</div>
+        <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>Başlamak için dokun</div>
+        <div style={{fontSize:11,color:"#E5E7EB"}}>Kaydır / ok tuşlarıyla şerit değiştir</div>
+      </div>}
+      {bitti&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.6)",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
+        <div style={{fontSize:22,fontWeight:900,color:"#fff"}}>💥 Kaza!</div>
+        <div style={{fontSize:14,color:"#fff"}}>Skor: {skor}</div>
+        <button onClick={yeniden} style={{background:"#EF4444",border:"none",borderRadius:10,padding:"11px 24px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>Tekrar</button>
+      </div>}
+    </div>
+    <div style={{fontSize:11,color:C.t3,marginTop:16,textAlign:"center"}}>Sağa-sola kaydır, trafikten kaç 🚗</div>
+  </OyunKabuk>;
+}
+
+// ═══════════════════ TETRIS ═══════════════════
+function OyunTetris({onKapat,C,P,APP_W,GeriBaslik}){
+  const KOL=10,SAT=18;
+  const PARCALAR=[
+    {s:[[1,1,1,1]],r:"#22D3EE"},         // I
+    {s:[[1,1],[1,1]],r:"#FBBF24"},       // O
+    {s:[[0,1,0],[1,1,1]],r:"#A78BFA"},   // T
+    {s:[[0,1,1],[1,1,0]],r:"#34D399"},   // S
+    {s:[[1,1,0],[0,1,1]],r:"#F87171"},   // Z
+    {s:[[1,0,0],[1,1,1]],r:"#60A5FA"},   // J
+    {s:[[0,0,1],[1,1,1]],r:"#FB923C"},   // L
+  ];
+  const bosTahta=()=>Array(SAT).fill().map(()=>Array(KOL).fill(null));
+  const [tahta,setTahta]=useState(bosTahta);
+  const [parca,setParca]=useState(null);
+  const [skor,setSkor]=useState(0);
+  const [rekor,setRekor]=useState(skorAl("tetris"));
+  const [bitti,setBitti]=useState(false);
+  const [basladi,setBasladi]=useState(false);
+  const durumRef=useRef({tahta:bosTahta(),parca:null,bitti:false});
+
+  const yeniParca=()=>{const p=PARCALAR[Math.floor(Math.random()*PARCALAR.length)];return {sekil:p.s,renk:p.r,x:Math.floor(KOL/2)-1,y:0};};
+
+  const carpisir=(t,p,nx,ny,sekil)=>{
+    const sk=sekil||p.sekil;
+    for(let i=0;i<sk.length;i++)for(let j=0;j<sk[i].length;j++){
+      if(sk[i][j]){const x=nx+j,y=ny+i;if(x<0||x>=KOL||y>=SAT)return true;if(y>=0&&t[y][x])return true;}
+    }
+    return false;
+  };
+  const dondur=(sekil)=>sekil[0].map((_,i)=>sekil.map(r=>r[i]).reverse());
+
+  const sabitle=(t,p)=>{
+    const yeni=t.map(r=>[...r]);
+    p.sekil.forEach((row,i)=>row.forEach((v,j)=>{if(v){const y=p.y+i,x=p.x+j;if(y>=0)yeni[y][x]=p.renk;}}));
+    // satır temizle
+    let temiz=0;
+    const kalan=yeni.filter(r=>{const dolu=r.every(c=>c);if(dolu)temiz++;return !dolu;});
+    while(kalan.length<SAT)kalan.unshift(Array(KOL).fill(null));
+    return {tahta:kalan,temiz};
+  };
+
+  const basla=()=>{
+    const t=bosTahta(),p=yeniParca();
+    setTahta(t);setParca(p);setSkor(0);setBitti(false);setBasladi(true);
+    durumRef.current={tahta:t,parca:p,bitti:false};
+  };
+
+  // Otomatik düşme
+  useEffect(()=>{
+    if(!basladi||bitti)return;
+    const t=setInterval(()=>{dusur();},Math.max(180,600-skor*3));
+    return ()=>clearInterval(t);
+  },[basladi,bitti,skor]);
+
+  const dusur=()=>{
+    const D=durumRef.current;if(!D.parca||D.bitti)return;
+    const p=D.parca;
+    if(!carpisir(D.tahta,p,p.x,p.y+1)){
+      const np={...p,y:p.y+1};D.parca=np;setParca(np);
+    }else{
+      const {tahta:nt,temiz}=sabitle(D.tahta,p);
+      const yp=yeniParca();
+      if(carpisir(nt,yp,yp.x,yp.y)){
+        D.bitti=true;setBitti(true);
+        setSkor(sk=>{skorYaz("tetris",sk);setRekor(skorAl("tetris"));return sk;});
+        setTahta(nt);return;
+      }
+      D.tahta=nt;D.parca=yp;setTahta(nt);setParca(yp);
+      if(temiz>0)setSkor(s=>s+[0,10,25,45,70][temiz]);
+    }
+  };
+  const hareket=(dx)=>{const D=durumRef.current;if(!D.parca||D.bitti)return;const p=D.parca;if(!carpisir(D.tahta,p,p.x+dx,p.y)){const np={...p,x:p.x+dx};D.parca=np;setParca(np);}};
+  const cevir=()=>{const D=durumRef.current;if(!D.parca||D.bitti)return;const p=D.parca;const ns=dondur(p.sekil);if(!carpisir(D.tahta,p,p.x,p.y,ns)){const np={...p,sekil:ns};D.parca=np;setParca(np);}};
+  const hizliDus=()=>{const D=durumRef.current;if(!D.parca||D.bitti)return;let p=D.parca;while(!carpisir(D.tahta,p,p.x,p.y+1))p={...p,y:p.y+1};D.parca=p;setParca(p);dusur();};
+
+  useEffect(()=>{
+    const t=(e)=>{
+      if(!basladi||bitti)return;
+      if(e.key==="ArrowLeft"){e.preventDefault();hareket(-1);}
+      if(e.key==="ArrowRight"){e.preventDefault();hareket(1);}
+      if(e.key==="ArrowDown"){e.preventDefault();dusur();}
+      if(e.key==="ArrowUp"||e.key===" "){e.preventDefault();cevir();}
+    };
+    window.addEventListener("keydown",t);return ()=>window.removeEventListener("keydown",t);
+  },[basladi,bitti]);
+
+  // Render için tahta + aktif parça birleşimi
+  const goster=tahta.map(r=>[...r]);
+  if(parca&&!bitti)parca.sekil.forEach((row,i)=>row.forEach((v,j)=>{if(v){const y=parca.y+i,x=parca.x+j;if(y>=0&&y<SAT&&x>=0&&x<KOL)goster[y][x]=parca.renk;}}));
+
+  return <OyunKabuk baslik="🧱 Tetris" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={onKapat} renk="#6366F1"
+    altBar={<button onClick={basla} style={{background:"#6366F1",border:"none",borderRadius:12,padding:"0 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>{basladi?"Yeni":"Başlat"}</button>}>
+    <div style={{position:"relative"}}>
+      <div style={{display:"grid",gridTemplateColumns:`repeat(${KOL},1fr)`,gap:1,background:C.border,borderRadius:8,padding:3,width:"min(62vw,220px)"}}>
+        {goster.flat().map((renk,i)=><div key={i} style={{aspectRatio:"1",background:renk||(C.bg==="#0B0F1A"?"#111827":"#F9FAFB"),borderRadius:2}}/>)}
+      </div>
+      {!basladi&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,background:"rgba(0,0,0,0.4)",borderRadius:8}}>
+        <div style={{fontSize:34}}>🧱</div>
+        <button onClick={basla} style={{background:"#6366F1",border:"none",borderRadius:10,padding:"12px 24px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>Başlat</button>
+      </div>}
+      {bitti&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.6)",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
+        <div style={{fontSize:20,fontWeight:900,color:"#fff"}}>Oyun Bitti</div>
+        <div style={{fontSize:14,color:"#fff"}}>Skor: {skor}</div>
+        <button onClick={basla} style={{background:"#6366F1",border:"none",borderRadius:10,padding:"11px 24px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>Tekrar</button>
+      </div>}
+    </div>
+    {/* Mobil kontrol tuşları */}
+    {basladi&&!bitti&&<div style={{display:"flex",gap:8,marginTop:16}}>
+      <button onClick={()=>hareket(-1)} style={{width:52,height:48,borderRadius:12,border:"none",background:C.card,boxShadow:C.sh,fontSize:20,cursor:"pointer",color:C.t1}}>◀</button>
+      <button onClick={cevir} style={{width:52,height:48,borderRadius:12,border:"none",background:"#6366F1",fontSize:18,cursor:"pointer",color:"#fff"}}>⟳</button>
+      <button onClick={()=>hareket(1)} style={{width:52,height:48,borderRadius:12,border:"none",background:C.card,boxShadow:C.sh,fontSize:20,cursor:"pointer",color:C.t1}}>▶</button>
+      <button onClick={hizliDus} style={{width:52,height:48,borderRadius:12,border:"none",background:C.card,boxShadow:C.sh,fontSize:20,cursor:"pointer",color:C.t1}}>▼</button>
+    </div>}
+    <div style={{fontSize:11,color:C.t3,marginTop:14,textAlign:"center"}}>◀▶ kaydır · ⟳ döndür · ▼ hızlı düş</div>
   </OyunKabuk>;
 }
