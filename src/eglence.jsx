@@ -18,11 +18,13 @@ export function EglenceKosesi({onKapat,C,P,GRAD,APP_W,GeriBaslik,Sh}){
     {id:"yilan",ad:"Yılan",emoji:"🐍",renk:"#0E9F6E",aciklama:"Klasik yılan — yemleri topla, büyü"},
     {id:"hafiza",ad:"Hafıza — Aletler",emoji:"🧰",renk:"#3B82F6",aciklama:"Alet çiftlerini eşleştir"},
     {id:"asmaca",ad:"Adam Asmaca",emoji:"🔤",renk:"#7C3AED",aciklama:"Türkçe kelimeyi harf harf bul"},
+    {id:"dino",  ad:"Zıpzıp Dino", emoji:"🦕",renk:"#4B5563",aciklama:"Zıpla, engellere çarpma — sonsuz koşu"},
   ];
   if(oyun==="2048")   return <Oyun2048   onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="yilan")  return <OyunYilan  onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="hafiza") return <OyunHafiza onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   if(oyun==="asmaca") return <OyunAsmaca onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
+  if(oyun==="dino")   return <OyunDino   onKapat={()=>setOyun(null)} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>;
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
       <GeriBaslik baslik="🎮 Eğlence Köşesi" onKapat={onKapat}/>
@@ -284,12 +286,34 @@ const ASMACA_KELIMELER=[
 ];
 function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
   const HARFLER="ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
+  const [zorluk,setZorluk]=useState(null); // null = seçim ekranı, "kolay" | "zor"
   const [kelime,setKelime]=useState({k:"",i:""});
   const [bulunan,setBulunan]=useState([]);
   const [yanlis,setYanlis]=useState([]);
   const [skor,setSkor]=useState(0);
   const [rekor,setRekor]=useState(skorAl("asmaca"));
-  const MAX=6;
+  const MAX=zorluk==="zor"?5:6; // zorda 1 can daha az
+  const ipucuGoster=zorluk==="kolay";
+
+  // Zorluk seçim ekranı
+  if(!zorluk) return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1003,display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
+      <GeriBaslik baslik="🔤 Adam Asmaca" onKapat={onKapat}/>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px",gap:16}}>
+        <div style={{fontSize:52,marginBottom:4}}>🔤</div>
+        <div style={{fontSize:20,fontWeight:800,color:C.t1,marginBottom:2}}>Zorluk Seç</div>
+        <div style={{fontSize:12.5,color:C.t3,textAlign:"center",marginBottom:10}}>Türkçe usta & inşaat kelimeleri</div>
+        <button onClick={()=>{setZorluk("kolay");}} style={{width:"min(84vw,320px)",background:"#0E9F6E",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
+          <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>😊 Kolay</div>
+          <div style={{fontSize:12,opacity:0.9}}>İpucu gösterilir · 6 can</div>
+        </button>
+        <button onClick={()=>{setZorluk("zor");}} style={{width:"min(84vw,320px)",background:"#DC2626",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
+          <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>🔥 Zor</div>
+          <div style={{fontSize:12,opacity:0.9}}>İpucu YOK · 5 can · daha çok puan</div>
+        </button>
+      </div>
+    </div>
+  </div>;
   const durum=(()=>{
     if(yanlis.length>=MAX)return "kayip";
     if(kelime.k&&kelime.k.split("").every(h=>h===" "||bulunan.includes(h)))return "kazanc";
@@ -303,7 +327,7 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
   useEffect(()=>{yeniKelime();},[]);
   useEffect(()=>{
     if(durum==="kazanc"){
-      const yeniSkor=skor+1;setSkor(yeniSkor);skorYaz("asmaca",yeniSkor);setRekor(skorAl("asmaca"));
+      const yeniSkor=skor+(zorluk==="zor"?2:1);setSkor(yeniSkor);skorYaz("asmaca",yeniSkor);setRekor(skorAl("asmaca"));
     }else if(durum==="kayip"){
       skorYaz("asmaca",skor);setRekor(skorAl("asmaca"));
     }
@@ -319,7 +343,7 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
 
   // Asılan adam çizimi (yanlış sayısına göre parça parça)
   const parcalar=yanlis.length;
-  return <OyunKabuk baslik="🔤 Adam Asmaca" skorEt="DOĞRU" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={onKapat} renk="#7C3AED"
+  return <OyunKabuk baslik={zorluk==="zor"?"🔥 Asmaca — Zor":"😊 Asmaca — Kolay"} skorEt="DOĞRU" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={()=>setZorluk(null)} renk="#7C3AED"
     altBar={<div style={{background:yanlis.length>=4?"#FEE2E2":C.card,borderRadius:12,padding:"9px 12px",boxShadow:C.sh,minWidth:56,textAlign:"center"}}><div style={{fontSize:9,color:C.t3,fontWeight:700}}>CAN</div><div style={{fontSize:19,fontWeight:800,color:yanlis.length>=4?"#DC2626":"#0E9F6E"}}>{MAX-parcalar}</div></div>}>
     {/* Darağacı */}
     <svg viewBox="0 0 120 120" style={{width:130,height:130,marginBottom:6}}>
@@ -334,8 +358,8 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
       {parcalar>4&&<line x1="80" y1="75" x2="68" y2="95" stroke="#DC2626" strokeWidth="3"/>}
       {parcalar>5&&<line x1="80" y1="75" x2="92" y2="95" stroke="#DC2626" strokeWidth="3"/>}
     </svg>
-    {/* İpucu */}
-    <div style={{fontSize:12,color:C.t3,marginBottom:10}}>💡 {kelime.i}</div>
+    {/* İpucu — sadece kolay modda */}
+    <div style={{fontSize:12,color:C.t3,marginBottom:10}}>{ipucuGoster?"💡 "+kelime.i:"🔥 "+kelime.k.length+" harf · ipucu yok"}</div>
     {/* Kelime */}
     <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center",marginBottom:18}}>
       {kelime.k.split("").map((h,i)=><div key={i} style={{width:26,height:34,borderBottom:`3px solid ${C.t2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:durum==="kayip"&&!bulunan.includes(h)?"#DC2626":C.t1}}>{bulunan.includes(h)||durum==="kayip"?h:""}</div>)}
@@ -351,5 +375,141 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
         <div style={{fontSize:15,color:C.t2,marginBottom:16}}>Kelime: <b>{kelime.k}</b></div>
         <button onClick={sonraki} style={{background:"#7C3AED",border:"none",borderRadius:10,padding:"13px 28px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>{durum==="kazanc"?"Sıradaki Kelime →":"Yeniden Başla"}</button>
       </div>}
+  </OyunKabuk>;
+}
+
+// ═══════════════════ ZIPZIP DİNO ═══════════════════
+// Google'ın çevrimdışı dino oyununun kendi özgün sürümümüz — canvas tabanlı.
+function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
+  const [skor,setSkor]=useState(0);
+  const [rekor,setRekor]=useState(skorAl("dino"));
+  const [bitti,setBitti]=useState(false);
+  const [basladi,setBasladi]=useState(false);
+  const canvasRef=useRef(null);
+  const durumRef=useRef(null);
+
+  // Oyun döngüsü — ref üzerinden yürür, React'i her frame render etmez
+  useEffect(()=>{
+    const cv=canvasRef.current;if(!cv)return;
+    const ctx=cv.getContext("2d");
+    const W=cv.width,H=cv.height,ZEMIN=H-28;
+    // Karanlık mod tespiti: arka plan renginin parlaklığına bak
+    const koyu=(()=>{const h=(C.bg||"#fff").replace("#","");if(h.length<6)return false;const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*0.299+g*0.587+b*0.114)<128;})();
+    const cizgi=koyu?"#9CA3AF":"#4B5563";
+    const arka=koyu?"#1F2937":"#F3F4F6";
+
+    const S={
+      dino:{x:34,y:ZEMIN,vy:0,ziplama:false,ayak:0},
+      engeller:[],
+      bulutlar:[{x:W*0.5,y:40},{x:W*0.9,y:70}],
+      hiz:4.2,
+      skor:0,
+      gecen:0,
+      sonEngel:0,
+      calisiyor:true,
+      raf:0,
+    };
+    durumRef.current=S;
+
+    const zipla=()=>{if(!S.dino.ziplama&&S.calisiyor){S.dino.vy=-11.5;S.dino.ziplama=true;}};
+    const yerCekimi=0.62;
+
+    const ciz=()=>{
+      if(!S.calisiyor)return;
+      S.gecen++;
+      // Skor
+      if(S.gecen%6===0){S.skor++;setSkor(S.skor);}
+      // Hızlanma
+      S.hiz=4.2+S.skor*0.0025;
+
+      // Dino zıplama fiziği
+      S.dino.vy+=yerCekimi;S.dino.y+=S.dino.vy;
+      if(S.dino.y>=ZEMIN){S.dino.y=ZEMIN;S.dino.vy=0;S.dino.ziplama=false;}
+      S.dino.ayak=(S.dino.ayak+1)%20;
+
+      // Engel üretimi (kaktüs)
+      S.sonEngel--;
+      if(S.sonEngel<=0){
+        const yuk=[18,26,34][Math.floor(Math.random()*3)];
+        S.engeller.push({x:W+10,w:12+Math.random()*8,h:yuk});
+        S.sonEngel=Math.floor(60+Math.random()*60-S.skor*0.05);
+        if(S.sonEngel<32)S.sonEngel=32;
+      }
+      S.engeller.forEach(e=>e.x-=S.hiz);
+      S.engeller=S.engeller.filter(e=>e.x+e.w>0);
+      // Bulutlar
+      S.bulutlar.forEach(b=>{b.x-=S.hiz*0.3;if(b.x<-30)b.x=W+20;});
+
+      // Çarpışma
+      const dx=S.dino.x,dw=22,dh=24;
+      for(const e of S.engeller){
+        if(dx+dw-4>e.x&&dx+4<e.x+e.w&&S.dino.y>ZEMIN-e.h+4){
+          S.calisiyor=false;
+          skorYaz("dino",S.skor);setRekor(skorAl("dino"));setBitti(true);
+        }
+      }
+
+      // ── ÇİZİM ──
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle=arka;ctx.fillRect(0,0,W,H);
+      // Zemin çizgisi
+      ctx.strokeStyle=cizgi;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(0,ZEMIN+2);ctx.lineTo(W,ZEMIN+2);ctx.stroke();
+      // Bulutlar
+      ctx.fillStyle=koyu?"#374151":"#D1D5DB";
+      S.bulutlar.forEach(b=>{ctx.beginPath();ctx.ellipse(b.x,b.y,16,7,0,0,7);ctx.fill();});
+      // Engeller (kaktüs)
+      ctx.fillStyle=koyu?"#6EE7B7":"#059669";
+      S.engeller.forEach(e=>{
+        ctx.fillRect(e.x,ZEMIN-e.h,e.w,e.h);
+        ctx.fillRect(e.x-4,ZEMIN-e.h*0.6,4,e.h*0.35);
+        ctx.fillRect(e.x+e.w,ZEMIN-e.h*0.7,4,e.h*0.4);
+      });
+      // Dino
+      ctx.fillStyle=cizgi;
+      const dyt=S.dino.y-24;
+      ctx.fillRect(S.dino.x,dyt,20,18);        // gövde
+      ctx.fillRect(S.dino.x+14,dyt-8,12,12);   // kafa
+      ctx.fillStyle=arka;ctx.fillRect(S.dino.x+22,dyt-5,3,3); // göz
+      ctx.fillStyle=cizgi;
+      // bacaklar (koşu animasyonu)
+      if(!S.dino.ziplama){
+        if(S.dino.ayak<10){ctx.fillRect(S.dino.x+3,S.dino.y-6,4,6);ctx.fillRect(S.dino.x+12,S.dino.y-2,4,2);}
+        else{ctx.fillRect(S.dino.x+3,S.dino.y-2,4,2);ctx.fillRect(S.dino.x+12,S.dino.y-6,4,6);}
+      }else{ctx.fillRect(S.dino.x+3,S.dino.y-6,4,6);ctx.fillRect(S.dino.x+12,S.dino.y-6,4,6);}
+
+      S.raf=requestAnimationFrame(ciz);
+    };
+
+    S.zipla=zipla;
+    S.raf=requestAnimationFrame(ciz);
+    return ()=>{S.calisiyor=false;cancelAnimationFrame(S.raf);};
+  },[basladi,C.bg]);
+
+  const zipla=()=>{if(durumRef.current&&durumRef.current.zipla)durumRef.current.zipla();};
+  useEffect(()=>{
+    const t=(e)=>{if(e.code==="Space"||e.key===" "||e.key==="ArrowUp"){e.preventDefault();if(!basladi){setBasladi(true);setBitti(false);}else if(bitti){yeniden();}else zipla();}};
+    window.addEventListener("keydown",t);return ()=>window.removeEventListener("keydown",t);
+  },[basladi,bitti]);
+
+  const yeniden=()=>{setBitti(false);setSkor(0);setBasladi(false);setTimeout(()=>setBasladi(true),20);};
+  const dokun=()=>{if(!basladi){setBasladi(true);setBitti(false);}else if(bitti){yeniden();}else zipla();};
+
+  return <OyunKabuk baslik="🦕 Zıpzıp Dino" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={onKapat} renk="#4B5563"
+    altBar={<button onClick={yeniden} style={{background:"#4B5563",border:"none",borderRadius:12,padding:"0 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Yeni</button>}>
+    <div onClick={dokun} onTouchStart={(e)=>{e.preventDefault();dokun();}} style={{position:"relative",width:"min(92vw,400px)",cursor:"pointer",touchAction:"none"}}>
+      <canvas ref={canvasRef} width={400} height={160} style={{width:"100%",borderRadius:12,border:`1px solid ${C.border}`,display:"block"}}/>
+      {!basladi&&!bitti&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
+        <div style={{fontSize:34}}>🦕</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1}}>Başlamak için dokun</div>
+        <div style={{fontSize:11,color:C.t3}}>Zıplamak için dokun / Boşluk tuşu</div>
+      </div>}
+      {bitti&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.55)",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
+        <div style={{fontSize:22,fontWeight:900,color:"#fff"}}>💥 Çarptın!</div>
+        <div style={{fontSize:14,color:"#fff"}}>Skor: {skor}</div>
+        <button onClick={yeniden} style={{background:"#4B5563",border:"none",borderRadius:10,padding:"11px 24px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>Tekrar Oyna</button>
+      </div>}
+    </div>
+    <div style={{fontSize:11,color:C.t3,marginTop:16,textAlign:"center"}}>Dokun veya Boşluk tuşu ile zıpla 🦕</div>
   </OyunKabuk>;
 }
