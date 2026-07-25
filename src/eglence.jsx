@@ -6,6 +6,15 @@
 // ═══════════════════════════════════════════════════════════════
 import { useState, useEffect, useRef, useCallback } from "react";
 
+// Retina/yüksek yoğunluklu ekranlarda canvas'ı netleştir
+function canvasKur(cv,W,H){
+  const dpr=Math.min(window.devicePixelRatio||1,3);
+  cv.width=W*dpr;cv.height=H*dpr;
+  const ctx=cv.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return ctx;
+}
+
 // Tema — App.jsx'teki C ile uyumlu, prop olarak alır
 const skorAl=(k)=>{try{return Number(localStorage.getItem("tf_skor_"+k)||0);}catch{return 0;}};
 const skorYaz=(k,v)=>{try{if(v>skorAl(k))localStorage.setItem("tf_skor_"+k,String(v));}catch{}};
@@ -57,8 +66,16 @@ export function EglenceKosesi({onKapat,C,P,GRAD,APP_W,GeriBaslik,Sh}){
 
 // ═══ OYUN KABUĞU (ortak başlık + skor şeridi) ═══
 function OyunKabuk({baslik,skorEt,rekor,skor,C,APP_W,GeriBaslik,onKapat,renk,children,altBar}){
-  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1003,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
+  // Oyun açıkken sayfa kaydırmasını tamamen engelle (mobilde titreme/kayma önlenir)
+  useEffect(()=>{
+    const eskiOverflow=document.body.style.overflow;
+    const eskiOverscroll=document.body.style.overscrollBehavior;
+    document.body.style.overflow="hidden";
+    document.body.style.overscrollBehavior="none";
+    return ()=>{document.body.style.overflow=eskiOverflow;document.body.style.overscrollBehavior=eskiOverscroll;};
+  },[]);
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1003,display:"flex",justifyContent:"center",touchAction:"none"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100dvh"}}>
       <GeriBaslik baslik={baslik} onKapat={onKapat}/>
       <div style={{display:"flex",gap:10,padding:"12px 14px 0"}}>
         <div style={{flex:1,background:C.card,borderRadius:12,padding:"9px 12px",boxShadow:C.sh}}>
@@ -71,7 +88,7 @@ function OyunKabuk({baslik,skorEt,rekor,skor,C,APP_W,GeriBaslik,onKapat,renk,chi
         </div>
         {altBar}
       </div>
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"14px",overflow:"hidden"}}>{children}</div>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"14px",overflow:"hidden",minHeight:0}}>{children}</div>
     </div>
   </div>;
 }
@@ -138,7 +155,7 @@ function Oyun2048({onKapat,C,P,APP_W,GeriBaslik}){
   const dokunBit=(e)=>{
     if(!dokunRef.current)return;const t=e.changedTouches[0];
     const dx=t.clientX-dokunRef.current.x,dy=t.clientY-dokunRef.current.y;
-    if(Math.abs(dx)<20&&Math.abs(dy)<20)return;
+    if(Math.abs(dx)<16&&Math.abs(dy)<16)return;
     if(Math.abs(dx)>Math.abs(dy))hamle(dx>0?"sag":"sol");else hamle(dy>0?"asagi":"yukari");
     dokunRef.current=null;
   };
@@ -198,7 +215,7 @@ function OyunYilan({onKapat,C,P,APP_W,GeriBaslik}){
     window.addEventListener("keydown",t);return ()=>window.removeEventListener("keydown",t);
   },[]);
   const dokunBas=(e)=>{const t=e.touches[0];dokunRef.current={x:t.clientX,y:t.clientY};};
-  const dokunBit=(e)=>{if(!dokunRef.current)return;const t=e.changedTouches[0];const dx=t.clientX-dokunRef.current.x,dy=t.clientY-dokunRef.current.y;if(Math.abs(dx)<20&&Math.abs(dy)<20)return;if(Math.abs(dx)>Math.abs(dy))cevir([0,dx>0?1:-1]);else cevir([dy>0?1:-1,0]);dokunRef.current=null;};
+  const dokunBit=(e)=>{if(!dokunRef.current)return;const t=e.changedTouches[0];const dx=t.clientX-dokunRef.current.x,dy=t.clientY-dokunRef.current.y;if(Math.abs(dx)<16&&Math.abs(dy)<16)return;if(Math.abs(dx)>Math.abs(dy))cevir([0,dx>0?1:-1]);else cevir([dy>0?1:-1,0]);dokunRef.current=null;};
 
   return <OyunKabuk baslik="🐍 Yılan" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={onKapat} renk="#0E9F6E"
     altBar={<button onClick={basla} style={{background:"#0E9F6E",border:"none",borderRadius:12,padding:"0 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>{oynuyor?"Yeni":"Başlat"}</button>}>
@@ -395,8 +412,8 @@ function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
   // Oyun döngüsü — ref üzerinden yürür, React'i her frame render etmez
   useEffect(()=>{
     const cv=canvasRef.current;if(!cv)return;
-    const ctx=cv.getContext("2d");
-    const W=cv.width,H=cv.height,ZEMIN=H-28;
+    const W=400,H=160,ZEMIN=H-28;
+    const ctx=canvasKur(cv,W,H);
     // Karanlık mod tespiti: arka plan renginin parlaklığına bak
     const koyu=(()=>{const h=(C.bg||"#fff").replace("#","");if(h.length<6)return false;const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*0.299+g*0.587+b*0.114)<128;})();
     const cizgi=koyu?"#9CA3AF":"#4B5563";
@@ -530,7 +547,7 @@ function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
 
   return <OyunKabuk baslik="🦕 Zıpzıp Dino" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={onKapat} renk="#4B5563"
     altBar={<button onClick={yeniden} style={{background:"#4B5563",border:"none",borderRadius:12,padding:"0 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Yeni</button>}>
-    <div onClick={dokun} onTouchStart={(e)=>{e.preventDefault();dokun();}} style={{position:"relative",width:"min(92vw,400px)",cursor:"pointer",touchAction:"none"}}>
+    <div onPointerDown={(e)=>{e.preventDefault();dokun();}} style={{position:"relative",width:"min(92vw,400px)",cursor:"pointer",touchAction:"none",WebkitUserSelect:"none",userSelect:"none"}}>
       <canvas ref={canvasRef} width={400} height={160} style={{width:"100%",borderRadius:12,border:`1px solid ${C.border}`,display:"block"}}/>
       {!basladi&&!bitti&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
         <div style={{fontSize:34}}>🦕</div>
@@ -560,8 +577,8 @@ function OyunAraba({onKapat,C,P,APP_W,GeriBaslik}){
 
   useEffect(()=>{
     const cv=canvasRef.current;if(!cv)return;
-    const ctx=cv.getContext("2d");
-    const W=cv.width,H=cv.height;
+    const W=240,H=400;
+    const ctx=canvasKur(cv,W,H);
     const koyu=(()=>{const h=(C.bg||"#fff").replace("#","");if(h.length<6)return false;const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*0.299+g*0.587+b*0.114)<128;})();
     const yolBg=koyu?"#1F2937":"#374151";
     const seritGen=W/SERIT;
@@ -688,7 +705,7 @@ function OyunAraba({onKapat,C,P,APP_W,GeriBaslik}){
     altBar={<button onClick={yeniden} style={{background:"#EF4444",border:"none",borderRadius:12,padding:"0 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Yeni</button>}>
     <div onTouchStart={dokunBas} onTouchEnd={dokunBit} style={{position:"relative",width:"min(70vw,240px)",touchAction:"none"}}>
       <canvas ref={canvasRef} width={240} height={400} style={{width:"100%",borderRadius:12,display:"block",border:`1px solid ${C.border}`}}/>
-      {!basladi&&!bitti&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,background:"rgba(0,0,0,0.35)",borderRadius:12}}>
+      {!basladi&&!bitti&&<div onPointerDown={(e)=>{e.preventDefault();setBasladi(true);setBitti(false);}} style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,background:"rgba(0,0,0,0.35)",borderRadius:12,cursor:"pointer"}}>
         <div style={{fontSize:34}}>🏎️</div>
         <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>Başlamak için dokun</div>
         <div style={{fontSize:11,color:"#E5E7EB"}}>Kaydır / ok tuşlarıyla şerit değiştir</div>
@@ -811,11 +828,11 @@ function OyunTetris({onKapat,C,P,APP_W,GeriBaslik}){
       </div>}
     </div>
     {/* Mobil kontrol tuşları */}
-    {basladi&&!bitti&&<div style={{display:"flex",gap:8,marginTop:16}}>
-      <button onClick={()=>hareket(-1)} style={{width:52,height:48,borderRadius:12,border:"none",background:C.card,boxShadow:C.sh,fontSize:20,cursor:"pointer",color:C.t1}}>◀</button>
-      <button onClick={cevir} style={{width:52,height:48,borderRadius:12,border:"none",background:"#6366F1",fontSize:18,cursor:"pointer",color:"#fff"}}>⟳</button>
-      <button onClick={()=>hareket(1)} style={{width:52,height:48,borderRadius:12,border:"none",background:C.card,boxShadow:C.sh,fontSize:20,cursor:"pointer",color:C.t1}}>▶</button>
-      <button onClick={hizliDus} style={{width:52,height:48,borderRadius:12,border:"none",background:C.card,boxShadow:C.sh,fontSize:20,cursor:"pointer",color:C.t1}}>▼</button>
+    {basladi&&!bitti&&<div style={{display:"flex",gap:9,marginTop:16,touchAction:"none"}}>
+      <button onPointerDown={(e)=>{e.preventDefault();hareket(-1);}} style={{width:58,height:54,borderRadius:14,border:"none",background:C.card,boxShadow:C.sh,fontSize:22,cursor:"pointer",color:C.t1,touchAction:"none",WebkitUserSelect:"none",userSelect:"none"}}>◀</button>
+      <button onPointerDown={(e)=>{e.preventDefault();cevir();}} style={{width:58,height:54,borderRadius:14,border:"none",background:"#6366F1",fontSize:20,cursor:"pointer",color:"#fff",touchAction:"none",WebkitUserSelect:"none",userSelect:"none"}}>⟳</button>
+      <button onPointerDown={(e)=>{e.preventDefault();hareket(1);}} style={{width:58,height:54,borderRadius:14,border:"none",background:C.card,boxShadow:C.sh,fontSize:22,cursor:"pointer",color:C.t1,touchAction:"none",WebkitUserSelect:"none",userSelect:"none"}}>▶</button>
+      <button onPointerDown={(e)=>{e.preventDefault();hizliDus();}} style={{width:58,height:54,borderRadius:14,border:"none",background:C.card,boxShadow:C.sh,fontSize:22,cursor:"pointer",color:C.t1,touchAction:"none",WebkitUserSelect:"none",userSelect:"none"}}>▼</button>
     </div>}
     <div style={{fontSize:11,color:C.t3,marginTop:14,textAlign:"center"}}>◀▶ kaydır · ⟳ döndür · ▼ hızlı düş</div>
   </OyunKabuk>;
