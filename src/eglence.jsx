@@ -294,27 +294,169 @@ function OyunHafiza({onKapat,C,P,APP_W,GeriBaslik}){
 
 // ═══════════════════ ADAM ASMACA ═══════════════════
 const ASMACA_KELIMELER=[
-  {k:"TORNAVIDA",i:"Vida sıkma aleti"},{k:"MATKAP",i:"Delik açar"},{k:"KESKI",i:"Yontma aleti"},
-  {k:"PENSE",i:"Tel bükme/kesme"},{k:"CEKIC",i:"Çivi çakar"},{k:"TESTERE",i:"Kesme aleti"},
-  {k:"MERDIVEN",i:"Yükseğe çıkmak için"},{k:"KABLO",i:"Elektrik taşır"},{k:"MUSLUK",i:"Su akıtır"},
-  {k:"BORU",i:"İçinden sıvı geçer"},{k:"VANA",i:"Akışı keser"},{k:"PANO",i:"Elektrik dağıtım kutusu"},
-  {k:"SIGORTA",i:"Aşırı akımı keser"},{k:"CIVATA",i:"Somunla eşleşir"},{k:"KAYNAK",i:"Metal birleştirme"},
-  {k:"BETON",i:"İnşaat harcı"},{k:"TUGLA",i:"Duvar malzemesi"},{k:"CIMENTO",i:"Bağlayıcı toz"},
-  {k:"ISKELE",i:"Geçici çalışma platformu"},{k:"MALA",i:"Sıva aleti"},{k:"SPATULA",i:"Macun sürme"},
-  {k:"POMPA",i:"Sıvı basar"},{k:"KOMPRESOR",i:"Hava basıncı üretir"},{k:"JENERATOR",i:"Elektrik üretir"},
-  {k:"HAVUZ",i:"İçinde yüzülür"},{k:"KLIMA",i:"Serinletir"},{k:"KOMBI",i:"Isıtma cihazı"},
-  {k:"RADYATOR",i:"Isı yayar"},{k:"FILTRE",i:"Süzer, temizler"},{k:"CONTA",i:"Sızdırmazlık sağlar"},
+  // 🏛️ TARİH
+  {k:"ISTANBUL",kat:"🏛️ Tarih",i:"1453'te fethedilen şehir"},
+  {k:"ATATURK",kat:"🏛️ Tarih",i:"Türkiye Cumhuriyeti'nin kurucusu"},
+  {k:"OSMANLI",kat:"🏛️ Tarih",i:"600 yıl süren Türk imparatorluğu"},
+  {k:"PIRAMIT",kat:"🏛️ Tarih",i:"Mısır'daki devasa mezar yapıları"},
+  {k:"SELCUKLU",kat:"🏛️ Tarih",i:"Malazgirt'i kazanan Türk devleti"},
+  {k:"CUMHURIYET",kat:"🏛️ Tarih",i:"1923'te ilan edildi"},
+  {k:"FATIH",kat:"🏛️ Tarih",i:"İstanbul'u fetheden padişah"},
+  {k:"KLEOPATRA",kat:"🏛️ Tarih",i:"Mısır'ın ünlü kraliçesi"},
+  {k:"NAPOLYON",kat:"🏛️ Tarih",i:"Fransız imparator, Waterloo'da yenildi"},
+  {k:"EFES",kat:"🏛️ Tarih",i:"İzmir'deki antik kent"},
+  {k:"TROYA",kat:"🏛️ Tarih",i:"Tahta atıyla ünlü antik şehir"},
+  {k:"GOBEKLITEPE",kat:"🏛️ Tarih",i:"Şanlıurfa'daki 12 bin yıllık tapınak"},
+  {k:"MEVLANA",kat:"🏛️ Tarih",i:"Konya'daki ünlü mutasavvıf"},
+  {k:"SUMERLER",kat:"🏛️ Tarih",i:"Yazıyı bulan Mezopotamya uygarlığı"},
+  {k:"CANAKKALE",kat:"🏛️ Tarih",i:"1915 deniz zaferi"},
+  {k:"BIZANS",kat:"🏛️ Tarih",i:"Doğu Roma İmparatorluğu"},
+  {k:"HITITLER",kat:"🏛️ Tarih",i:"Anadolu'nun kadim uygarlığı"},
+  {k:"KANUNI",kat:"🏛️ Tarih",i:"Muhteşem lakaplı Osmanlı padişahı"},
+  // 🌍 COĞRAFYA
+  {k:"EVEREST",kat:"🌍 Coğrafya",i:"Dünyanın en yüksek dağı"},
+  {k:"AMAZON",kat:"🌍 Coğrafya",i:"Güney Amerika'daki dev nehir/orman"},
+  {k:"SAHRA",kat:"🌍 Coğrafya",i:"Afrika'daki en büyük çöl"},
+  {k:"ERCIYES",kat:"🌍 Coğrafya",i:"Kayseri'nin volkanik dağı"},
+  {k:"KAPADOKYA",kat:"🌍 Coğrafya",i:"Peri bacalarıyla ünlü bölge"},
+  {k:"PAMUKKALE",kat:"🌍 Coğrafya",i:"Denizli'deki beyaz travertenler"},
+  {k:"TOKYO",kat:"🌍 Coğrafya",i:"Japonya'nın başkenti"},
+  {k:"AVUSTRALYA",kat:"🌍 Coğrafya",i:"Hem ülke hem kıta"},
+  {k:"NIL",kat:"🌍 Coğrafya",i:"Mısır'dan geçen dünyanın en uzun nehri"},
+  {k:"BOGAZICI",kat:"🌍 Coğrafya",i:"İstanbul'u ikiye ayıran su yolu"},
+  {k:"AKDENIZ",kat:"🌍 Coğrafya",i:"Türkiye'nin güney denizi"},
+  {k:"HIMALAYA",kat:"🌍 Coğrafya",i:"Asya'nın dev sıradağları"},
+  {k:"VOLKAN",kat:"🌍 Coğrafya",i:"Lav püskürten dağ"},
+  {k:"OKYANUS",kat:"🌍 Coğrafya",i:"Denizden büyük su kütlesi"},
+  {k:"ANTARKTIKA",kat:"🌍 Coğrafya",i:"Dünyanın en soğuk kıtası"},
+  {k:"VANGOLU",kat:"🌍 Coğrafya",i:"Türkiye'nin en büyük gölü"},
+  {k:"AGRIDAGI",kat:"🌍 Coğrafya",i:"Türkiye'nin en yüksek dağı"},
+  {k:"MEKSIKA",kat:"🌍 Coğrafya",i:"Sombrero ve tako ülkesi"},
+  // 🦁 HAYVANLAR
+  {k:"ZURAFA",kat:"🦁 Hayvanlar",i:"Uzun boyunlu Afrika hayvanı"},
+  {k:"PENGUEN",kat:"🦁 Hayvanlar",i:"Uçamayan kutup kuşu"},
+  {k:"AHTAPOT",kat:"🦁 Hayvanlar",i:"Sekiz kollu deniz canlısı"},
+  {k:"KARTAL",kat:"🦁 Hayvanlar",i:"Keskin gözlü yırtıcı kuş"},
+  {k:"TIMSAH",kat:"🦁 Hayvanlar",i:"Nehirlerdeki sürüngen avcı"},
+  {k:"KELEBEK",kat:"🦁 Hayvanlar",i:"Renkli kanatlı böcek"},
+  {k:"YUNUS",kat:"🦁 Hayvanlar",i:"Zeki deniz memelisi"},
+  {k:"KAPLAN",kat:"🦁 Hayvanlar",i:"Çizgili büyük kedi"},
+  {k:"BUKALEMUN",kat:"🦁 Hayvanlar",i:"Renk değiştiren sürüngen"},
+  {k:"KANGURU",kat:"🦁 Hayvanlar",i:"Avustralya'nın zıplayan hayvanı"},
+  {k:"FLAMINGO",kat:"🦁 Hayvanlar",i:"Pembe uzun bacaklı kuş"},
+  {k:"KUTUPAYISI",kat:"🦁 Hayvanlar",i:"Beyaz kürklü kutup avcısı"},
+  {k:"AKREP",kat:"🦁 Hayvanlar",i:"Kuyruğunda zehir taşır"},
+  {k:"BAYKUS",kat:"🦁 Hayvanlar",i:"Gece avlanan bilge kuş"},
+  {k:"SALYANGOZ",kat:"🦁 Hayvanlar",i:"Kabuğunu sırtında taşır"},
+  {k:"GORILLA",kat:"🦁 Hayvanlar",i:"En iri primat"},
+  // 🍲 YEMEKLER
+  {k:"BAKLAVA",kat:"🍲 Yemekler",i:"Fıstıklı şerbetli tatlı"},
+  {k:"MANTI",kat:"🍲 Yemekler",i:"Yoğurtlu Kayseri hamur işi"},
+  {k:"LAHMACUN",kat:"🍲 Yemekler",i:"İnce hamurlu kıymalı pide"},
+  {k:"MENEMEN",kat:"🍲 Yemekler",i:"Yumurtalı domatesli kahvaltılık"},
+  {k:"KEBAP",kat:"🍲 Yemekler",i:"Mangalda pişen et yemeği"},
+  {k:"PIZZA",kat:"🍲 Yemekler",i:"İtalyan hamur işi, dilimli"},
+  {k:"SUSHI",kat:"🍲 Yemekler",i:"Japon pirinç ve balık yemeği"},
+  {k:"DOLMA",kat:"🍲 Yemekler",i:"Yaprağa sarılan pirinçli yemek"},
+  {k:"KOFTE",kat:"🍲 Yemekler",i:"Yuvarlanmış kıyma topları"},
+  {k:"SIMIT",kat:"🍲 Yemekler",i:"Susamlı halka ekmek"},
+  {k:"KUNEFE",kat:"🍲 Yemekler",i:"Peynirli sıcak tatlı"},
+  {k:"HAMBURGER",kat:"🍲 Yemekler",i:"Köfteli ekmek arası"},
+  {k:"MAKARNA",kat:"🍲 Yemekler",i:"İtalyan hamur yemeği, soslu"},
+  {k:"CORBA",kat:"🍲 Yemekler",i:"Sıcak içilen sulu yemek"},
+  {k:"DONDURMA",kat:"🍲 Yemekler",i:"Maraş'la ünlü soğuk tatlı"},
+  {k:"PILAV",kat:"🍲 Yemekler",i:"Tereyağlı pirinç yemeği"},
+  {k:"BOREK",kat:"🍲 Yemekler",i:"Yufkadan katmerli hamur işi"},
+  // ⚽ SPOR
+  {k:"BASKETBOL",kat:"⚽ Spor",i:"Potaya top atılan spor"},
+  {k:"GALATASARAY",kat:"⚽ Spor",i:"Sarı-kırmızılı futbol kulübü"},
+  {k:"OLIMPIYAT",kat:"⚽ Spor",i:"4 yılda bir yapılan dev oyunlar"},
+  {k:"SATRANC",kat:"⚽ Spor",i:"Şah mat'lı zeka oyunu"},
+  {k:"VOLEYBOL",kat:"⚽ Spor",i:"Fileden top geçirilen spor"},
+  {k:"YUZME",kat:"⚽ Spor",i:"Suda yapılan spor"},
+  {k:"TENIS",kat:"⚽ Spor",i:"Raketle oynanan file sporu"},
+  {k:"GURES",kat:"⚽ Spor",i:"Kırkpınar'la ünlü ata sporu"},
+  {k:"MARATON",kat:"⚽ Spor",i:"42 kilometrelik koşu"},
+  {k:"BOKS",kat:"⚽ Spor",i:"Eldivenli yumruk sporu"},
+  {k:"KAYAK",kat:"⚽ Spor",i:"Karda yamaçtan iniş sporu"},
+  {k:"FENERBAHCE",kat:"⚽ Spor",i:"Sarı-lacivertli İstanbul kulübü"},
+  {k:"PENALTI",kat:"⚽ Spor",i:"Futbolda ceza atışı"},
+  {k:"BADMINTON",kat:"⚽ Spor",i:"Tüylü topla oynanan raket sporu"},
+  // 🔬 BİLİM & UZAY
+  {k:"GEZEGEN",kat:"🔬 Bilim",i:"Güneş etrafında dönen gök cismi"},
+  {k:"ATOM",kat:"🔬 Bilim",i:"Maddenin en küçük yapı taşı"},
+  {k:"GRAVITE",kat:"🔬 Bilim",i:"Yer çekimi kuvveti"},
+  {k:"EINSTEIN",kat:"🔬 Bilim",i:"İzafiyet teorisinin babası"},
+  {k:"GALAKSI",kat:"🔬 Bilim",i:"Milyarlarca yıldız topluluğu"},
+  {k:"MOLEKUL",kat:"🔬 Bilim",i:"Atomların birleşmiş hali"},
+  {k:"DINOZOR",kat:"🔬 Bilim",i:"Milyonlarca yıl önce yaşayan dev"},
+  {k:"ROKET",kat:"🔬 Bilim",i:"Uzaya fırlatılan araç"},
+  {k:"MIKROP",kat:"🔬 Bilim",i:"Gözle görülmeyen canlı"},
+  {k:"ELEKTRON",kat:"🔬 Bilim",i:"Atomun negatif parçacığı"},
+  {k:"VOLKAN",kat:"🔬 Bilim",i:"Lav püskürten yer şekli"},
+  {k:"MIKNATIS",kat:"🔬 Bilim",i:"Demiri çeken cisim"},
+  {k:"GUNES",kat:"🔬 Bilim",i:"Merkezimizdeki yıldız"},
+  {k:"SATURN",kat:"🔬 Bilim",i:"Halkalarıyla ünlü gezegen"},
+  {k:"HUCRE",kat:"🔬 Bilim",i:"Canlının en küçük birimi"},
+  {k:"TELESKOP",kat:"🔬 Bilim",i:"Uzak gök cisimlerini yakınlaştırır"},
+  {k:"KIMYA",kat:"🔬 Bilim",i:"Maddelerin bilimi"},
+  // 🎬 SİNEMA & MÜZİK
+  {k:"YONETMEN",kat:"🎬 Sanat",i:"Filmi çekimini yöneten kişi"},
+  {k:"SENFONI",kat:"🎬 Sanat",i:"Orkestra için büyük müzik eseri"},
+  {k:"GITAR",kat:"🎬 Sanat",i:"Altı telli çalgı"},
+  {k:"KAMERA",kat:"🎬 Sanat",i:"Görüntü kaydeden cihaz"},
+  {k:"PIYANO",kat:"🎬 Sanat",i:"Siyah-beyaz tuşlu çalgı"},
+  {k:"OSKAR",kat:"🎬 Sanat",i:"Sinemanın en ünlü ödülü"},
+  {k:"KEMAN",kat:"🎬 Sanat",i:"Yayla çalınan telli çalgı"},
+  {k:"SENARYO",kat:"🎬 Sanat",i:"Filmin yazılı metni"},
+  {k:"BALE",kat:"🎬 Sanat",i:"Parmak ucunda dans sanatı"},
+  {k:"DAVUL",kat:"🎬 Sanat",i:"Vurmalı ritim çalgısı"},
+  {k:"OPERA",kat:"🎬 Sanat",i:"Şarkıyla anlatılan sahne eseri"},
+  {k:"FLUT",kat:"🎬 Sanat",i:"Üflemeli ince çalgı"},
+  {k:"HEYKEL",kat:"🎬 Sanat",i:"Taş veya bronzdan yontulmuş eser"},
+  {k:"MELODI",kat:"🎬 Sanat",i:"Şarkının akılda kalan ezgisi"},
+  // 💡 GENEL KÜLTÜR
+  {k:"PUSULA",kat:"💡 Genel",i:"Yön bulmaya yarayan alet"},
+  {k:"TAKVIM",kat:"💡 Genel",i:"Günleri gösteren çizelge"},
+  {k:"KUTUPHANE",kat:"💡 Genel",i:"Kitapların toplandığı yer"},
+  {k:"GOKKUSAGI",kat:"💡 Genel",i:"Yağmur sonrası renkli yay"},
+  {k:"FENER",kat:"💡 Genel",i:"Gemilere yol gösteren ışık"},
+  {k:"UCURTMA",kat:"💡 Genel",i:"Rüzgarda uçurulan oyuncak"},
+  {k:"SEMSIYE",kat:"💡 Genel",i:"Yağmurdan korur"},
+  {k:"MERDIVEN",kat:"💡 Genel",i:"Basamaklı çıkış aracı"},
+  {k:"AYNA",kat:"💡 Genel",i:"Görüntüyü yansıtır"},
+  {k:"SAAT",kat:"💡 Genel",i:"Zamanı gösterir"},
+  {k:"ANAHTAR",kat:"💡 Genel",i:"Kilidi açar"},
+  {k:"KOPRU",kat:"💡 Genel",i:"İki yakayı birleştirir"},
+  {k:"BALON",kat:"💡 Genel",i:"Hava dolu uçan oyuncak"},
+  {k:"MUZE",kat:"💡 Genel",i:"Tarihi eserlerin sergilendiği yer"},
+  {k:"HAZINE",kat:"💡 Genel",i:"Saklı değerli varlık"},
+  {k:"YELKEN",kat:"💡 Genel",i:"Rüzgarla tekneyi iter"},
+  {k:"VOLKAN",kat:"💡 Genel",i:"Patlayan lav dağı"},
+  {k:"KELEPCE",kat:"💡 Genel",i:"Bilekleri bağlayan araç"},
+  {k:"TELESKOP",kat:"💡 Genel",i:"Yıldızları yakınlaştırır"},
+  {k:"MIKROFON",kat:"💡 Genel",i:"Sesi büyütmeye yarar"},
+  {k:"BAYRAK",kat:"💡 Genel",i:"Ülkeyi simgeleyen kumaş"},
+  {k:"MADALYA",kat:"💡 Genel",i:"Kazanana verilen ödül"},
+  {k:"PARASUT",kat:"💡 Genel",i:"Havadan yavaş inmeyi sağlar"},
+  {k:"LABIRENT",kat:"💡 Genel",i:"Çıkışı zor karmaşık yol"},
+  {k:"YANARDAG",kat:"💡 Genel",i:"Lav püskürten dağın diğer adı"},
+  {k:"DEGIRMEN",kat:"💡 Genel",i:"Rüzgarla dönen un öğütücü"},
 ];
 function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
   const HARFLER="ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
-  const [zorluk,setZorluk]=useState(null); // null = seçim ekranı, "kolay" | "zor"
-  const [kelime,setKelime]=useState({k:"",i:""});
+  const [zorluk,setZorluk]=useState(null);      // null seçim | "kolay" | "zor"
+  const [kelime,setKelime]=useState({k:"",i:"",kat:""});
   const [bulunan,setBulunan]=useState([]);
   const [yanlis,setYanlis]=useState([]);
   const [skor,setSkor]=useState(0);
   const [rekor,setRekor]=useState(skorAl("asmaca"));
-  const MAX=zorluk==="zor"?5:6; // zorda 1 can daha az
-  const ipucuGoster=zorluk==="kolay";
+  const [joker,setJoker]=useState(3);           // zor modda 3 joker hakkı
+  const [acikMod,setAcikMod]=useState(false);   // kolay modda ipucu görünür; zorda joker ile açılır
+  const [elenenHarfler,setElenenHarfler]=useState([]); // "yanlış ele" jokeriyle silinen harfler
+  const [turJoker,setTurJoker]=useState(0);     // bu turda kaç joker kullanıldı (puan düşer)
+
+  const MAX=zorluk==="zor"?6:6;
 
   const durum=(()=>{
     if(!zorluk)return "secim";
@@ -325,13 +467,15 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
 
   const yeniKelime=()=>{
     const s=ASMACA_KELIMELER[Math.floor(Math.random()*ASMACA_KELIMELER.length)];
-    setKelime(s);setBulunan([]);setYanlis([]);
+    setKelime(s);setBulunan([]);setYanlis([]);setElenenHarfler([]);setTurJoker(0);
+    setAcikMod(zorluk==="kolay");   // kolayda ipucu hep açık, zorda kapalı başlar
   };
-  // Zorluk seçilince ilk kelimeyi getir
   useEffect(()=>{if(zorluk)yeniKelime();},[zorluk]);
   useEffect(()=>{
     if(durum==="kazanc"){
-      const yeniSkor=skor+(zorluk==="zor"?2:1);setSkor(yeniSkor);skorYaz("asmaca",yeniSkor);setRekor(skorAl("asmaca"));
+      // Kolay: 1 puan. Zor: 3 puan, her kullanılan joker -1 (min 1)
+      const kazanc=zorluk==="zor"?Math.max(1,3-turJoker):1;
+      const yeniSkor=skor+kazanc;setSkor(yeniSkor);skorYaz("asmaca",yeniSkor);setRekor(skorAl("asmaca"));
     }else if(durum==="kayip"){
       skorYaz("asmaca",skor);setRekor(skorAl("asmaca"));
     }
@@ -339,38 +483,60 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
   },[durum]);
 
   const harfSec=(h)=>{
-    if(durum!=="oyun"||bulunan.includes(h)||yanlis.includes(h))return;
+    if(durum!=="oyun"||bulunan.includes(h)||yanlis.includes(h)||elenenHarfler.includes(h))return;
     if(kelime.k.includes(h))setBulunan(p=>[...p,h]);
     else setYanlis(p=>[...p,h]);
   };
   const sonraki=()=>{if(durum==="kayip")setSkor(0);yeniKelime();};
 
-  // ── Zorluk seçim ekranı (hook'lardan SONRA, JSX içinde) ──
+  // ─── JOKERLER (zor mod) ───
+  const jokerHarfAc=()=>{
+    if(joker<=0)return;
+    const gizli=kelime.k.split("").filter(h=>h!==" "&&!bulunan.includes(h));
+    if(gizli.length===0)return;
+    const h=gizli[Math.floor(Math.random()*gizli.length)];
+    setBulunan(p=>[...p,h]);setJoker(j=>j-1);setTurJoker(t=>t+1);
+  };
+  const jokerAciklama=()=>{
+    if(joker<=0||acikMod)return;
+    setAcikMod(true);setJoker(j=>j-1);setTurJoker(t=>t+1);
+  };
+  const jokerYanlisEle=()=>{
+    if(joker<=0)return;
+    const eleneBilir=HARFLER.filter(h=>!kelime.k.includes(h)&&!yanlis.includes(h)&&!elenenHarfler.includes(h));
+    // 3 tanesini karışık seç
+    const secilen=[];const kopya=[...eleneBilir];
+    for(let i=0;i<3&&kopya.length;i++){const ix=Math.floor(Math.random()*kopya.length);secilen.push(kopya.splice(ix,1)[0]);}
+    if(secilen.length===0)return;
+    setElenenHarfler(p=>[...p,...secilen]);setJoker(j=>j-1);setTurJoker(t=>t+1);
+  };
+
+  // ── Zorluk seçim ekranı ──
   if(durum==="secim") return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1003,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100dvh"}}>
       <GeriBaslik baslik="🔤 Adam Asmaca" onKapat={onKapat}/>
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px",gap:16}}>
         <div style={{fontSize:52,marginBottom:4}}>🔤</div>
         <div style={{fontSize:20,fontWeight:800,color:C.t1,marginBottom:2}}>Zorluk Seç</div>
-        <div style={{fontSize:12.5,color:C.t3,textAlign:"center",marginBottom:10}}>Türkçe usta & inşaat kelimeleri</div>
+        <div style={{fontSize:12.5,color:C.t3,textAlign:"center",marginBottom:10}}>Tarih · Coğrafya · Bilim · Spor · Yemek ve daha fazlası</div>
         <button onClick={()=>setZorluk("kolay")} style={{width:"min(84vw,320px)",background:"#0E9F6E",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
           <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>😊 Kolay</div>
-          <div style={{fontSize:12,opacity:0.9}}>İpucu gösterilir · 6 can</div>
+          <div style={{fontSize:12,opacity:0.9}}>Kategori + açıklama görünür · 6 can</div>
         </button>
         <button onClick={()=>setZorluk("zor")} style={{width:"min(84vw,320px)",background:"#DC2626",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
           <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>🔥 Zor</div>
-          <div style={{fontSize:12,opacity:0.9}}>İpucu YOK · 5 can · daha çok puan</div>
+          <div style={{fontSize:12,opacity:0.9}}>Sadece kategori · 3 joker hakkı · 3 kat puan</div>
         </button>
       </div>
     </div>
   </div>;
 
-  // Asılan adam çizimi (yanlış sayısına göre parça parça)
   const parcalar=yanlis.length;
-  return <OyunKabuk baslik={zorluk==="zor"?"🔥 Asmaca — Zor":"😊 Asmaca — Kolay"} skorEt="DOĞRU" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={()=>setZorluk(null)} renk="#7C3AED"
-    altBar={<div style={{background:yanlis.length>=4?"#FEE2E2":C.card,borderRadius:12,padding:"9px 12px",boxShadow:C.sh,minWidth:56,textAlign:"center"}}><div style={{fontSize:9,color:C.t3,fontWeight:700}}>CAN</div><div style={{fontSize:19,fontWeight:800,color:yanlis.length>=4?"#DC2626":"#0E9F6E"}}>{MAX-parcalar}</div></div>}>
+  const jokerAktif=zorluk==="zor"&&durum==="oyun";
+  return <OyunKabuk baslik={zorluk==="zor"?"🔥 Asmaca — Zor":"😊 Asmaca — Kolay"} skorEt="PUAN" skor={skor} rekor={rekor} C={C} APP_W={APP_W} GeriBaslik={GeriBaslik} onKapat={()=>setZorluk(null)} renk="#7C3AED"
+    altBar={<div style={{background:yanlis.length>=4?"#FEE2E2":C.card,borderRadius:12,padding:"9px 12px",boxShadow:C.sh,minWidth:52,textAlign:"center"}}><div style={{fontSize:9,color:C.t3,fontWeight:700}}>CAN</div><div style={{fontSize:19,fontWeight:800,color:yanlis.length>=4?"#DC2626":"#0E9F6E"}}>{MAX-parcalar}</div></div>}>
     {/* Darağacı */}
-    <svg viewBox="0 0 120 120" style={{width:130,height:130,marginBottom:6}}>
+    <svg viewBox="0 0 120 120" style={{width:112,height:112,marginBottom:4}}>
       <line x1="10" y1="115" x2="70" y2="115" stroke={C.t2} strokeWidth="3"/>
       <line x1="30" y1="115" x2="30" y2="10" stroke={C.t2} strokeWidth="3"/>
       <line x1="30" y1="10" x2="80" y2="10" stroke={C.t2} strokeWidth="3"/>
@@ -382,26 +548,40 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
       {parcalar>4&&<line x1="80" y1="75" x2="68" y2="95" stroke="#DC2626" strokeWidth="3"/>}
       {parcalar>5&&<line x1="80" y1="75" x2="92" y2="95" stroke="#DC2626" strokeWidth="3"/>}
     </svg>
-    {/* İpucu — sadece kolay modda */}
-    <div style={{fontSize:12,color:C.t3,marginBottom:10}}>{ipucuGoster?"💡 "+kelime.i:"🔥 "+kelime.k.length+" harf · ipucu yok"}</div>
-    {/* Kelime */}
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center",marginBottom:18}}>
-      {kelime.k.split("").map((h,i)=><div key={i} style={{width:26,height:34,borderBottom:`3px solid ${C.t2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:durum==="kayip"&&!bulunan.includes(h)?"#DC2626":C.t1}}>{bulunan.includes(h)||durum==="kayip"?h:""}</div>)}
+    {/* Kategori — her zaman görünür */}
+    <div style={{fontSize:13,fontWeight:800,color:"#7C3AED",marginBottom:4}}>{kelime.kat}</div>
+    {/* Açıklama — kolayda hep, zorda joker açınca */}
+    <div style={{fontSize:12,color:C.t3,marginBottom:8,minHeight:16,textAlign:"center"}}>
+      {acikMod?"💡 "+kelime.i:(zorluk==="zor"?"🔒 Açıklama için joker kullan ("+kelime.k.length+" harf)":"")}
     </div>
+    {/* Kelime */}
+    <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginBottom:14}}>
+      {kelime.k.split("").map((h,i)=><div key={i} style={{width:24,height:32,borderBottom:`3px solid ${C.t2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,fontWeight:800,color:durum==="kayip"&&!bulunan.includes(h)?"#DC2626":C.t1}}>{bulunan.includes(h)||durum==="kayip"?h:""}</div>)}
+    </div>
+    {/* JOKER BUTONLARI — sadece zor modda */}
+    {jokerAktif&&<div style={{display:"flex",gap:8,marginBottom:14}}>
+      <button onClick={jokerHarfAc} disabled={joker<=0} style={{flex:1,background:joker>0?"#7C3AED":"#E5E7EB",border:"none",borderRadius:10,padding:"9px 6px",color:joker>0?"#fff":"#9CA3AF",fontSize:11,fontWeight:700,cursor:joker>0?"pointer":"default"}}>🔦 Harf Aç</button>
+      <button onClick={jokerAciklama} disabled={joker<=0||acikMod} style={{flex:1,background:(joker>0&&!acikMod)?"#7C3AED":"#E5E7EB",border:"none",borderRadius:10,padding:"9px 6px",color:(joker>0&&!acikMod)?"#fff":"#9CA3AF",fontSize:11,fontWeight:700,cursor:(joker>0&&!acikMod)?"pointer":"default"}}>💡 Açıklama</button>
+      <button onClick={jokerYanlisEle} disabled={joker<=0} style={{flex:1,background:joker>0?"#7C3AED":"#E5E7EB",border:"none",borderRadius:10,padding:"9px 6px",color:joker>0?"#fff":"#9CA3AF",fontSize:11,fontWeight:700,cursor:joker>0?"pointer":"default"}}>❌ 3 Harf Ele</button>
+    </div>}
+    {jokerAktif&&<div style={{fontSize:11,color:C.t3,marginBottom:12,fontWeight:700}}>🎫 Kalan joker: {joker} · Joker kullandıkça puan düşer</div>}
+    {/* Harf klavyesi */}
     {durum==="oyun"
-      ?<div style={{display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:6,width:"min(92vw,380px)"}}>
-        {HARFLER.map(h=>{const kul=bulunan.includes(h)||yanlis.includes(h);const dogru=bulunan.includes(h);
-          return <button key={h} onClick={()=>harfSec(h)} disabled={kul} style={{aspectRatio:"1",borderRadius:8,border:"none",background:kul?(dogru?"#0E9F6E":"#E5E7EB"):"#7C3AED",color:kul?(dogru?"#fff":"#9CA3AF"):"#fff",fontSize:15,fontWeight:800,cursor:kul?"default":"pointer"}}>{h}</button>;
+      ?<div style={{display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:5,width:"min(94vw,384px)"}}>
+        {HARFLER.map(h=>{
+          const dogru=bulunan.includes(h);const yanl=yanlis.includes(h);const elendi=elenenHarfler.includes(h);
+          const kul=dogru||yanl||elendi;
+          return <button key={h} onClick={()=>harfSec(h)} disabled={kul} style={{aspectRatio:"1",borderRadius:8,border:"none",background:dogru?"#0E9F6E":yanl?"#DC2626":elendi?"#D1D5DB":"#7C3AED",color:kul?(elendi?"#6B7280":"#fff"):"#fff",fontSize:15,fontWeight:800,cursor:kul?"default":"pointer",opacity:elendi?0.5:1,textDecoration:elendi?"line-through":"none"}}>{h}</button>;
         })}
       </div>
       :<div style={{textAlign:"center"}}>
         <div style={{fontSize:26,fontWeight:900,color:durum==="kazanc"?"#0E9F6E":"#DC2626",marginBottom:6}}>{durum==="kazanc"?"🎉 Bildin!":"💀 Kaybettin"}</div>
-        <div style={{fontSize:15,color:C.t2,marginBottom:16}}>Kelime: <b>{kelime.k}</b></div>
+        <div style={{fontSize:15,color:C.t2,marginBottom:4}}>Kelime: <b>{kelime.k}</b></div>
+        <div style={{fontSize:12,color:C.t3,marginBottom:16}}>{kelime.kat} · {kelime.i}</div>
         <button onClick={sonraki} style={{background:"#7C3AED",border:"none",borderRadius:10,padding:"13px 28px",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"}}>{durum==="kazanc"?"Sıradaki Kelime →":"Yeniden Başla"}</button>
       </div>}
   </OyunKabuk>;
 }
-
 // ═══════════════════ ZIPZIP DİNO ═══════════════════
 // Google'ın çevrimdışı dino oyununun kendi özgün sürümümüz — canvas tabanlı.
 function OyunDino({onKapat,C,P,APP_W,GeriBaslik}){
