@@ -316,26 +316,8 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
   const MAX=zorluk==="zor"?5:6; // zorda 1 can daha az
   const ipucuGoster=zorluk==="kolay";
 
-  // Zorluk seçim ekranı
-  if(!zorluk) return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1003,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
-      <GeriBaslik baslik="🔤 Adam Asmaca" onKapat={onKapat}/>
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px",gap:16}}>
-        <div style={{fontSize:52,marginBottom:4}}>🔤</div>
-        <div style={{fontSize:20,fontWeight:800,color:C.t1,marginBottom:2}}>Zorluk Seç</div>
-        <div style={{fontSize:12.5,color:C.t3,textAlign:"center",marginBottom:10}}>Türkçe usta & inşaat kelimeleri</div>
-        <button onClick={()=>{setZorluk("kolay");}} style={{width:"min(84vw,320px)",background:"#0E9F6E",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
-          <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>😊 Kolay</div>
-          <div style={{fontSize:12,opacity:0.9}}>İpucu gösterilir · 6 can</div>
-        </button>
-        <button onClick={()=>{setZorluk("zor");}} style={{width:"min(84vw,320px)",background:"#DC2626",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
-          <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>🔥 Zor</div>
-          <div style={{fontSize:12,opacity:0.9}}>İpucu YOK · 5 can · daha çok puan</div>
-        </button>
-      </div>
-    </div>
-  </div>;
   const durum=(()=>{
+    if(!zorluk)return "secim";
     if(yanlis.length>=MAX)return "kayip";
     if(kelime.k&&kelime.k.split("").every(h=>h===" "||bulunan.includes(h)))return "kazanc";
     return "oyun";
@@ -345,7 +327,8 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
     const s=ASMACA_KELIMELER[Math.floor(Math.random()*ASMACA_KELIMELER.length)];
     setKelime(s);setBulunan([]);setYanlis([]);
   };
-  useEffect(()=>{yeniKelime();},[]);
+  // Zorluk seçilince ilk kelimeyi getir
+  useEffect(()=>{if(zorluk)yeniKelime();},[zorluk]);
   useEffect(()=>{
     if(durum==="kazanc"){
       const yeniSkor=skor+(zorluk==="zor"?2:1);setSkor(yeniSkor);skorYaz("asmaca",yeniSkor);setRekor(skorAl("asmaca"));
@@ -361,6 +344,26 @@ function OyunAsmaca({onKapat,C,P,APP_W,GeriBaslik}){
     else setYanlis(p=>[...p,h]);
   };
   const sonraki=()=>{if(durum==="kayip")setSkor(0);yeniKelime();};
+
+  // ── Zorluk seçim ekranı (hook'lardan SONRA, JSX içinde) ──
+  if(durum==="secim") return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1003,display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100dvh"}}>
+      <GeriBaslik baslik="🔤 Adam Asmaca" onKapat={onKapat}/>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px",gap:16}}>
+        <div style={{fontSize:52,marginBottom:4}}>🔤</div>
+        <div style={{fontSize:20,fontWeight:800,color:C.t1,marginBottom:2}}>Zorluk Seç</div>
+        <div style={{fontSize:12.5,color:C.t3,textAlign:"center",marginBottom:10}}>Türkçe usta & inşaat kelimeleri</div>
+        <button onClick={()=>setZorluk("kolay")} style={{width:"min(84vw,320px)",background:"#0E9F6E",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
+          <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>😊 Kolay</div>
+          <div style={{fontSize:12,opacity:0.9}}>İpucu gösterilir · 6 can</div>
+        </button>
+        <button onClick={()=>setZorluk("zor")} style={{width:"min(84vw,320px)",background:"#DC2626",border:"none",borderRadius:16,padding:"18px 20px",color:"#fff",cursor:"pointer",textAlign:"left"}}>
+          <div style={{fontSize:17,fontWeight:800,marginBottom:3}}>🔥 Zor</div>
+          <div style={{fontSize:12,opacity:0.9}}>İpucu YOK · 5 can · daha çok puan</div>
+        </button>
+      </div>
+    </div>
+  </div>;
 
   // Asılan adam çizimi (yanlış sayısına göre parça parça)
   const parcalar=yanlis.length;
