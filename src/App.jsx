@@ -2346,9 +2346,20 @@ export const ibanBicim=(ham)=>(ham||"").replace(/\s/g,"").toUpperCase().replace(
 // ─── YASAL UYARI & SORUMLULUK ───────────────────────────────────
 function YasalEkrani({onKapat}){
   const link=(u)=>window.open(u,"_blank","noopener,noreferrer");
+  // ESC ile kapat + sayfa kaydırmasını kilitle
+  useEffect(()=>{
+    const esc=(e)=>{if(e.key==="Escape")onKapat();};
+    window.addEventListener("keydown",esc);
+    return ()=>window.removeEventListener("keydown",esc);
+  },[onKapat]);
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
-    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
-      <GeriBaslik baslik="🛡️ Yasal Uyarı" onKapat={onKapat}/>
+    <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100dvh"}}>
+      {/* Kapatma başlığı — her iki buton da garantili kapatır */}
+      <div style={{display:"flex",alignItems:"center",gap:12,padding:"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:60}}>
+        <button onClick={onKapat} type="button" style={{width:38,height:38,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:16,cursor:"pointer",color:C.t1}}>←</button>
+        <div style={{flex:1,fontSize:18,fontWeight:800,color:C.t1}}>🛡️ Yasal Uyarı</div>
+        <button onClick={onKapat} type="button" aria-label="Kapat" style={{width:40,height:40,borderRadius:12,background:"#EF4444",border:"none",fontSize:19,cursor:"pointer",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>✕</button>
+      </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px 40px"}}>
 
         <Sh s={{padding:16,marginBottom:14}}>
@@ -2401,6 +2412,8 @@ function YasalEkrani({onKapat}){
             <span style={{fontSize:13,color:P,fontWeight:700}}>↗</span>
           </div>)}
         </Sh>
+
+        <button onClick={onKapat} type="button" style={{width:"100%",background:P,border:"none",borderRadius:14,padding:15,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",marginTop:16}}>Anladım, Kapat</button>
       </div>
     </div>
   </div>;
