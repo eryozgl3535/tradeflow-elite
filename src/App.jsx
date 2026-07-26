@@ -3897,9 +3897,18 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
       <div style={{fontSize:13,color:C.t2,marginTop:3}}>{T.gozAt}</div>
     </div>
     <div style={{display:"flex",alignItems:"center",gap:10}}>
-      <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.t1,fontSize:13,fontWeight:600,cursor:"pointer",outline:"none",boxShadow:C.sh}}>
-        {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
-      </select>
+      <div style={{position:"relative",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"7px 14px",boxShadow:C.sh,display:"flex",alignItems:"center",gap:9,minWidth:190,cursor:"pointer"}}>
+        <i className="ti ti-briefcase" style={{fontSize:17,color:P,flexShrink:0}} aria-hidden="true"/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:9.5,color:C.t3,fontWeight:700,letterSpacing:"0.04em",lineHeight:1.2}}>İŞ SEKTÖRÜNÜZ</div>
+          <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{isKolu||"Sektör seçin…"}</div>
+        </div>
+        <i className="ti ti-chevron-down" style={{fontSize:14,color:C.t3,flexShrink:0}} aria-hidden="true"/>
+        <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}} title="İş sektörünüzü seçin">
+          {!isKolu&&<option value="" disabled>İş sektörünüzü seçin</option>}
+          {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
+        </select>
+      </div>
       <button onClick={onAsistan} title="Asistan" style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-message-chatbot" style={{fontSize:19}} aria-hidden="true"/></button>
       <button onClick={onAra} style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-search" style={{fontSize:19}} aria-hidden="true"/></button>
       <button onClick={onBildirim} style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,position:"relative",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}>
