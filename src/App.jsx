@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, BarChart, Bar, X
 import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.js";
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 import { EglenceKosesi } from "./eglence.jsx";
+import { NakitOzetKart, NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
 import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf } from "./utils.js";
 
@@ -771,7 +772,7 @@ function tanitimIpuclari(bugunIslerVarsa,bugunIsMetni,onTakvim,onKasa,setSekme){
   ];
 }
 
-const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,onTakvim,cekSenetler=[]}){
+const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,onTakvim,cekSenetler=[],onNakit}){
   const ad=(yetkili||"").split(" ")[0]||"";
   const saat=new Date().getHours();
   const selam=(saat>=7&&saat<11)?"Günaydın":(saat>=11&&saat<18)?"İyi günler":"İyi akşamlar";
@@ -906,6 +907,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <button onClick={onOzellestir} style={{width:52,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:C.sh}}><i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/></button>
     </div>
     {/* ⏰ Yaklaşan çek/senet */}
+    <NakitOzetKart jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} onAc={onNakit}/>
     {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
     <Sh s={{padding:"14px 4px",marginBottom:16}}>
       <div style={{display:"flex"}}>
@@ -1412,7 +1414,7 @@ const JobList=memo(function JobList({jobs,onSelect,T,onTum}){
 })
 
 // ─── MODALLAR ────────────────────────────────────────────────────
-function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,giderler,onPatch}){
+function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,giderler,onPatch,onSahitli}){
   const [silOnay,setSilOnay]=useState(false);
   const [odemeAc,setOdemeAc]=useState(false);
   const [odemeTutar,setOdemeTutar]=useState("");
@@ -1543,6 +1545,10 @@ function DetayModal({job,onKapat,onDurum,onFatura,onSil,onDuzenle,onOdeme,T,gide
     </div>}
 
     {!silOnay?<>
+      <button onClick={()=>onSahitli&&onSahitli(job)} style={{width:"100%",background:job.sahitli?"#DCFCE7":"#EEF2FF",border:"none",borderRadius:12,padding:13,color:job.sahitli?"#059669":"#4F46E5",fontSize:13,fontWeight:700,cursor:"pointer",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
+        <i className={`ti ${job.sahitli?"ti-shield-check":"ti-shield-plus"}`} style={{fontSize:17}} aria-hidden="true"/>
+        {job.sahitli?"🛡️ Şahitli İş Kaydını Gör":"🛡️ Şahitli İş Oluştur (foto+imza+konum)"}
+      </button>
       <div style={{display:"flex",gap:8,marginBottom:10}}>
         {job.durum!=="tamamlandi"&&<button onClick={()=>{onDurum(job.id,"tamamlandi");onKapat();}} style={{flex:1,background:C.greenBg,border:"none",borderRadius:12,padding:13,color:C.green,fontSize:13,fontWeight:700,cursor:"pointer"}}>✓ {T.tamamla}</button>}
         <button onClick={onFatura} style={{flex:1,background:C.amberBg,border:"none",borderRadius:12,padding:13,color:C.amber,fontSize:13,fontWeight:700,cursor:"pointer"}}>📄 {T.faturaKes}</button>
@@ -4246,6 +4252,8 @@ export default function TradeFlow(){
   const [teklifAc,setTeklifAc]=useState(false);
   const [giderAc,setGiderAc]=useState(false);
   const [ekran,setEkran]=useState(null);
+  const [sahitliJob,setSahitliJob]=useState(null);
+  const [sahitliMod,setSahitliMod]=useState(null); // "duzenle" | "goruntule"
   const [isKolu,setIsKolu]=useState("Mekanik Tesisat");
   const [isKoluAc,setIsKoluAc]=useState(false);
   const [dil,setDil]=useState("tr");
@@ -4769,7 +4777,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><div style={{padding:"0 28px 20px"}}><NakitOzetKart jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} onAc={()=>setEkran("nakit")}/></div><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
@@ -4837,7 +4845,7 @@ export default function TradeFlow(){
           if(kod==="VGTDMS"){setIsletme(i=>({...i,plan:"elite",omurBoyu:true}));goster("🎉 Ömür boyu Elite tanımlandı!");return true;}
           return false;
         }}/>}
-        {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T} giderler={giderler} onPatch={jobPatch}/>}
+        {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T} giderler={giderler} onPatch={jobPatch} onSahitli={(j)=>{const g=jobs.find(x=>x.id===j.id)||j;setSahitliJob(g);setSahitliMod(g.sahitli?"goruntule":"duzenle");setSecili(null);}}/>}
         {fatJob&&<FaturaModal job={fatJob} isletme={isletme} kdv={kdv} T={T} onKapat={()=>setFatJob(null)} onKesildi={faturaKesildi} gibAyar={gibAyar} onGibAc={(sekme)=>{setFatJob(null);setSekme("profil");setTimeout(()=>setGibAcSekme(sekme),100);}}/>}
         {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} onIsKolu={isKoluSecS} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip}/>}
         {duzenlenecekJob&&<YeniIsModal onKapat={()=>setDuzenlenecekJob(null)} onEkle={jobGuncelle} T={T} duzenlenecek={duzenlenecekJob} isKolu={isKolu} jobs={jobs} ekip={ekip}/>}
@@ -4859,6 +4867,9 @@ export default function TradeFlow(){
           onKaliciSil={(i)=>{if(window.confirm("Bu kayıt KALICI olarak silinecek — geri dönüşü yok. Emin misin?"))setCopKutusu(p=>p.filter((_,x)=>x!==i));}}/>}
         {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
         {ekran==="eglence"&&<EglenceKosesi onKapat={()=>setEkran(null)} C={C} P={P} GRAD={GRAD} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>}
+        {ekran==="nakit"&&<NakitDetayEkrani jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
+        {sahitliJob&&sahitliMod==="duzenle"&&<SahitliIsEkrani job={sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} goster={goster} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onKaydet={(kayit)=>{jobPatch(sahitliJob.id,{sahitli:kayit});}}/>}
+        {sahitliJob&&sahitliMod==="goruntule"&&<SahitliIsGoruntule job={jobs.find(j=>j.id===sahitliJob.id)||sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onDuzenle={()=>setSahitliMod("duzenle")}/>}
         {ekran==="kasa"&&!kasaAcik&&<PinKapi kayitliPin={isletme.kasaPin} onPinAyarla={(p)=>{setIsletme(i=>({...i,kasaPin:p}));goster("🔐 PIN kaydedildi");}} onBasari={()=>setKasaAcik(true)} onKapat={()=>setEkran(null)}/>}
         {ekran==="kasa"&&kasaAcik&&<KasaEkrani onKapat={()=>{setEkran(null);setKasaAcik(false);}} cekSenetler={cekSenetler} setCekSenetler={setCekSenetler} jobs={jobs} giderler={giderler} goster={goster}/>}
         {ekran==="ekip"&&<EkipEkrani onKapat={()=>setEkran(null)} ekip={ekip} setEkip={setEkip} jobs={jobs} goster={goster} T={T} kullaniciId={kullanici&&kullanici.id}/>}
