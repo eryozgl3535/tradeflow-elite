@@ -134,7 +134,17 @@ function fmtKisa(n){
 // ─── Ana ekran özet kartı ───
 export function NakitOzetKart({jobs,cekSenetler,giderler,C,P,onAc}){
   const t=nakitAkisiTahmini(jobs,cekSenetler,giderler);
-  if(t.hareketSayisi===0)return null;
+  // Veri yoksa: boş dönmek yerine kullanıcıyı yönlendir
+  if(t.hareketSayisi===0){
+    return <div style={{background:C.card,borderRadius:16,padding:"15px 17px",marginBottom:18,boxShadow:C.sh,borderLeft:`4px solid ${P}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:8}}>
+        <i className="ti ti-chart-line" style={{fontSize:19,color:P}} aria-hidden="true"/>
+        <span style={{fontSize:13.5,fontWeight:800,color:C.t1,flex:1}}>Nakit Akışı Tahmini</span>
+        <span style={{fontSize:9.5,fontWeight:800,color:C.t3,background:C.bg,borderRadius:9,padding:"2px 9px"}}>VERİ BEKLENİYOR</span>
+      </div>
+      <div style={{fontSize:12,color:C.t2,lineHeight:1.6}}>Tahmin için <b>gelecekte gelecek para</b> gerekir. Şunları girince burası dolar:{"\n"}• <b>Bekleyen</b> durumdaki işler (henüz tahsil edilmemiş){"\n"}• <b>Vadeli çek/senet</b> (Çek·Senet ekranından){"\n\n"}<span style={{color:C.t3}}>Not: "Tahsil edildi/tamamlandı" işaretlediğin işler zaten gelmiş para sayılır, tahmine girmez.</span></div>
+    </div>;
+  }
   const renk=t.risk==="yuksek"?"#DC2626":t.risk==="orta"?"#D97706":"#0E9F6E";
   const bg=t.risk==="yuksek"?"#FEE2E2":t.risk==="orta"?"#FEF3C7":"#DCFCE7";
   const ikon=t.risk==="yuksek"?"ti-alert-triangle":t.risk==="orta"?"ti-alert-circle":"ti-circle-check";
