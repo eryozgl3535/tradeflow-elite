@@ -5,6 +5,7 @@ import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 import { EglenceKosesi } from "./eglence.jsx";
 import { Ik, MODUL_IKON } from "./ikonlar.jsx";
+import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } from "./saat.jsx";
 import { NakitOzetKart, NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
 import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf } from "./utils.js";
@@ -772,7 +773,8 @@ function tanitimIpuclari(bugunIslerVarsa,bugunIsMetni,onTakvim,onKasa,setSekme){
 const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,onTakvim,cekSenetler=[],onNakit}){
   const ad=(yetkili||"").split(" ")[0]||"";
   const saat=new Date().getHours();
-  const selam=(saat>=7&&saat<11)?"Günaydın":(saat>=11&&saat<18)?"İyi günler":"İyi akşamlar";
+  const dilim=gunDilimi(saat);
+  const selam=DILIM_METIN[dilim].selam;
   const buAy=new Date().toISOString().slice(0,7);
   const gecenAy=(()=>{const d=new Date();d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,7);})();
   const bugun=new Date().toISOString().slice(0,10);
@@ -817,9 +819,12 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const ipDokunBit=(e)=>{if(ipDokunRef.current==null)return;const dx=e.changedTouches[0].clientX-ipDokunRef.current;if(Math.abs(dx)>34){setIpucuIx(i=>(i+(dx<0?1:-1)+ipuclari.length)%ipuclari.length);}ipDokunRef.current=null;};
   return <div style={{padding:"14px 16px 0"}}>
     {/* Karşılama */}
-    <div style={{padding:"8px 2px 2px",marginBottom:14}}>
-      <div style={{fontSize:27,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.25}}>{selam}{ad?", "+ad:""} 👋</div>
-      <div style={{fontSize:13.5,color:C.t3,marginTop:5}}>Bugün harika işler başarabilirsin.</div>
+    <div style={{padding:"8px 2px 2px",marginBottom:14,display:"flex",alignItems:"center",gap:13}}>
+      <GokyuzuSahne saat={saat} dk={new Date().getMinutes()} g={62}/>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:23,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.2}}>{selam}{ad?", "+ad:""}</div>
+        <div style={{fontSize:12.5,color:C.t3,marginTop:4}}>{DILIM_METIN[dilim].alt}</div>
+      </div>
     </div>
     {/* Yeni İş Ekle + İpucu kartları — yan yana */}
     <div style={{display:"flex",gap:12,marginBottom:18,alignItems:"stretch"}}>
@@ -3576,6 +3581,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
     {icon:"👷",label:T.ekipYonetimi,alt:"Usta ekle, giriş oluştur, iş ata",act:()=>onAc("ekip")},
     {icon:"📅",label:"Takvim",alt:"İşlerini ay görünümünde planla",act:()=>onAc("takvim")},
     {icon:"🗑️",label:"Çöp Kutusu",alt:"Silinenler 30 gün geri alınabilir",act:()=>onAc("cop")},
+    {icon:"🌍",label:"Dünya Saatleri",alt:"Şehirlerdeki güncel saatleri gör",act:()=>onAc("dunya")},
     {icon:"🎮",label:"Eğlence Köşesi",alt:"Oyunlarla mola ver — 2048, Yılan, Hafıza, Asmaca",act:()=>onAc("eglence")},
     {icon:"📈",label:"Muhasebe Raporu (PDF)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
     {icon:"📊",label:(T.excelIslerL||"İşler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelIs},
@@ -3922,13 +3928,10 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
   </div>;
 })
 
-function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu}){
+function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya}){
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
   return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"28px 28px 20px",gap:16,flexWrap:"wrap"}}>
-    <div>
-      <div style={{fontSize:24,fontWeight:800,color:C.t1,letterSpacing:"-0.02em"}}>{T.hosgeldinT}, {ad}! 👋</div>
-      <div style={{fontSize:13,color:C.t2,marginTop:3}}>{T.gozAt}</div>
-    </div>
+    <SelamSaat ad={ad} C={C} P={P} onDunya={onDunya}/>
     <div style={{display:"flex",alignItems:"center",gap:10}}>
       <div style={{position:"relative",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"7px 14px",boxShadow:C.sh,display:"flex",alignItems:"center",gap:9,minWidth:190,cursor:"pointer"}}>
         <Ik n="canta" s={18} c={P} w={1.7}/>
@@ -4824,6 +4827,7 @@ export default function TradeFlow(){
             setCopKutusu(p=>p.filter((_,x)=>x!==i));goster("↩️ Geri alındı");}}
           onKaliciSil={(i)=>{if(window.confirm("Bu kayıt KALICI olarak silinecek — geri dönüşü yok. Emin misin?"))setCopKutusu(p=>p.filter((_,x)=>x!==i));}}/>}
         {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
+        {ekran==="dunya"&&<DunyaSaatleriEkrani C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
         {ekran==="eglence"&&<EglenceKosesi onKapat={()=>setEkran(null)} C={C} P={P} GRAD={GRAD} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>}
         {ekran==="nakit"&&<NakitDetayEkrani jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
         {sahitliJob&&sahitliMod==="duzenle"&&<SahitliIsEkrani job={sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} goster={goster} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onKaydet={(kayit)=>{jobPatch(sahitliJob.id,{sahitli:kayit});}}/>}
