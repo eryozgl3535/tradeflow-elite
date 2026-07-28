@@ -4721,12 +4721,17 @@ export default function TradeFlow(){
   if(oturumKontrol){
     return <div style={{minHeight:"100vh",background:"#F2F2F7",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
       <div style={{textAlign:"center"}}>
-        <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:1,margin:"0 auto 14px"}}>
-          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:32,fontWeight:700,color:"#1C4E60",lineHeight:1}}>T</span>
-          <span style={{fontSize:24,color:"#C9A24B",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -3px"}}>/</span>
-          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:32,fontWeight:700,color:"#6B7280",lineHeight:1}}>F</span>
+        <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:1,animation:"tfPulse 1.7s ease-in-out infinite"}}>
+          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:"#2E7490",lineHeight:1}}>T</span>
+          <span style={{fontSize:44,color:"#C9A24B",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -5px"}}>/</span>
+          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:"#6B7280",lineHeight:1}}>F</span>
         </div>
-        <div style={{fontSize:13,color:"#6B7280"}}>Yükleniyor...</div>
+        <div style={{fontSize:20,fontWeight:700,color:"#111827",letterSpacing:"0.15em",marginTop:14}}>TRADEFLOW</div>
+        <div style={{fontSize:11,fontWeight:600,color:"#C9A24B",letterSpacing:"0.44em",marginTop:5}}>ELITE</div>
+        <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:"#9CA3AF"}}>
+          Built by <span style={{color:"#2E7490",fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
+        </div>
+        <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
       </div>
     </div>;
   }
@@ -4746,11 +4751,20 @@ export default function TradeFlow(){
   if(USTA_MI){
     return <UstaPanel kullanici={kullanici}/>;
   }
-  if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
-    <div style={{width:64,height:64,borderRadius:20,background:P,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,animation:"tfPulse 1.2s ease-in-out infinite"}}>⚡</div>
-    <div style={{fontSize:15,fontWeight:800,color:C.t1}}>TradeFlow</div>
-    <div style={{fontSize:12,color:C.t3}}>Verileriniz yükleniyor...</div>
-    <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.88);opacity:0.7}}`}</style>
+  if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+    {/* Logo */}
+    <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:1,animation:"tfPulse 1.7s ease-in-out infinite"}}>
+      <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:P,lineHeight:1}}>T</span>
+      <span style={{fontSize:44,color:GOLD,fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -5px"}}>/</span>
+      <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:C.t2,lineHeight:1}}>F</span>
+    </div>
+    <div style={{fontSize:20,fontWeight:700,color:C.t1,letterSpacing:"0.15em",marginTop:14}}>TRADEFLOW</div>
+    <div style={{fontSize:11,fontWeight:600,color:GOLD,letterSpacing:"0.44em",marginTop:5}}>ELITE</div>
+    {/* Built by ERAİ — ERA mavi, İ pembe */}
+    <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:C.t3}}>
+      Built by <span style={{color:P,fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
+    </div>
+    <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
   </div>;
 
   return (
