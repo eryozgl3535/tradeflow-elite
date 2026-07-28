@@ -212,20 +212,52 @@ export function NakitDetayEkrani({jobs,cekSenetler,giderler,C,P,APP_W,GeriBaslik
 
         {/* Grafik */}
         <Sh s={{padding:"16px 14px",marginBottom:16}}>
-          <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:12}}>📈 30 Günlük Bakiye Projeksiyonu</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontSize:13.5,fontWeight:700,color:C.t1}}>30 Günlük Bakiye Projeksiyonu</div>
+            <div style={{fontSize:10.5,color:C.t3,fontWeight:600}}>En düşük <b style={{color:t.enDusuk.bakiye<0?"#DC2626":C.t1,fontWeight:800}}>{fmtKisa(t.enDusuk.bakiye)}</b></div>
+          </div>
+          {/* Açıklama şeridi */}
+          <div style={{display:"flex",gap:15,fontSize:10.5,color:C.t2,fontWeight:600,marginBottom:8}}>
+            <span style={{display:"flex",alignItems:"center",gap:5}}><i style={{width:9,height:9,borderRadius:2,background:"#2E7490",display:"block"}}/>Bakiye</span>
+            <span style={{display:"flex",alignItems:"center",gap:5}}><i style={{width:9,height:9,borderRadius:2,background:"#DC2626",display:"block"}}/>Açık bölgesi</span>
+          </div>
           <div style={{overflowX:"auto"}}>
-            <svg width={genislik} height={yuk+28} style={{display:"block"}}>
+            <svg width={genislik} height={yuk+26} style={{display:"block"}}>
+              <defs>
+                <linearGradient id="nkUp" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2E7490" stopOpacity="0.24"/>
+                  <stop offset="100%" stopColor="#2E7490" stopOpacity="0"/>
+                </linearGradient>
+                <linearGradient id="nkDn" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#DC2626" stopOpacity="0.04"/>
+                  <stop offset="100%" stopColor="#DC2626" stopOpacity="0.18"/>
+                </linearGradient>
+                <clipPath id="nkAb"><rect x="0" y="0" width={genislik} height={Math.max(0,sifirY)}/></clipPath>
+                <clipPath id="nkBl"><rect x="0" y={Math.max(0,sifirY)} width={genislik} height={Math.max(0,yuk-sifirY)}/></clipPath>
+              </defs>
+              {/* yatay kılavuz çizgiler */}
+              {[0.25,0.5,0.75].map(o=><line key={o} x1="0" y1={yuk*o} x2={genislik} y2={yuk*o} stroke="#F1F5F9" strokeWidth="1"/>)}
+              {/* negatif bölge zemini */}
+              {minB<0&&<rect x="0" y={sifirY} width={genislik} height={yuk-sifirY} fill="url(#nkDn)"/>}
               {/* sıfır çizgisi */}
-              <line x1="0" y1={sifirY} x2={genislik} y2={sifirY} stroke={C.border} strokeWidth="1" strokeDasharray="4 3"/>
-              <text x="2" y={sifirY-4} fontSize="9" fill={C.t3}>0 ₺</text>
-              {/* negatif alan kırmızı */}
-              {minB<0&&<rect x="0" y={sifirY} width={genislik} height={yuk-sifirY} fill="#DC262610"/>}
-              {/* çizgi */}
-              <path d={yol} fill="none" stroke={renk} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              {/* açık noktası işareti */}
-              {t.acikGun&&(()=>{const i=t.gunluk.findIndex(g=>g.gun===t.acikGun.gun);const {x,y}=nokta(t.acikGun,i);return <g><circle cx={x} cy={y} r="5" fill="#DC2626"/><text x={x} y={y-9} fontSize="9" fill="#DC2626" fontWeight="700" textAnchor="middle">açık!</text></g>;})()}
+              <line x1="0" y1={sifirY} x2={genislik} y2={sifirY} stroke="#CBD5E1" strokeWidth="1" strokeDasharray="4 4"/>
+              <text x="4" y={sifirY-5} fontSize="9.5" fill={C.t3} fontWeight="600">0 ₺</text>
+              {/* alan dolgusu (sadece pozitif) */}
+              <path d={yol+` L${genislik},${yuk} L0,${yuk} Z`} fill="url(#nkUp)" clipPath="url(#nkAb)"/>
+              {/* çizgi: sıfır üstü mavi, altı kırmızı */}
+              <path d={yol} fill="none" stroke="#2E7490" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#nkAb)"/>
+              <path d={yol} fill="none" stroke="#DC2626" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" clipPath="url(#nkBl)"/>
+              {/* açık noktası */}
+              {t.acikGun&&(()=>{const i=t.gunluk.findIndex(g=>g.gun===t.acikGun.gun);const {x}=nokta(t.acikGun,i);
+                return <g><circle cx={x} cy={sifirY} r="5" fill="#fff" stroke="#DC2626" strokeWidth="2.4"/>
+                  <text x={x} y={sifirY-11} fontSize="9.5" fill="#DC2626" fontWeight="800" textAnchor="middle">açık</text></g>;})()}
+              {/* son nokta */}
+              {(()=>{const sonG=t.gunluk[t.gunluk.length-1];const {x,y}=nokta(sonG,t.gunluk.length-1);
+                return <circle cx={x} cy={y} r="3.6" fill={sonG.bakiye<0?"#DC2626":"#2E7490"}/>;})()}
               {/* gün etiketleri */}
-              {[0,7,14,21,30].map(g=>{const i=g;const x=(i/(t.gunluk.length-1))*genislik;return <text key={g} x={x} y={yuk+18} fontSize="9" fill={C.t3} textAnchor="middle">{g===0?"Bugün":g+"g"}</text>;})}
+              <text x="2" y={yuk+19} fontSize="9.5" fill={C.t3} fontWeight="600">Bugün</text>
+              <text x={genislik/2} y={yuk+19} fontSize="9.5" fill={C.t3} fontWeight="600" textAnchor="middle">15 gün</text>
+              <text x={genislik-2} y={yuk+19} fontSize="9.5" fill={C.t3} fontWeight="600" textAnchor="end">30 gün</text>
             </svg>
           </div>
         </Sh>
