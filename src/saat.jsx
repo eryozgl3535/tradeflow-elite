@@ -21,18 +21,18 @@ export const DILIM_METIN = {
 
 // ─── Gökyüzü sahnesi ───
 // Güneş/ay saate göre yay üzerinde ilerler; gökyüzü rengi değişir.
-export function GokyuzuSahne({saat,dk=0,g=64,gen}){
+export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76}){
   const dilim=gunDilimi(saat);
   const t=saat+dk/60;
-  const W=gen||64, H=46;                 // panoramik için gen ver
+  const W=bant?240:(gen||64), H=bant?58:46;
 
   const dogus=6, batis=19;
   const oran=Math.min(1,Math.max(0,(t-dogus)/(batis-dogus)));
   const gunduz=t>=dogus&&t<=batis;
   const gOran=gunduz?0:(t>batis?(t-batis)/(24-batis+dogus):(t+24-batis)/(24-batis+dogus));
   const p=gunduz?oran:gOran;
-  const cx=W*0.12+p*(W*0.76);
-  const cy=44-Math.sin(p*Math.PI)*26;
+  const cx=W*0.1+p*(W*0.8);
+  const cy=(bant?52:44)-Math.sin(p*Math.PI)*(bant?32:26);
 
   const gok={
     sabah:["#FFE9C4","#FFC98A"],
@@ -42,36 +42,42 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen}){
   }[dilim];
   const cisimRenk=dilim==="gece"?"#E8EDF5":dilim==="sabah"?"#FFB13B":dilim==="aksam"?"#FF7847":"#FFC61A";
   const halo   =dilim==="gece"?"#E8EDF522":dilim==="aksam"?"#FF784733":"#FFC61A38";
-  const id="gk"+dilim+W;
+  const id="gk"+dilim+(bant?"b":W);
+  const r=bant?8:6.6, hr=bant?13:11;
 
-  return <svg width={g} height={g*(H/W)} viewBox={`0 0 ${W} ${H}`} style={{display:"block",borderRadius:13,flexShrink:0}} aria-hidden="true">
+  const olcu = bant
+    ? {width:"100%",height:yuk,display:"block"}
+    : {width:g,height:g*(H/W),display:"block",borderRadius:13,flexShrink:0};
+
+  return <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio={bant?"none":"xMidYMid meet"}
+    style={olcu} aria-hidden="true">
     <defs>
       <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor={gok[0]}/><stop offset="100%" stopColor={gok[1]}/>
       </linearGradient>
     </defs>
-    <rect x="0" y="0" width={W} height={H} rx="9" fill={`url(#${id})`}/>
+    <rect x="0" y="0" width={W} height={H} rx={bant?0:9} fill={`url(#${id})`}/>
 
-    {dilim==="gece"&&Array.from({length:Math.round(W/9)}).map((_,i)=>{
-      const x=(i*17.3)%(W-6)+3, y=(i*11.7)%22+4;
+    {dilim==="gece"&&Array.from({length:Math.round(W/8)}).map((_,i)=>{
+      const x=(i*19.7)%(W-6)+3, y=(i*13.3)%(H*0.6)+4;
       return <circle key={i} cx={x} cy={y} r={i%3===0?0.9:0.6} fill="#fff" opacity={0.5+((i*7)%35)/100}/>;
     })}
 
     {dilim!=="gece"&&<g opacity={dilim==="ogle"?0.85:0.62}>
-      <ellipse cx={W*0.22} cy="13" rx={W*0.11} ry="3.2" fill="#ffffffcc"/>
-      <ellipse cx={W*0.29} cy="12" rx={W*0.07} ry="2.5" fill="#ffffffcc"/>
-      <ellipse cx={W*0.74} cy="20" rx={W*0.09} ry="2.6" fill="#ffffffa8"/>
+      <ellipse cx={W*0.2} cy={H*0.28} rx={W*0.09} ry={H*0.07} fill="#ffffffcc"/>
+      <ellipse cx={W*0.26} cy={H*0.25} rx={W*0.06} ry={H*0.055} fill="#ffffffcc"/>
+      <ellipse cx={W*0.76} cy={H*0.42} rx={W*0.075} ry={H*0.055} fill="#ffffffa8"/>
     </g>}
 
-    <circle cx={cx} cy={cy} r="11" fill={halo}/>
-    <circle cx={cx} cy={cy} r="6.6" fill={cisimRenk}/>
-    {dilim==="gece"&&<circle cx={cx+2.6} cy={cy-2.2} r="5.4" fill={gok[0]}/>}
+    <circle cx={cx} cy={cy} r={hr} fill={halo}/>
+    <circle cx={cx} cy={cy} r={r} fill={cisimRenk}/>
+    {dilim==="gece"&&<circle cx={cx+r*0.42} cy={cy-r*0.34} r={r*0.82} fill={gok[0]}/>}
     {dilim==="ogle"&&[0,45,90,135,180,225,270,315].map(a=>{
-      const r=(a*Math.PI)/180;
-      return <line key={a} x1={cx+Math.cos(r)*9} y1={cy+Math.sin(r)*9}
-        x2={cx+Math.cos(r)*11.5} y2={cy+Math.sin(r)*11.5} stroke={cisimRenk} strokeWidth="1.4" strokeLinecap="round" opacity="0.75"/>;
+      const rd=(a*Math.PI)/180;
+      return <line key={a} x1={cx+Math.cos(rd)*(r+2.4)} y1={cy+Math.sin(rd)*(r+2.4)}
+        x2={cx+Math.cos(rd)*(r+4.9)} y2={cy+Math.sin(rd)*(r+4.9)} stroke={cisimRenk} strokeWidth="1.4" strokeLinecap="round" opacity="0.75"/>;
     })}
-    <path d={`M0 38 Q${W*0.25} 33 ${W*0.5} 37 Q${W*0.75} 41 ${W} 35 L${W} ${H} L0 ${H} Z`}
+    <path d={`M0 ${H*0.82} Q${W*0.25} ${H*0.71} ${W*0.5} ${H*0.8} Q${W*0.75} ${H*0.89} ${W} ${H*0.76} L${W} ${H} L0 ${H} Z`}
       fill={dilim==="gece"?"#0A1120":"#00000018"}/>
   </svg>;
 }
@@ -81,38 +87,24 @@ export function SelamSaat({ad,C,P,onDunya}){
   const [now,setNow]=useState(()=>new Date());
   useEffect(()=>{const t=setInterval(()=>setNow(new Date()),1000);return ()=>clearInterval(t);},[]);
   const saat=now.getHours(), dk=now.getMinutes();
-  const dilim=gunDilimi(saat);
-  const d=DILIM_METIN[dilim];
+  const d=DILIM_METIN[gunDilimi(saat)];
   const ss=String(saat).padStart(2,"0"), mm=String(dk).padStart(2,"0"), sn=String(now.getSeconds()).padStart(2,"0");
   const tarih=now.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long"});
-  const gunduz=saat>=6&&saat<19;
 
-  return <div style={{flex:1,minWidth:340,display:"flex",alignItems:"stretch",gap:0,background:C.card,border:`1px solid ${C.border}`,borderRadius:18,overflow:"hidden"}}>
-    {/* Panoramik gökyüzü */}
-    <div style={{position:"relative",flexShrink:0}}>
-      <GokyuzuSahne saat={saat} dk={dk} g={168} gen={132}/>
-      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 10px 7px",display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
-        <span style={{fontSize:9,fontWeight:700,color:dilim==="gece"?"#94A9C4":"#5B4A33",letterSpacing:"0.05em"}}>
-          {gunduz?"↑ 06:00":"↓ 19:00"}
-        </span>
-        <span style={{fontSize:9,fontWeight:700,color:dilim==="gece"?"#94A9C4":"#5B4A33",letterSpacing:"0.05em"}}>
-          {gunduz?"↓ 19:00":"↑ 06:00"}
-        </span>
-      </div>
-    </div>
+  return <div style={{flex:1,minWidth:320,background:C.card,border:`1px solid ${C.border}`,borderRadius:18,overflow:"hidden"}}>
+    {/* Tam genişlik gökyüzü bandı */}
+    <GokyuzuSahne saat={saat} dk={dk} bant={true} yuk={80}/>
 
-    {/* Metin bloğu */}
-    <div style={{flex:1,minWidth:0,padding:"14px 20px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
-      <div style={{fontSize:24,fontWeight:800,color:C.t1,letterSpacing:"-0.025em",lineHeight:1.15}}>
+    {/* Altında selamlama */}
+    <div style={{padding:"13px 20px 15px"}}>
+      <div style={{fontSize:22,fontWeight:800,color:C.t1,letterSpacing:"-0.025em",lineHeight:1.2}}>
         {d.selam}{ad?", "+ad:""}
       </div>
-      <div style={{fontSize:12.5,color:C.t3,marginTop:3,marginBottom:9}}>{d.alt}</div>
-
-      <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
-        <span style={{fontSize:21,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em",lineHeight:1}}>
-          {ss}:{mm}<span style={{fontSize:13,color:C.t3,fontWeight:700}}>:{sn}</span>
+      <div style={{display:"flex",alignItems:"center",gap:13,marginTop:8,flexWrap:"wrap"}}>
+        <span style={{fontSize:20,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em",lineHeight:1}}>
+          {ss}:{mm}<span style={{fontSize:12.5,color:C.t3,fontWeight:700}}>:{sn}</span>
         </span>
-        <span style={{width:1,height:17,background:C.border,display:"block"}}/>
+        <span style={{width:1,height:16,background:C.border,display:"block"}}/>
         <span style={{fontSize:12.5,color:C.t2,fontWeight:500}}>{tarih}</span>
         <button onClick={onDunya} style={{marginLeft:"auto",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"6px 12px",fontSize:11.5,fontWeight:700,color:P,cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontFamily:"inherit",transition:"all .14s"}}
           onMouseEnter={e=>{e.currentTarget.style.background=C.bg;e.currentTarget.style.borderColor="#CBD5E1";}}
