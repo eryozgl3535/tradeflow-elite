@@ -68,3 +68,28 @@ export const MODUL_IKON = {
   giderler:   {n:"klasor",   c:"#14B8A6"},
   daha:       {n:"nokta",    c:"#64748B"},
 };
+
+// ═══ LED İMZA — ışık ilk harften son harfe akar, sonsuz döngü ═══
+export function LedImza({boyut=13, ortala=true}){
+  return <div style={{textAlign:ortala?"center":"left",padding:"2px 0"}}>
+    <style>{`
+      @keyframes tfLed{
+        0%   {background-position:-140% 0}
+        100% {background-position: 240% 0}
+      }
+      .tf-led{
+        background:linear-gradient(100deg,
+          #64748B 0%, #64748B 32%,
+          #2E7490 41%, #7DD3FC 47%, #FFFFFF 50%, #F9A8D4 53%, #EC4899 59%,
+          #64748B 68%, #64748B 100%);
+        background-size:260% 100%;
+        -webkit-background-clip:text; background-clip:text;
+        -webkit-text-fill-color:transparent; color:transparent;
+        animation:tfLed 3.6s linear infinite;
+        font-weight:800; letter-spacing:.1em; display:inline-block;
+      }
+      @media (prefers-reduced-motion:reduce){ .tf-led{animation:none} }
+    `}</style>
+    <span className="tf-led" style={{fontSize:boyut}}>Built by ERAİ</span>
+  </div>;
+}
