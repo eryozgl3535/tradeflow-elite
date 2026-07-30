@@ -80,8 +80,9 @@ export function PiyasaSeridi({C,P,masaustu=false}){
   // Sade, ince, tek satır kaydırılabilir şerit — ana ekranın alt bilgi çubuğu
   return <div style={{
     display:"flex",alignItems:"center",gap:masaustu?14:10,
-    padding:masaustu?"10px 28px":"9px 2px",
+    padding:masaustu?"14px 28px 4px":"13px 2px 4px",
     margin:masaustu?"0 0 14px":"2px 0 8px",
+    borderTop:`1px solid ${C.border}`,
     overflowX:"auto",
   }}>
     <span style={{width:6,height:6,borderRadius:"50%",background:cevrimdisi?"#94A3B8":"#0E9F6E",display:"block",flexShrink:0}}/>
