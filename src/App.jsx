@@ -3944,7 +3944,7 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
 
 function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya}){
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
-  return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
+  return <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
     <SelamSaat ad={ad} C={C} P={P} onDunya={onDunya}/>
     <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
       <div style={{position:"relative",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"7px 14px",display:"flex",alignItems:"center",gap:9,minWidth:190,cursor:"pointer"}}>
