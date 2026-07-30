@@ -860,6 +860,20 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </div>
+    {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
+    <Sh s={{padding:"14px 4px",marginBottom:16}}>
+      <div style={{display:"flex"}}>
+        {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{flex:1,padding:"2px 10px",cursor:"pointer",borderRight:i<3?`1px solid ${C.border}`:"none"}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
+            <i className={`ti ${k.ic}`} style={{fontSize:14,color:k.c}} aria-hidden="true"/>
+            <span style={{fontSize:9.5,fontWeight:700,color:C.t2,lineHeight:1.1}}>{k.l}</span>
+          </div>
+          <div style={{fontSize:15,fontWeight:800,color:C.t1,whiteSpace:"nowrap"}}>{k.v}</div>
+          <div style={{fontSize:9,color:C.t3,marginBottom:8}}>{k.sub}</div>
+          <div style={{height:4,borderRadius:3,background:k.c}}/>
+        </div>)}
+      </div>
+    </Sh>
     {/* 🔔 VADE HATIRLATMALARI */}
     {(()=>{
       const hatirlatmalar=vadeHatirlatmalari(jobs,cekSenetler);
@@ -889,7 +903,6 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         })}
       </div>;
     })()}
-    <PiyasaSeridi C={C} P={P}/>
     {/* Hızlı İşlemler — düz beyaz kutular */}
     <Sh s={{padding:"16px 12px",marginBottom:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 14px"}}>
@@ -922,20 +935,6 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <button onClick={onOzellestir} style={{width:52,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:C.sh}}><i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/></button>
     </div>
     {/* ⏰ Yaklaşan çek/senet */}
-    {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
-    <Sh s={{padding:"14px 4px",marginBottom:16}}>
-      <div style={{display:"flex"}}>
-        {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{flex:1,padding:"2px 10px",cursor:"pointer",borderRight:i<3?`1px solid ${C.border}`:"none"}}>
-          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
-            <i className={`ti ${k.ic}`} style={{fontSize:14,color:k.c}} aria-hidden="true"/>
-            <span style={{fontSize:9.5,fontWeight:700,color:C.t2,lineHeight:1.1}}>{k.l}</span>
-          </div>
-          <div style={{fontSize:15,fontWeight:800,color:C.t1,whiteSpace:"nowrap"}}>{k.v}</div>
-          <div style={{fontSize:9,color:C.t3,marginBottom:8}}>{k.sub}</div>
-          <div style={{height:4,borderRadius:3,background:k.c}}/>
-        </div>)}
-      </div>
-    </Sh>
     {/* Gelir - Gider Özeti */}
     <Sh s={{padding:"16px",marginBottom:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
@@ -959,7 +958,8 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </Sh>
-    {/* LED imza — mobil */}
+        <PiyasaSeridi C={C} P={P}/>
+{/* LED imza — mobil */}
     <div style={{padding:"6px 0 18px"}}><LedImza boyut={13}/></div>
   </div>;
 });
@@ -4756,7 +4756,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><PiyasaSeridi C={C} P={P} masaustu={true}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
