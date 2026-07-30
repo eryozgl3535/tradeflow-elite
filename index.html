@@ -28,7 +28,29 @@
     <script type="module" src="/src/main.jsx"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").then((kayit) => {
+            // Her sayfa açılışında sunucudan taze sw.js kontrolü zorla
+            kayit.update();
+            // Yeni sürüm indirilip devreye girdiyse tespit et
+            kayit.addEventListener("updatefound", () => {
+              const yeni = kayit.installing;
+              if (!yeni) return;
+              yeni.addEventListener("statechange", () => {
+                if (yeni.state === "activated") {
+                  // Yeni service worker devreye girdi — sayfayı tazele
+                  window.location.reload();
+                }
+              });
+            });
+          });
+          // Sekme arka plandan öne gelince de güncelleme kontrolü yap
+          document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+              navigator.serviceWorker.getRegistration().then((r) => r && r.update());
+            }
+          });
+        });
       }
     </script>
   </body>
