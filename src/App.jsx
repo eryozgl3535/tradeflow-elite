@@ -4,9 +4,10 @@ import { PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, BarChart, Bar, X
 import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.js";
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 import { EglenceKosesi } from "./eglence.jsx";
-import { Ik, MODUL_IKON } from "./ikonlar.jsx";
+import { Ik, MODUL_IKON, LedImza } from "./ikonlar.jsx";
 import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } from "./saat.jsx";
-import { NakitOzetKart, NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
+import { PiyasaSeridi } from "./piyasa.jsx";
+import { NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
 import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf } from "./utils.js";
 
@@ -757,20 +758,31 @@ function vadeEtiket(fark){
 }
 
 // 💡 Özellik tanıtım ipuçları — en güçlü özellikleri tanıtır
-function tanitimIpuclari(bugunIslerVarsa,bugunIsMetni,onTakvim,onKasa,setSekme){
+function tanitimIpuclari(bugunIslerVarsa,bugunIsMetni,onTakvim,onKasa,setSekme,onAc){
+  const git=(e)=>()=>onAc&&onAc(e);
   return [
-    {ic:"ti-calendar-event",baslik:"İpucu",metin:bugunIsMetni,act:onTakvim,renk:"#2563EB"},
+    {ic:"ti-calendar-event",baslik:"Bugün",metin:bugunIsMetni,act:onTakvim,renk:"#2563EB"},
     {ic:"ti-camera",baslik:"Çek & Senet Takibi",metin:"Çeklerini fotoğraflayarak kaydet, vadesi yaklaşınca uyarı al — asla kaçırma.",act:onKasa,renk:"#F59E0B"},
     {ic:"ti-file-pencil",baslik:"Teklif → PDF → WhatsApp",metin:"Teklifini saniyede PDF yap, tek dokunuşla WhatsApp'tan müşterine gönder.",act:()=>setSekme("teklifler"),renk:"#7C3AED"},
-    {ic:"ti-cloud-off",baslik:"İnternetsiz Çalışır",metin:"Şantiyede çekim yoksa bile çalış — veriler cihazında durur, bağlanınca buluta yüklenir.",act:()=>setSekme("isler"),renk:"#0E9F6E"},
+    {ic:"ti-shield-check",baslik:"Şahitli İş",metin:"Öncesi–sonrası fotoğrafı, konum ve müşteri imzasıyla kilitle. \"Eksik yapıldı\" tartışması bitsin.",act:()=>setSekme("isler"),renk:"#0E9F6E"},
+    {ic:"ti-cloud-off",baslik:"İnternetsiz Çalışır",metin:"Şantiyede çekim yoksa bile çalış — veriler cihazında durur, bağlanınca buluta yüklenir.",act:()=>setSekme("isler"),renk:"#0891B2"},
     {ic:"ti-chart-pie",baslik:"Kâr-Zarar Analizi",metin:"Her işin giderini bağla, gerçek kârını gör. Hangi iş kazandırıyor, hangisi zarar — net gör.",act:()=>setSekme("raporlar"),renk:"#EC4899"},
-    {ic:"ti-users",baslik:"Ekip Yönetimi",metin:"Ustalarını ekle, işleri onlara ata, harcamalarını takip et — hepsi tek yerde.",act:()=>setSekme("daha"),renk:"#3B82F6"},
-    {ic:"ti-world",baslik:"8 Dil Desteği",metin:"Uygulama 8 dilde çalışır — yabancı müşteri veya çalışanla iş yapmak artık kolay.",act:()=>setSekme("profil"),renk:"#14B8A6"},
+    {ic:"ti-users",baslik:"Ekip Yönetimi",metin:"Ustalarını ekle, işleri onlara ata, saha harcamalarını onayla — hepsi tek yerde.",act:git("ekip"),renk:"#3B82F6"},
     {ic:"ti-receipt",baslik:"Fatura & Tahsilat",metin:"Fatura kes, tahsilatı işaretle, bekleyen alacaklarını anında gör.",act:()=>setSekme("faturalar"),renk:"#6366F1"},
+    {ic:"ti-calendar",baslik:"Takvim Görünümü",metin:"İşlerini ay görünümünde planla, hangi gün ne var tek bakışta gör.",act:onTakvim,renk:"#14B8A6"},
+    {ic:"ti-microphone",baslik:"Sesli Not",metin:"Elin doluyken işe sesli not bırak — yazmakla uğraşma.",act:()=>setSekme("isler"),renk:"#F97316"},
+    {ic:"ti-robot",baslik:"Yapay Zekâ Asistan",metin:"İşlerini, tahsilatlarını, müşterilerini sor — asistan cevaplasın.",act:git("asistan"),renk:"#8B5CF6"},
+    {ic:"ti-world",baslik:"8 Dil Desteği",metin:"Uygulama 8 dilde çalışır — yabancı müşteri veya çalışanla iş yapmak artık kolay.",act:()=>setSekme("profil"),renk:"#0EA5E9"},
+    {ic:"ti-device-mobile",baslik:"Telefona Kurulabilir",metin:"Tarayıcıdan \"Ana ekrana ekle\" de — uygulama gibi açılsın, simgesi olsun.",act:()=>setSekme("profil"),renk:"#64748B"},
+    {ic:"ti-download",baslik:"Yedek Al",metin:"Tüm verini tek tuşla dosya olarak indir, istediğinde geri yükle.",act:()=>setSekme("profil"),renk:"#0E9F6E"},
+    {ic:"ti-lock",baslik:"Otomatik Kilit",metin:"Telefonun başkasının eline geçerse oturum kendiliğinden kapansın.",act:()=>setSekme("profil"),renk:"#DC2626"},
+    {ic:"ti-clock",baslik:"Dünya Saatleri",metin:"18 şehrin güncel saatini gör — yurt dışıyla iş yapanlar için.",act:git("dunya"),renk:"#7C3AED"},
+    {ic:"ti-device-gamepad-2",baslik:"Eğlence Köşesi",metin:"Mola ver — 2048, Yılan, Tetris, Adam Asmaca ve dahası. İnternetsiz oynanır.",act:git("eglence"),renk:"#EC4899"},
+    {ic:"ti-trash",baslik:"Çöp Kutusu",metin:"Yanlışlıkla sildiğin kayıtlar 30 gün geri alınabilir.",act:git("cop"),renk:"#94A3B8"},
   ];
 }
 
-const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,onTakvim,cekSenetler=[],onNakit}){
+const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetkili,onYeniIs,isKolu,setIsKolu,onOzellestir,onStatClick,setSekme,onIsSec,okunmamis,onKasa,onTakvim,cekSenetler=[],onNakit,onAc}){
   const ad=(yetkili||"").split(" ")[0]||"";
   const saat=new Date().getHours();
   const dilim=gunDilimi(saat);
@@ -811,7 +823,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   // 💡 İpucu carousel — özellik tanıtımları, otomatik döner + kaydırma
   const [ipucuIx,setIpucuIx]=useState(0);
   const bugunIsMetni=bugunIsler.length===0?"Planlı işin yok — yeni iş ekleyerek gününü planla.":((bugunIsler[0].hatirlatma||"").slice(11,16)||"Bugün")+" · "+bugunIsler[0].musteri+" — "+bugunIsler[0].baslik+(bugunIsler.length>1?" (+"+(bugunIsler.length-1)+" iş daha)":"");
-  const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme);
+  const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme,onAc);
   useEffect(()=>{const t=setInterval(()=>setIpucuIx(i=>(i+1)%ipuclari.length),6500);return ()=>clearInterval(t);},[ipuclari.length]);
   const ipucu=ipuclari[ipucuIx];
   const ipDokunRef=useRef(null);
@@ -828,7 +840,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     </div>
     {/* Yeni İş Ekle + İpucu kartları — yan yana */}
     <div style={{display:"flex",gap:12,marginBottom:18,alignItems:"stretch"}}>
-      <button onClick={onYeniIs} style={{flex:"0 0 46%",background:GRAD,border:"none",borderRadius:20,padding:"18px 16px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
+      <button onClick={onYeniIs} style={{flex:"0 0 38%",background:GRAD,border:"none",borderRadius:20,padding:"18px 16px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:9}}>
           <div style={{width:32,height:32,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/></div>
           <span style={{fontSize:17.5,fontWeight:800,letterSpacing:"-0.01em"}}>{T.yeniIs} Ekle</span>
@@ -844,7 +856,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
           <div style={{width:48,height:48,borderRadius:13,background:ipucu.renk+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ${ipucu.ic}`} style={{fontSize:23,color:ipucu.renk}} aria-hidden="true"/></div>
         </div>
         <div style={{display:"flex",justifyContent:"center",gap:5,paddingTop:8,flexWrap:"wrap"}}>
-          {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIpucuIx(i);}} style={{width:i===ipucuIx?16:6,height:6,borderRadius:3,background:i===ipucuIx?ipucu.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer"}}/>)}
+          {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIpucuIx(i);}} style={{width:i===ipucuIx?14:4.5,height:4.5,borderRadius:3,background:i===ipucuIx?ipucu.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer",flexShrink:0}}/>)}
         </div>
       </div>
     </div>
@@ -877,6 +889,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         })}
       </div>;
     })()}
+    <PiyasaSeridi C={C} P={P}/>
     {/* Hızlı İşlemler — düz beyaz kutular */}
     <Sh s={{padding:"16px 12px",marginBottom:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 14px"}}>
@@ -909,7 +922,6 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <button onClick={onOzellestir} style={{width:52,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:C.sh}}><i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/></button>
     </div>
     {/* ⏰ Yaklaşan çek/senet */}
-    <NakitOzetKart jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} onAc={onNakit}/>
     {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
     <Sh s={{padding:"14px 4px",marginBottom:16}}>
       <div style={{display:"flex"}}>
@@ -947,6 +959,8 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </Sh>
+    {/* LED imza — mobil */}
+    <div style={{padding:"6px 0 18px"}}><LedImza boyut={13}/></div>
   </div>;
 });
 
@@ -3863,7 +3877,9 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme,acilVade=0}){
     </nav>
     <div style={{flex:1}}/>
     <div onClick={()=>setSekme("profil")} style={{display:"flex",alignItems:"center",gap:11,background:"#F8FAFC",border:`1px solid ${C.border}`,borderRadius:14,padding:"11px",cursor:"pointer",marginBottom:14}}>
-      <div style={{width:36,height:36,borderRadius:11,background:`linear-gradient(145deg,#3E8FA3,#1C4E60)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"#fff",flexShrink:0}}>{(isletme.yetkili||"EO").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}</div>
+      {isletme?.logo
+        ? <img src={isletme.logo} alt="" style={{width:36,height:36,borderRadius:11,objectFit:"cover",flexShrink:0,border:`1px solid ${C.border}`}}/>
+        : <div style={{width:36,height:36,borderRadius:11,background:`linear-gradient(145deg,#3E8FA3,#1C4E60)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"#fff",flexShrink:0}}>{(isletme.yetkili||"EO").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}</div>}
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:13,fontWeight:600,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:5}}>
           {isletme.yetkili||"Kullanıcı"}
@@ -3873,9 +3889,7 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme,acilVade=0}){
       </div>
       <Ik n="asagi" s={15} c={C.t3} w={2}/>
     </div>
-    <div style={{textAlign:"center",fontSize:11,fontWeight:600,letterSpacing:"0.07em",color:C.t3}}>
-      Built by <span style={{color:P,fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
-    </div>
+    <LedImza boyut={12}/>
   </aside>;
 })
 
@@ -3959,15 +3973,15 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
 }
 
 // 🖥️ Masaüstü hero — mobildeki Yeni İş Ekle + İpucu kartlarının geniş ekran uyarlaması
-const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs}){
+const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs,onAc}){
   const bugun=new Date().toISOString().slice(0,10);
   const bugunIsler=jobs.filter(j=>j.durum!=="tamamlandi"&&((j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)));
   const [ix,setIx]=useState(0);
   const bugunIsMetni=bugunIsler.length===0?"Planlı işin yok — yeni iş ekleyerek gününü planla.":((bugunIsler[0].hatirlatma||"").slice(11,16)||"Bugün")+" · "+bugunIsler[0].musteri+" — "+bugunIsler[0].baslik+(bugunIsler.length>1?" (+"+(bugunIsler.length-1)+" iş daha)":"");
-  const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme);
+  const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme,onAc);
   useEffect(()=>{const t=setInterval(()=>setIx(i=>(i+1)%ipuclari.length),6500);return ()=>clearInterval(t);},[ipuclari.length]);
   const ip=ipuclari[ix];
-  return <div style={{display:"grid",gridTemplateColumns:"1fr 1.4fr",gap:16,padding:"20px 28px 20px"}}>
+  return <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"20px 28px 20px"}}>
     <button onClick={onYeniIs} style={{background:GRAD,border:"none",borderRadius:20,padding:"22px 24px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.28)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10,transition:"transform 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="none"}>
       <div style={{display:"flex",alignItems:"center",gap:11}}>
@@ -3987,7 +4001,7 @@ const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme
         <button onClick={e=>{e.stopPropagation();setIx(i=>(i+1)%ipuclari.length);}} style={{position:"absolute",right:6,top:"42%",width:28,height:28,borderRadius:"50%",border:"none",background:C.bg,color:C.t3,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
       </div>
       <div style={{display:"flex",justifyContent:"center",gap:5,paddingTop:9}}>
-        {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIx(i);}} style={{width:i===ix?16:6,height:6,borderRadius:3,background:i===ix?ip.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer"}}/>)}
+        {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIx(i);}} style={{width:i===ix?14:4.5,height:4.5,borderRadius:3,background:i===ix?ip.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer",flexShrink:0}}/>)}
       </div>
     </div>
   </div>;
@@ -4732,13 +4746,17 @@ export default function TradeFlow(){
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div onClick={()=>setSekme("bildiri")} style={{position:"relative",cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-bell" style={{fontSize:22,color:C.t1}} aria-hidden="true"/>{okunmamis>0&&<span style={{position:"absolute",top:5,right:5,width:9,height:9,borderRadius:"50%",background:"#2E7490",border:"2px solid "+C.bg}}/>}</div>
-            <div onClick={()=>setSekme("profil")} style={{cursor:"pointer"}}><div style={{width:42,height:42,background:GRAD,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff"}}>{((isletme?.yetkili||kullanici?.email||"?").split(" ").map(w=>w[0]).join("").slice(0,2)).toUpperCase()}</div></div>
+            <div onClick={()=>setSekme("profil")} style={{cursor:"pointer"}} title="Profil — fotoğraf eklemek için dokun">
+              {isletme?.logo
+                ? <img src={isletme.logo} alt="" style={{width:42,height:42,borderRadius:"50%",objectFit:"cover",display:"block",border:`2px solid ${C.card}`,boxShadow:"0 2px 8px rgba(16,24,40,0.14)"}}/>
+                : <div style={{width:42,height:42,background:GRAD,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff"}}>{((isletme?.yetkili||kullanici?.email||"?").split(" ").map(w=>w[0]).join("").slice(0,2)).toUpperCase()}</div>}
+            </div>
           </div>
         </div>}
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><div style={{padding:"0 28px 20px"}}><NakitOzetKart jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} onAc={()=>setEkran("nakit")}/></div><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{textAlign:"center",padding:"2px 0 10px"}}><span style={{fontSize:12,fontWeight:700,letterSpacing:"0.4em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:12,fontWeight:700,color:"#E4335A"}}>İ</span></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><PiyasaSeridi C={C} P={P} masaustu={true}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
@@ -4778,7 +4796,7 @@ export default function TradeFlow(){
             onGit={(b)=>{
               setBildirimler(p=>p.map(x=>x.id===b.id?{...x,okundu:true}:x));
               const h=b.hedef;if(!h)return;
-              if(h.tur==="is"){const j=jobs.find(x=>x.id===h.id);if(j){setSecili(j);}else{goster("Bu iş silinmiş olabilir");}}
+              if(h.tur==="is"){const j=jobs.find(x=>x.ref===h.ref||x.id===h.id);if(j){setSekme("isler");setSecili(j);}else{goster("Bu iş silinmiş olabilir");}}
               else if(h.tur==="kasa"){setEkran("kasa");}
               else if(h.tur==="sekme"){setIslerFiltre(null);setTahsilatFiltre(null);setSekme(h.sekme);}
             }}/>}
