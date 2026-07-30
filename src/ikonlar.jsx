@@ -69,27 +69,28 @@ export const MODUL_IKON = {
   daha:       {n:"nokta",    c:"#64748B"},
 };
 
-// ═══ LED İMZA — ışık ilk harften son harfe akar, sonsuz döngü ═══
-export function LedImza({boyut=13, ortala=true}){
+// ═══ LED İMZA — ışık ilk harften son harfe tek tek koşar (LED şerit) ═══
+export function LedImza({boyut=13, ortala=true, metin="Built by ERAİ"}){
+  const harfler=[...metin];
   return <div style={{textAlign:ortala?"center":"left",padding:"2px 0"}}>
     <style>{`
-      @keyframes tfLed{
-        0%   {background-position:-140% 0}
-        100% {background-position: 240% 0}
+      @keyframes tfKos{
+        0%, 70%, 100% { color:#8A96A8; text-shadow:none }
+        76% { color:#22D3EE; text-shadow:0 0 7px rgba(34,211,238,.85), 0 0 16px rgba(34,211,238,.42) }
+        82% { color:#FFFFFF; text-shadow:0 0 9px rgba(255,255,255,.9),  0 0 20px rgba(167,139,250,.6) }
+        88% { color:#EC4899; text-shadow:0 0 7px rgba(236,72,153,.85), 0 0 16px rgba(236,72,153,.42) }
       }
-      .tf-led{
-        background:linear-gradient(100deg,
-          #64748B 0%, #64748B 32%,
-          #2E7490 41%, #7DD3FC 47%, #FFFFFF 50%, #F9A8D4 53%, #EC4899 59%,
-          #64748B 68%, #64748B 100%);
-        background-size:260% 100%;
-        -webkit-background-clip:text; background-clip:text;
-        -webkit-text-fill-color:transparent; color:transparent;
-        animation:tfLed 3.6s linear infinite;
-        font-weight:800; letter-spacing:.1em; display:inline-block;
-      }
-      @media (prefers-reduced-motion:reduce){ .tf-led{animation:none} }
+      .tf-led{ font-weight:900; letter-spacing:.13em; display:inline-flex; line-height:1.25 }
+      .tf-led i{ font-style:normal; display:inline-block; color:#8A96A8;
+                 animation:tfKos 2.6s linear infinite; will-change:color,text-shadow }
+      @media (prefers-reduced-motion:reduce){ .tf-led i{ animation:none } }
     `}</style>
-    <span className="tf-led" style={{fontSize:boyut}}>Built by ERAİ</span>
+    <span className="tf-led" style={{fontSize:boyut}} aria-label={metin}>
+      {harfler.map((h,i)=>
+        <i key={i} style={{animationDelay:(i*0.085).toFixed(3)+"s"}} aria-hidden="true">
+          {h===" "?"\u00A0":h}
+        </i>
+      )}
+    </span>
   </div>;
 }
