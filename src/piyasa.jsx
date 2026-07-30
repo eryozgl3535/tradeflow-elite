@@ -58,10 +58,10 @@ export function PiyasaSeridi({C,P,masaustu=false}){
   const {veri,onceki,zaman,yukleniyor,cevrimdisi,yenile} = usePiyasa();
 
   const kalemler = [
-    {kod:"USD",  ad:"Dolar",      deger:veri&&veri.USD,       eski:onceki&&onceki.USD,       renk:"#0E9F6E"},
-    {kod:"EUR",  ad:"Euro",       deger:veri&&veri.EUR,       eski:onceki&&onceki.EUR,       renk:"#3B82F6"},
-    {kod:"GBP",  ad:"Sterlin",    deger:veri&&veri.GBP,       eski:onceki&&onceki.GBP,       renk:"#7C3AED"},
-    {kod:"ALTIN",ad:"Gram Altın", deger:veri&&veri.gramAltin, eski:onceki&&onceki.gramAltin, renk:"#C9A24B"},
+    {kod:"USD",  ad:"USD",  deger:veri&&veri.USD,       eski:onceki&&onceki.USD},
+    {kod:"EUR",  ad:"EUR",  deger:veri&&veri.EUR,       eski:onceki&&onceki.EUR},
+    {kod:"GBP",  ad:"GBP",  deger:veri&&veri.GBP,       eski:onceki&&onceki.GBP},
+    {kod:"ALTIN",ad:"Altın",deger:veri&&veri.gramAltin, eski:onceki&&onceki.gramAltin},
   ].filter(k=>k.deger!=null || yukleniyor);
 
   if(!yukleniyor && kalemler.length===0) return null;
@@ -77,48 +77,31 @@ export function PiyasaSeridi({C,P,masaustu=false}){
     return f>0?"yukari":"asagi";
   };
 
+  // Sade, ince, tek satır kaydırılabilir şerit — ana ekranın alt bilgi çubuğu
   return <div style={{
-    background:C.card, border:`1px solid ${C.border}`, borderRadius:masaustu?18:16,
-    padding:masaustu?"14px 18px":"13px 15px",
-    margin:masaustu?"0 28px 16px":"0 0 16px",
+    display:"flex",alignItems:"center",gap:masaustu?14:10,
+    padding:masaustu?"10px 28px":"9px 2px",
+    margin:masaustu?"0 0 14px":"2px 0 8px",
+    overflowX:"auto",
   }}>
-    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:11}}>
-      <span style={{width:7,height:7,borderRadius:"50%",background:cevrimdisi?"#94A3B8":"#0E9F6E",display:"block",
-        boxShadow:cevrimdisi?"none":"0 0 0 3px #0E9F6E22"}}/>
-      <span style={{fontSize:masaustu?14:13,fontWeight:700,color:C.t1,flex:1}}>Canlı Piyasa</span>
-      {cevrimdisi
-        ? <span style={{fontSize:9,fontWeight:700,color:C.t3,background:C.bg,borderRadius:8,padding:"2px 8px"}}>ÇEVRİMDIŞI</span>
-        : veri&&veri.kaynak && <span style={{fontSize:9,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>{veri.kaynak}</span>}
-      <button onClick={yenile} aria-label="Yenile" style={{background:"transparent",border:"none",cursor:"pointer",padding:2,display:"flex",color:C.t3}}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M20 11.5A8 8 0 1 0 18.4 16"/><path d="M20 5.5v6h-6"/>
-        </svg>
-      </button>
-    </div>
-
-    <div style={{display:"grid",gridTemplateColumns:`repeat(${masaustu?4:2},1fr)`,gap:masaustu?12:10}}>
-      {yukleniyor && !veri
-        ? [0,1,2,3].map(i=><div key={i} style={{height:masaustu?56:52,borderRadius:11,background:C.bg}}/>)
-        : kalemler.map(k=>{
-          const y=yon(k);
-          return <div key={k.kod} style={{background:C.bg,borderRadius:11,padding:masaustu?"9px 12px":"9px 11px",borderLeft:`3px solid ${k.renk}`}}>
-            <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.04em",marginBottom:3}}>{k.ad}</div>
-            <div style={{display:"flex",alignItems:"baseline",gap:5}}>
-              <span style={{fontSize:masaustu?16.5:15,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.01em"}}>
-                {bicim(k.deger)}
-              </span>
-              <span style={{fontSize:10.5,color:C.t3,fontWeight:700}}>₺</span>
-              {y&&<span style={{fontSize:10,fontWeight:800,color:y==="yukari"?"#0E9F6E":"#DC2626",marginLeft:"auto"}}>
-                {y==="yukari"?"▲":"▼"}
-              </span>}
-            </div>
-          </div>;
-        })}
-    </div>
-
-    {guncelleme && <div style={{fontSize:10,color:C.t3,marginTop:9,textAlign:"right"}}>
-      {cevrimdisi?"Son bilinen: ":"Güncelleme: "}{guncelleme}
-      {veri&&veri.tarih&&veri.kaynak==="TCMB" ? " · TCMB "+veri.tarih : ""}
-    </div>}
+    <span style={{width:6,height:6,borderRadius:"50%",background:cevrimdisi?"#94A3B8":"#0E9F6E",display:"block",flexShrink:0}}/>
+    {yukleniyor && !veri
+      ? <span style={{fontSize:11.5,color:C.t3}}>Piyasa yükleniyor…</span>
+      : kalemler.map(k=>{
+        const y=yon(k);
+        return <span key={k.kod} style={{display:"flex",alignItems:"baseline",gap:4,flexShrink:0}}>
+          <span style={{fontSize:10.5,fontWeight:700,color:C.t3}}>{k.ad}</span>
+          <span style={{fontSize:12.5,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums"}}>{bicim(k.deger)}</span>
+          {y && <span style={{fontSize:9.5,fontWeight:800,color:y==="yukari"?"#0E9F6E":"#DC2626"}}>{y==="yukari"?"▲":"▼"}</span>}
+        </span>;
+      })}
+    <span style={{marginLeft:"auto",fontSize:9.5,color:C.t3,flexShrink:0,paddingLeft:8}}>
+      {cevrimdisi?"çevrimdışı":guncelleme?guncelleme:""}
+    </span>
+    <button onClick={yenile} aria-label="Yenile" style={{background:"transparent",border:"none",cursor:"pointer",padding:2,display:"flex",color:C.t3,flexShrink:0}}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M20 11.5A8 8 0 1 0 18.4 16"/><path d="M20 5.5v6h-6"/>
+      </svg>
+    </button>
   </div>;
 }
