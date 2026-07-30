@@ -960,7 +960,6 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     </Sh>
         <PiyasaSeridi C={C} P={P}/>
 {/* LED imza — mobil */}
-    <div style={{padding:"6px 0 18px"}}><LedImza boyut={13}/></div>
   </div>;
 });
 
@@ -4742,7 +4741,7 @@ export default function TradeFlow(){
         {!MASAUSTU&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 16px 12px",background:C.bg,position:"sticky",top:0,zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{display:"flex",alignItems:"baseline"}}><span style={{fontFamily:"Georgia,serif",fontSize:26,fontWeight:800,color:"#2E7490",lineHeight:1}}>T</span><span style={{fontSize:20,color:"#7FB3C2",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -2px"}}>/</span><span style={{fontFamily:"Georgia,serif",fontSize:26,fontWeight:800,color:"#173F4E",lineHeight:1}}>F</span></div>
-            <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,color:"#2E7490",letterSpacing:"0.3em"}}>ELITE <span style={{color:"#1B2A4A",letterSpacing:"0.15em"}}>· ERA</span><span style={{color:"#E4335A",letterSpacing:"0.05em"}}>İ</span></div></div>
+            <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,color:"#2E7490",letterSpacing:"0.3em",display:"flex",alignItems:"center",gap:5}}>ELITE <span style={{color:C.t3}}>·</span> <LedImza boyut={10} metin="ERAİ" inline={true}/></div></div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div onClick={()=>setSekme("bildiri")} style={{position:"relative",cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-bell" style={{fontSize:22,color:C.t1}} aria-hidden="true"/>{okunmamis>0&&<span style={{position:"absolute",top:5,right:5,width:9,height:9,borderRadius:"50%",background:"#2E7490",border:"2px solid "+C.bg}}/>}</div>
