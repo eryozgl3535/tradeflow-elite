@@ -70,9 +70,9 @@ export const MODUL_IKON = {
 };
 
 // ═══ LED İMZA — ışık ilk harften son harfe tek tek koşar (LED şerit) ═══
-export function LedImza({boyut=13, ortala=true, metin="Built by ERAİ"}){
+export function LedImza({boyut=13, ortala=true, metin="Built by ERAİ", inline=false}){
   const harfler=[...metin];
-  return <div style={{textAlign:ortala?"center":"left",padding:"2px 0"}}>
+  return <div style={inline?{display:"inline-flex",verticalAlign:"middle"}:{textAlign:ortala?"center":"left",padding:"2px 0"}}>
     <style>{`
       @keyframes tfKos{
         0%, 70%, 100% { color:#8A96A8; text-shadow:none }
