@@ -1,5 +1,5 @@
 // TradeFlow Elite — Service Worker v3 (güçlendirilmiş çevrimdışı)
-const CACHE = "tradeflow-v4";
+const CACHE = "tradeflow-v5";
 const CORE = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
