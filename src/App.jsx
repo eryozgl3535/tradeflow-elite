@@ -831,7 +831,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const ipDokunBit=(e)=>{if(ipDokunRef.current==null)return;const dx=e.changedTouches[0].clientX-ipDokunRef.current;if(Math.abs(dx)>34){setIpucuIx(i=>(i+(dx<0?1:-1)+ipuclari.length)%ipuclari.length);}ipDokunRef.current=null;};
   return <div style={{padding:"14px 16px 0"}}>
     {/* Karşılama */}
-    <div style={{padding:"8px 2px 2px",marginBottom:14,display:"flex",alignItems:"center",gap:13}}>
+    <div style={{padding:"6px 2px 4px",marginBottom:20,display:"flex",alignItems:"center",gap:14}}>
       <GokyuzuSahne saat={saat} dk={new Date().getMinutes()} g={62}/>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:23,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.2}}>{selam}{ad?", "+ad:""}</div>
@@ -839,7 +839,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>
     </div>
     {/* Yeni İş Ekle + İpucu kartları — yan yana */}
-    <div style={{display:"flex",gap:12,marginBottom:18,alignItems:"stretch"}}>
+    <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"stretch"}}>
       <button onClick={onYeniIs} style={{flex:"0 0 38%",background:GRAD,border:"none",borderRadius:20,padding:"18px 16px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:9}}>
           <div style={{width:32,height:32,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/></div>
@@ -861,7 +861,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>
     </div>
     {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
-    <Sh s={{padding:"14px 4px",marginBottom:16}}>
+    <Sh s={{padding:"16px 6px",marginBottom:16,borderRadius:18}}>
       <div style={{display:"flex"}}>
         {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{flex:1,padding:"2px 10px",cursor:"pointer",borderRight:i<3?`1px solid ${C.border}`:"none"}}>
           <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
@@ -880,7 +880,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       if(hatirlatmalar.length===0)return null;
       const gorunen=hatirlatmalar.slice(0,3);
       const acil=hatirlatmalar.filter(h=>h.fark<=0).length;
-      return <div style={{marginBottom:18}}>
+      return <div style={{marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",margin:"0 2px 9px"}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <i className="ti ti-bell-ringing" style={{fontSize:15,color:acil>0?"#DC2626":"#D97706"}} aria-hidden="true"/>
@@ -890,7 +890,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
           {hatirlatmalar.length>3&&<span onClick={onKasa} style={{fontSize:11.5,fontWeight:700,color:P,cursor:"pointer"}}>Tümü ({hatirlatmalar.length}) ›</span>}
         </div>
         {gorunen.map(h=>{const et=vadeEtiket(h.fark);
-          return <div key={h.id} onClick={h.tip==="cek"?onKasa:()=>onIsSec&&onIsSec(h.ref)} style={{background:C.card,borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:11,boxShadow:C.sh,borderLeft:`3px solid ${et.renk}`,cursor:"pointer"}}>
+          return <div key={h.id} onClick={h.tip==="cek"?onKasa:()=>onIsSec&&onIsSec(h.ref)} style={{background:C.card,borderRadius:16,padding:"13px 15px",marginBottom:9,display:"flex",alignItems:"center",gap:11,boxShadow:C.sh,borderLeft:`3px solid ${et.renk}`,cursor:"pointer"}}>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.baslik}</div>
               <div style={{fontSize:11,color:C.t3,marginTop:1}}>{h.alt}{h.saat?" · "+h.saat:""}</div>
@@ -904,7 +904,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>;
     })()}
     {/* Hızlı İşlemler — düz beyaz kutular */}
-    <Sh s={{padding:"16px 12px",marginBottom:16}}>
+    <Sh s={{padding:"18px 16px",marginBottom:16,borderRadius:18}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 14px"}}>
         <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Hızlı İşlemler</div>
         <div onClick={onOzellestir} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>{T.duzenle} <i className="ti ti-pencil" style={{fontSize:13}} aria-hidden="true"/></div>
@@ -925,7 +925,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <i className="ti ti-tool" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
       <span style={{fontSize:11.5,color:C.t3,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.14em"}}>İş Kolunuz</span>
     </div>
-    <div style={{display:"flex",gap:10,marginBottom:18}}>
+    <div style={{display:"flex",gap:10,marginBottom:16}}>
       <div style={{flex:1,position:"relative",background:C.card,borderRadius:16,padding:"11px 14px",display:"flex",alignItems:"center",gap:11,boxShadow:C.sh}}>
         <div style={{width:36,height:36,borderRadius:11,background:"#EAF0FA",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-briefcase" style={{fontSize:17,color:"#2563EB"}} aria-hidden="true"/></div>
         <span style={{flex:1,fontSize:15,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</span>
@@ -936,7 +936,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     </div>
     {/* ⏰ Yaklaşan çek/senet */}
     {/* Gelir - Gider Özeti */}
-    <Sh s={{padding:"16px",marginBottom:16}}>
+    <Sh s={{padding:"18px",marginBottom:16,borderRadius:18}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Gelir - Gider Özeti</div>
         <div onClick={()=>setSekme("raporlar")} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer"}}>{T.buAy} ▾</div>
@@ -1065,7 +1065,7 @@ const MODUL_VARSAYILAN=[
 
 const QuickActions=memo(function QuickActions({setSekme,T,moduller,onDuzenle}){
   const gorununler=moduller.filter(m=>m.aktif);
-  return <Sh s={{margin:MASAUSTU?"0 28px 20px":"0 14px 14px",padding:MASAUSTU?"19px 22px":"18px 16px",border:MASAUSTU?`1px solid ${C.border}`:"none"}}>
+  return <Sh s={{margin:MASAUSTU?"0 28px 16px":"0 14px 16px",padding:MASAUSTU?"20px 22px":"18px 16px",border:MASAUSTU?`1px solid ${C.border}`:"none",borderRadius:18}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 3px 15px"}}>
       <div style={{fontSize:MASAUSTU?15:16,fontWeight:700,color:C.t1}}>Hızlı İşlemler</div>
       <div onClick={onDuzenle} style={{fontSize:12.5,fontWeight:700,color:P,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
@@ -3902,7 +3902,7 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
   const netKar=toplamGelir-toplamGider;
   const toplamTahsilat=tahsilE+beklT;
   const pie=[{name:T.tahsilEdilen,gercek:tahsilE,val:tahsilE||(beklT?0:1),color:P},{name:T.bekleyen,gercek:beklT,val:beklT||(tahsilE?0:1),color:"#B4B2A9"}];
-  return <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,padding:"0 28px 20px"}}>
+  return <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,padding:"0 28px 16px"}}>
     <Sh s={{padding:"20px 22px"}}>
       <div style={{fontSize:15,fontWeight:700,color:C.t1,marginBottom:14}}>{T.gelirGider}</div>
       <div style={{display:"flex",gap:28,marginBottom:14}}>
@@ -3981,7 +3981,7 @@ const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme
   const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme,onAc);
   useEffect(()=>{const t=setInterval(()=>setIx(i=>(i+1)%ipuclari.length),6500);return ()=>clearInterval(t);},[ipuclari.length]);
   const ip=ipuclari[ix];
-  return <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"20px 28px 20px"}}>
+  return <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"20px 28px 16px"}}>
     <button onClick={onYeniIs} style={{background:GRAD,border:"none",borderRadius:20,padding:"22px 24px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.28)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10,transition:"transform 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="none"}>
       <div style={{display:"flex",alignItems:"center",gap:11}}>
@@ -4013,7 +4013,7 @@ const DesktopVade=memo(function DesktopVade({jobs,cekSenetler,onKasa,onIsSec}){
   const acil=hatirlatmalar.filter(h=>h.fark<=0).length;
   const IKON={cek:"cek",is:"takvim",tahsilat:"cuzdan"};
   return <div style={{padding:"0 28px 16px"}}>
-    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:19,padding:"19px 22px"}}>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:"20px 22px"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:15}}>
         <div style={{display:"flex",alignItems:"center",gap:9}}>
           <Ik n="zil" s={19} c={acil>0?"#DC2626":"#D97706"} w={1.9}/>
@@ -4055,7 +4055,7 @@ const DesktopStats=memo(function DesktopStats({jobs,faturalar,T,onStatClick}){
     {ik:"fatura",l:T.faturalar,        sub:T.beklemede,    v:beklFat,      c:"#7C3AED",go:"stat-bekleyen"},
   ];
   return <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,padding:"0 28px 16px"}}>
-    {kartlar.map(k=><div key={k.l} onClick={()=>onStatClick(k.go)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:17,padding:"16px 18px 14px",cursor:"pointer",transition:"all 0.14s"}}
+    {kartlar.map(k=><div key={k.l} onClick={()=>onStatClick(k.go)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:"18px 20px 16px",cursor:"pointer",transition:"all 0.14s"}}
       onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="#CBD5E1";}}
       onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.borderColor=C.border;}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:11}}>
