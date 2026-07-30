@@ -91,25 +91,25 @@ export function SelamSaat({ad,C,P,onDunya}){
   const ss=String(saat).padStart(2,"0"), mm=String(dk).padStart(2,"0"), sn=String(now.getSeconds()).padStart(2,"0");
   const tarih=now.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long"});
 
-  return <div style={{flex:1,minWidth:320,background:C.card,border:`1px solid ${C.border}`,borderRadius:18,overflow:"hidden"}}>
-    {/* Tam genişlik gökyüzü bandı */}
-    <GokyuzuSahne saat={saat} dk={dk} bant={true} yuk={80}/>
+  return <div style={{flex:1,minWidth:320,maxWidth:520,background:C.card,border:`1px solid ${C.border}`,borderRadius:18,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+    {/* Tam genişlik gökyüzü bandı — kompakt oran */}
+    <GokyuzuSahne saat={saat} dk={dk} bant={true} yuk={54}/>
 
-    {/* Altında selamlama */}
-    <div style={{padding:"13px 20px 15px"}}>
-      <div style={{fontSize:22,fontWeight:800,color:C.t1,letterSpacing:"-0.025em",lineHeight:1.2}}>
+    {/* Altında selamlama — dengeli, simetrik boşluklar */}
+    <div style={{padding:"14px 20px",display:"flex",flexDirection:"column",gap:9}}>
+      <div style={{fontSize:19,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.15}}>
         {d.selam}{ad?", "+ad:""}
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:13,marginTop:8,flexWrap:"wrap"}}>
-        <span style={{fontSize:20,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em",lineHeight:1}}>
-          {ss}:{mm}<span style={{fontSize:12.5,color:C.t3,fontWeight:700}}>:{sn}</span>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <span style={{fontSize:18,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em",lineHeight:1,flexShrink:0}}>
+          {ss}:{mm}<span style={{fontSize:11.5,color:C.t3,fontWeight:700}}>:{sn}</span>
         </span>
-        <span style={{width:1,height:16,background:C.border,display:"block"}}/>
-        <span style={{fontSize:12.5,color:C.t2,fontWeight:500}}>{tarih}</span>
-        <button onClick={onDunya} style={{marginLeft:"auto",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"6px 12px",fontSize:11.5,fontWeight:700,color:P,cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontFamily:"inherit",transition:"all .14s"}}
+        <span style={{width:1,height:14,background:C.border,display:"block",flexShrink:0}}/>
+        <span style={{fontSize:12,color:C.t2,fontWeight:500,flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tarih}</span>
+        <button onClick={onDunya} style={{flexShrink:0,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"7px 12px",fontSize:11.5,fontWeight:700,color:P,cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontFamily:"inherit",transition:"all .14s",whiteSpace:"nowrap"}}
           onMouseEnter={e=>{e.currentTarget.style.background=C.bg;e.currentTarget.style.borderColor="#CBD5E1";}}
           onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor=C.border;}}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
             <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>
           </svg>
           Dünya saatleri
