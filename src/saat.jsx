@@ -66,9 +66,10 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false})
   const gOran=gunduz?0:(t>batis?(t-batis)/(24-batis+dogus):(t+24-batis)/(24-batis+dogus));
   const p=gunduz?oran:gOran;
   const cx=W*0.09+p*(W*0.82);
-  const yayY=bant?H*0.86:44;
-  const tepe=bant?H*0.16:8;
-  const cy=yayY-Math.sin(p*Math.PI)*(yayY-tepe);
+  const yayY=bant?H*0.9:44;
+  const tepe=bant?H*0.14:8;
+  const yukselim=Math.sin(p*Math.PI);          // 0=ufuk, 1=tepe noktası
+  const cy=yayY-yukselim*(yayY-tepe);
 
   const {ust,alt}=gokRenkleri(t%24);
   const geceYogunluk=Math.max(0, Math.min(1,
@@ -80,8 +81,19 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false})
   const geceMi = t<dogus-0.3 || t>batis+1.1;
 
   const gunBatimiYakin = (t>batis-1.4 && t<batis+0.6) || (t>dogus-0.3 && t<dogus+1.1);
-  const cisimRenk = geceMi ? "#F1F4FA" : gunBatimiYakin ? "#FFA857" : "#FFD65C";
+  const cisimRenk = geceMi ? "#F4F6FB" : gunBatimiYakin ? "#FFA857" : "#FFD65C";
   const id="gk"+Math.round(t*10)+(bant?"b":"k")+W;
+
+  // Ufka yaklaştıkça güneş/ay büyür ve ışıması güçlenir — dramatik gün doğumu/batımı
+  const buyume = bant ? 1+(1-yukselim)*1.05 : 1+(1-yukselim)*0.55;
+  const govdeR = (bant?H*0.15:6.6)*buyume;
+  const haloR  = (bant?H*0.4:11)*buyume;
+
+  // Dağ silüetleri — gökyüzü rengiyle harmanlanmış, atmosferik derinlik
+  const arkaDag = lerpHex(alt,"#140C22",0.5);
+  const onDag   = lerpHex(alt,"#0A0612",0.74);
+  const arkaYol = `M0,${H*0.8} L0,${H*0.7} L${W*0.11},${H*0.6} L${W*0.22},${H*0.68} L${W*0.35},${H*0.52} L${W*0.5},${H*0.66} L${W*0.63},${H*0.55} L${W*0.77},${H*0.7} L${W*0.9},${H*0.58} L${W},${H*0.68} L${W},${H} L0,${H} Z`;
+  const onYol   = `M0,${H} L0,${H*0.86} L${W*0.09},${H*0.74} L${W*0.2},${H*0.85} L${W*0.32},${H*0.7} L${W*0.46},${H*0.83} L${W*0.58},${H*0.68} L${W*0.71},${H*0.82} L${W*0.85},${H*0.72} L${W},${H*0.84} L${W},${H} Z`;
 
   return <svg width={bant?"100%":g} height={bant?yuk:g*(H/W)} viewBox={`0 0 ${W} ${H}`}
     preserveAspectRatio={bant?"none":"xMidYMid meet"}
@@ -89,16 +101,18 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false})
     <defs>
       <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor={ust}/>
-        <stop offset="100%" stopColor={alt}/>
+        <stop offset="62%" stopColor={alt}/>
+        <stop offset="100%" stopColor={lerpHex(alt,cisimRenk,geceMi?0:0.16)}/>
       </linearGradient>
       <radialGradient id={id+"g"} cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor={cisimRenk} stopOpacity="0.55"/>
+        <stop offset="0%" stopColor={cisimRenk} stopOpacity="0.6"/>
+        <stop offset="45%" stopColor={cisimRenk} stopOpacity="0.22"/>
         <stop offset="100%" stopColor={cisimRenk} stopOpacity="0"/>
       </radialGradient>
       {scrim && <linearGradient id={id+"s"} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="#000000" stopOpacity="0"/>
-        <stop offset="58%" stopColor="#000000" stopOpacity="0"/>
-        <stop offset="100%" stopColor="#000000" stopOpacity={geceMi?0.42:0.34}/>
+        <stop offset="55%" stopColor="#000000" stopOpacity="0"/>
+        <stop offset="100%" stopColor="#000000" stopOpacity={geceMi?0.46:0.4}/>
       </linearGradient>}
     </defs>
 
@@ -106,36 +120,37 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false})
 
     {/* Yıldızlar — geceye yaklaştıkça belirir, parıldar */}
     {geceYogunluk>0.08 && <g opacity={Math.min(1,geceYogunluk*1.15)}>
-      <style>{`
-        @keyframes tfTwinkle{0%,100%{opacity:.25}50%{opacity:1}}
-      `}</style>
+      <style>{`@keyframes tfTwinkle{0%,100%{opacity:.25}50%{opacity:1}}`}</style>
       {Array.from({length:Math.round(W/6.2)}).map((_,i)=>{
-        const x=(i*23.7)%(W-4)+2, y=(i*17.1)%(H*0.62)+3;
+        const x=(i*23.7)%(W-4)+2, y=(i*17.1)%(H*0.5)+3;
         const r=i%4===0?1.05:i%3===0?0.75:0.5;
         return <circle key={i} cx={x} cy={y} r={r} fill="#fff"
           style={{animation:`tfTwinkle ${2.2+((i*13)%18)/10}s ease-in-out ${((i*7)%20)/10}s infinite`}}/>;
       })}
     </g>}
 
-    {/* Bulutlar — sadece gündüz, yumuşak */}
-    {!geceMi && oran>0.02 && oran<0.98 && <g opacity={0.5+oran*0.25}>
-      <ellipse cx={W*0.24} cy={H*0.26} rx={W*0.1} ry={H*0.065} fill="#ffffffd0"/>
-      <ellipse cx={W*0.3}  cy={H*0.23} rx={W*0.065} ry={H*0.05} fill="#ffffffd0"/>
-      <ellipse cx={W*0.78} cy={H*0.4}  rx={W*0.08} ry={H*0.05} fill="#ffffffb0"/>
+    {/* Bulutlar — sadece gündüz, gökyüzünün üst yarısında */}
+    {!geceMi && oran>0.05 && oran<0.95 && <g opacity={0.42+oran*0.2}>
+      <ellipse cx={W*0.22} cy={H*0.2} rx={W*0.09} ry={H*0.05} fill="#ffffffcc"/>
+      <ellipse cx={W*0.28} cy={H*0.17} rx={W*0.06} ry={H*0.04} fill="#ffffffcc"/>
+      <ellipse cx={W*0.8}  cy={H*0.28} rx={W*0.07} ry={H*0.042} fill="#ffffffa0"/>
     </g>}
 
-    {/* Güneş/Ay ışıma halkası + gövde */}
-    <circle cx={cx} cy={cy} r={bant?H*0.34:11} fill={`url(#${id}g)`}/>
-    <circle cx={cx} cy={cy} r={bant?H*0.135:6.6} fill={cisimRenk}/>
-    {geceMi && <>
-      {/* Ay hilali — gövdenin üstüne gökyüzü renginde disk bindirilir */}
-      <circle cx={cx+(bant?H*0.058:2.6)} cy={cy-(bant?H*0.05:2.2)} r={bant?H*0.115:5.4} fill={ust}/>
-    </>}
-    {!geceMi && oran>0.3 && oran<0.7 && [0,45,90,135,180,225,270,315].map(a=>{
-      const rad=(a*Math.PI)/180, r1=(bant?H*0.15:8.2), r2=(bant?H*0.2:10.6);
+    {/* Arka dağ katmanı — sisli, uzak, güneşin ARKASINDA */}
+    <path d={arkaYol} fill={arkaDag} opacity="0.85"/>
+
+    {/* Güneş/Ay — ışıma halkası + gövde, ufka yaklaştıkça büyür */}
+    <circle cx={cx} cy={cy} r={haloR} fill={`url(#${id}g)`}/>
+    <circle cx={cx} cy={cy} r={govdeR} fill={cisimRenk}/>
+    {geceMi && <circle cx={cx+govdeR*0.4} cy={cy-govdeR*0.34} r={govdeR*0.84} fill={ust}/>}
+    {!geceMi && yukselim>0.55 && [0,45,90,135,180,225,270,315].map(a=>{
+      const rad=(a*Math.PI)/180, r1=govdeR*1.28, r2=govdeR*1.7;
       return <line key={a} x1={cx+Math.cos(rad)*r1} y1={cy+Math.sin(rad)*r1}
-        x2={cx+Math.cos(rad)*r2} y2={cy+Math.sin(rad)*r2} stroke={cisimRenk} strokeWidth={bant?1.6:1.3} strokeLinecap="round" opacity="0.6"/>;
+        x2={cx+Math.cos(rad)*r2} y2={cy+Math.sin(rad)*r2} stroke={cisimRenk} strokeWidth={bant?1.6:1.2} strokeLinecap="round" opacity="0.55"/>;
     })}
+
+    {/* Ön dağ katmanı — yakın, koyu, güneşin bir kısmını örter (tam senin fotoğraftaki gibi) */}
+    <path d={onYol} fill={onDag}/>
 
     {/* Alt scrim — üstüne yazı bindirilecekse okunabilirlik için yumuşak karartma */}
     {scrim && <rect x="0" y="0" width={W} height={H} fill={`url(#${id}s)`}/>}
