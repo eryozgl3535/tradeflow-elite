@@ -46,6 +46,7 @@ const YOLLAR = {
   simsek:    <><path d="M13.2 2.5 4.5 13.5h6l-.7 8 8.7-11h-6Z"/></>,
   yildiz:    <><path d="M12 3 14.9 9.1 21.5 10 16.8 14.7 17.9 21.3 12 18.2 6.1 21.3 7.2 14.7 2.5 10 9.1 9.1Z"/></>,
   oyun:      <><rect x="2" y="7" width="20" height="11" rx="3.6"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.8" r="1.05" fill="currentColor"/><circle cx="18.2" cy="14" r="1.05" fill="currentColor"/></>,
+  palet:     <><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.9 1.2-1.85-.3-.55-.05-1.2.55-1.35A5 5 0 0 0 17.5 13c0-1.4-.6-2.2-1.6-2.6-.7-.28-.7-1.25 0-1.5A4.6 4.6 0 0 0 19 4.9 9 9 0 0 0 12 3Z"/><circle cx="7.3" cy="10.2" r="1.15" fill="currentColor"/><circle cx="9" cy="6.7" r="1.15" fill="currentColor"/><circle cx="14.2" cy="6.4" r="1.15" fill="currentColor"/></>,
 };
 
 // Ana ikon bileşeni
