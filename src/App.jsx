@@ -3941,7 +3941,7 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
   </div>;
 })
 
-function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya}){
+function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya,onTema}){
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
   return <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
     <SelamSaat ad={ad} C={C} P={P} onDunya={onDunya}/>
@@ -3958,6 +3958,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
           {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
         </select>
       </div>
+      <button onClick={onTema} title="Tema ve Görünüm" style={{width:42,height:42,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><Ik n="palet" s={19} c={C.t2} w={1.7}/></button>
       <button onClick={onAsistan} title="Asistan" style={{width:42,height:42,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><Ik n="pano" s={19} c={C.t2} w={1.8}/></button>
       <button onClick={onAra} style={{width:42,height:42,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><Ik n="ara" s={19} c={C.t2} w={1.8}/></button>
       <button onClick={onBildirim} style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,position:"relative",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -4752,7 +4753,7 @@ export default function TradeFlow(){
             </div>
           </div>
         </div>}
-        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")}/>}
+        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
           {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}{MASAUSTU&&<QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
