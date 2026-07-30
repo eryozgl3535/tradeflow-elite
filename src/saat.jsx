@@ -19,66 +19,126 @@ export const DILIM_METIN = {
   gece: {selam:"İyi geceler",  alt:"Geç saatte hâlâ iş başında."},
 };
 
-// ─── Gökyüzü sahnesi ───
-// Güneş/ay saate göre yay üzerinde ilerler; gökyüzü rengi değişir.
-export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76}){
-  const dilim=gunDilimi(saat);
-  const t=saat+dk/60;
-  const W=bant?240:(gen||64), H=bant?58:46;
+// ─── Renk yardımcıları: hex → rgb → interpolasyon ───
+function hex2rgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function rgb2hex(r,g,b){ return "#"+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join(""); }
+function lerpHex(a,b,t){
+  const A=hex2rgb(a), B=hex2rgb(b);
+  return rgb2hex(A[0]+(B[0]-A[0])*t, A[1]+(B[1]-A[1])*t, A[2]+(B[2]-A[2])*t);
+}
+// 24 saatlik gökyüzü paleti — gece → şafak → gündüz → gün batımı → gece (döngüsel)
+const GOK_ANAHTAR = [
+  {h:0,   ust:"#0B1230", alt:"#050814"},
+  {h:4.5, ust:"#131A42", alt:"#0A0F26"},
+  {h:5.5, ust:"#2C3768", alt:"#171F45"},
+  {h:6.3, ust:"#F3A56A", alt:"#F76F5C"},
+  {h:7.5, ust:"#7EC1E8", alt:"#FBD3A6"},
+  {h:9,   ust:"#5AAEE0", alt:"#CDEAF9"},
+  {h:12,  ust:"#4B9FDA", alt:"#DFF2FC"},
+  {h:16,  ust:"#5CB2E4", alt:"#D3EEFB"},
+  {h:17.7,ust:"#7CC3E8", alt:"#FBE0A8"},
+  {h:18.7,ust:"#E8895F", alt:"#F8B267"},
+  {h:19.6,ust:"#B24F6C", alt:"#EE8156"},
+  {h:20.5,ust:"#3D2E5E", alt:"#7A4560"},
+  {h:22,  ust:"#171B40", alt:"#241B3E"},
+  {h:24,  ust:"#0B1230", alt:"#050814"},
+];
+function gokRenkleri(t){
+  for(let i=0;i<GOK_ANAHTAR.length-1;i++){
+    const a=GOK_ANAHTAR[i], b=GOK_ANAHTAR[i+1];
+    if(t>=a.h && t<=b.h){
+      const f=(t-a.h)/(b.h-a.h);
+      return {ust:lerpHex(a.ust,b.ust,f), alt:lerpHex(a.alt,b.alt,f)};
+    }
+  }
+  return {ust:GOK_ANAHTAR[0].ust, alt:GOK_ANAHTAR[0].alt};
+}
 
-  const dogus=6, batis=19;
-  const oran=Math.min(1,Math.max(0,(t-dogus)/(batis-dogus)));
+// ─── Gökyüzü sahnesi — sürekli renk döngüsü, parıldayan yıldızlar, ışıma ───
+// bant=true → header'da tam genişlik panorama (metin üzerine bindirilebilir, scrim destekli)
+export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false}){
+  const t=saat+dk/60;
+  const W=bant?280:(gen||64), H=bant?yuk:46;
+
+  const dogus=6, batis=19.2;
   const gunduz=t>=dogus&&t<=batis;
+  const oran=Math.min(1,Math.max(0,(t-dogus)/(batis-dogus)));
   const gOran=gunduz?0:(t>batis?(t-batis)/(24-batis+dogus):(t+24-batis)/(24-batis+dogus));
   const p=gunduz?oran:gOran;
-  const cx=W*0.1+p*(W*0.8);
-  const cy=(bant?52:44)-Math.sin(p*Math.PI)*(bant?32:26);
+  const cx=W*0.09+p*(W*0.82);
+  const yayY=bant?H*0.86:44;
+  const tepe=bant?H*0.16:8;
+  const cy=yayY-Math.sin(p*Math.PI)*(yayY-tepe);
 
-  const gok={
-    sabah:["#FFE9C4","#FFC98A"],
-    ogle: ["#BFE6F7","#7EC8ED"],
-    aksam:["#FFC48C","#F08A6E"],
-    gece: ["#1E2C48","#0F1729"],
-  }[dilim];
-  const cisimRenk=dilim==="gece"?"#E8EDF5":dilim==="sabah"?"#FFB13B":dilim==="aksam"?"#FF7847":"#FFC61A";
-  const halo   =dilim==="gece"?"#E8EDF522":dilim==="aksam"?"#FF784733":"#FFC61A38";
-  const id="gk"+dilim+(bant?"b":W);
-  const r=bant?8:6.6, hr=bant?13:11;
+  const {ust,alt}=gokRenkleri(t%24);
+  const geceYogunluk=Math.max(0, Math.min(1,
+    t<dogus-0.6 ? 1-(t/(dogus-0.6))*0.3 :
+    t<dogus+0.8 ? (dogus+0.8-t)/1.4 :
+    t>batis+1.3 ? Math.min(1,(t-batis-1.3)/1.2) :
+    t>batis-0.3 ? 0 : 0
+  ));
+  const geceMi = t<dogus-0.3 || t>batis+1.1;
 
-  const olcu = bant
-    ? {width:"100%",height:yuk,display:"block"}
-    : {width:g,height:g*(H/W),display:"block",borderRadius:13,flexShrink:0};
+  const gunBatimiYakin = (t>batis-1.4 && t<batis+0.6) || (t>dogus-0.3 && t<dogus+1.1);
+  const cisimRenk = geceMi ? "#F1F4FA" : gunBatimiYakin ? "#FFA857" : "#FFD65C";
+  const id="gk"+Math.round(t*10)+(bant?"b":"k")+W;
 
-  return <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio={bant?"none":"xMidYMid meet"}
-    style={olcu} aria-hidden="true">
+  return <svg width={bant?"100%":g} height={bant?yuk:g*(H/W)} viewBox={`0 0 ${W} ${H}`}
+    preserveAspectRatio={bant?"none":"xMidYMid meet"}
+    style={bant?{display:"block"}:{display:"block",borderRadius:13,flexShrink:0}} aria-hidden="true">
     <defs>
       <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor={gok[0]}/><stop offset="100%" stopColor={gok[1]}/>
+        <stop offset="0%" stopColor={ust}/>
+        <stop offset="100%" stopColor={alt}/>
       </linearGradient>
+      <radialGradient id={id+"g"} cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor={cisimRenk} stopOpacity="0.55"/>
+        <stop offset="100%" stopColor={cisimRenk} stopOpacity="0"/>
+      </radialGradient>
+      {scrim && <linearGradient id={id+"s"} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#000000" stopOpacity="0"/>
+        <stop offset="58%" stopColor="#000000" stopOpacity="0"/>
+        <stop offset="100%" stopColor="#000000" stopOpacity={geceMi?0.42:0.34}/>
+      </linearGradient>}
     </defs>
-    <rect x="0" y="0" width={W} height={H} rx={bant?0:9} fill={`url(#${id})`}/>
 
-    {dilim==="gece"&&Array.from({length:Math.round(W/8)}).map((_,i)=>{
-      const x=(i*19.7)%(W-6)+3, y=(i*13.3)%(H*0.6)+4;
-      return <circle key={i} cx={x} cy={y} r={i%3===0?0.9:0.6} fill="#fff" opacity={0.5+((i*7)%35)/100}/>;
-    })}
+    <rect x="0" y="0" width={W} height={H} fill={`url(#${id})`}/>
 
-    {dilim!=="gece"&&<g opacity={dilim==="ogle"?0.85:0.62}>
-      <ellipse cx={W*0.2} cy={H*0.28} rx={W*0.09} ry={H*0.07} fill="#ffffffcc"/>
-      <ellipse cx={W*0.26} cy={H*0.25} rx={W*0.06} ry={H*0.055} fill="#ffffffcc"/>
-      <ellipse cx={W*0.76} cy={H*0.42} rx={W*0.075} ry={H*0.055} fill="#ffffffa8"/>
+    {/* Yıldızlar — geceye yaklaştıkça belirir, parıldar */}
+    {geceYogunluk>0.08 && <g opacity={Math.min(1,geceYogunluk*1.15)}>
+      <style>{`
+        @keyframes tfTwinkle{0%,100%{opacity:.25}50%{opacity:1}}
+      `}</style>
+      {Array.from({length:Math.round(W/6.2)}).map((_,i)=>{
+        const x=(i*23.7)%(W-4)+2, y=(i*17.1)%(H*0.62)+3;
+        const r=i%4===0?1.05:i%3===0?0.75:0.5;
+        return <circle key={i} cx={x} cy={y} r={r} fill="#fff"
+          style={{animation:`tfTwinkle ${2.2+((i*13)%18)/10}s ease-in-out ${((i*7)%20)/10}s infinite`}}/>;
+      })}
     </g>}
 
-    <circle cx={cx} cy={cy} r={hr} fill={halo}/>
-    <circle cx={cx} cy={cy} r={r} fill={cisimRenk}/>
-    {dilim==="gece"&&<circle cx={cx+r*0.42} cy={cy-r*0.34} r={r*0.82} fill={gok[0]}/>}
-    {dilim==="ogle"&&[0,45,90,135,180,225,270,315].map(a=>{
-      const rd=(a*Math.PI)/180;
-      return <line key={a} x1={cx+Math.cos(rd)*(r+2.4)} y1={cy+Math.sin(rd)*(r+2.4)}
-        x2={cx+Math.cos(rd)*(r+4.9)} y2={cy+Math.sin(rd)*(r+4.9)} stroke={cisimRenk} strokeWidth="1.4" strokeLinecap="round" opacity="0.75"/>;
+    {/* Bulutlar — sadece gündüz, yumuşak */}
+    {!geceMi && oran>0.02 && oran<0.98 && <g opacity={0.5+oran*0.25}>
+      <ellipse cx={W*0.24} cy={H*0.26} rx={W*0.1} ry={H*0.065} fill="#ffffffd0"/>
+      <ellipse cx={W*0.3}  cy={H*0.23} rx={W*0.065} ry={H*0.05} fill="#ffffffd0"/>
+      <ellipse cx={W*0.78} cy={H*0.4}  rx={W*0.08} ry={H*0.05} fill="#ffffffb0"/>
+    </g>}
+
+    {/* Güneş/Ay ışıma halkası + gövde */}
+    <circle cx={cx} cy={cy} r={bant?H*0.34:11} fill={`url(#${id}g)`}/>
+    <circle cx={cx} cy={cy} r={bant?H*0.135:6.6} fill={cisimRenk}/>
+    {geceMi && <>
+      {/* Ay hilali — gövdenin üstüne gökyüzü renginde disk bindirilir */}
+      <circle cx={cx+(bant?H*0.058:2.6)} cy={cy-(bant?H*0.05:2.2)} r={bant?H*0.115:5.4} fill={ust}/>
+    </>}
+    {!geceMi && oran>0.3 && oran<0.7 && [0,45,90,135,180,225,270,315].map(a=>{
+      const rad=(a*Math.PI)/180, r1=(bant?H*0.15:8.2), r2=(bant?H*0.2:10.6);
+      return <line key={a} x1={cx+Math.cos(rad)*r1} y1={cy+Math.sin(rad)*r1}
+        x2={cx+Math.cos(rad)*r2} y2={cy+Math.sin(rad)*r2} stroke={cisimRenk} strokeWidth={bant?1.6:1.3} strokeLinecap="round" opacity="0.6"/>;
     })}
-    <path d={`M0 ${H*0.82} Q${W*0.25} ${H*0.71} ${W*0.5} ${H*0.8} Q${W*0.75} ${H*0.89} ${W} ${H*0.76} L${W} ${H} L0 ${H} Z`}
-      fill={dilim==="gece"?"#0A1120":"#00000018"}/>
+
+    {/* Alt scrim — üstüne yazı bindirilecekse okunabilirlik için yumuşak karartma */}
+    {scrim && <rect x="0" y="0" width={W} height={H} fill={`url(#${id}s)`}/>}
   </svg>;
 }
 
@@ -91,25 +151,27 @@ export function SelamSaat({ad,C,P,onDunya}){
   const ss=String(saat).padStart(2,"0"), mm=String(dk).padStart(2,"0"), sn=String(now.getSeconds()).padStart(2,"0");
   const tarih=now.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long"});
 
-  return <div style={{flex:1,minWidth:320,maxWidth:520,background:C.card,border:`1px solid ${C.border}`,borderRadius:18,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-    {/* Tam genişlik gökyüzü bandı — kompakt oran */}
-    <GokyuzuSahne saat={saat} dk={dk} bant={true} yuk={54}/>
+  return <div style={{flex:1,minWidth:320,maxWidth:520,position:"relative",borderRadius:18,overflow:"hidden",height:150,boxShadow:"0 1px 3px rgba(15,23,42,.08)"}}>
+    {/* Tam kaplayan gökyüzü simülasyonu — arka plan */}
+    <div style={{position:"absolute",inset:0}}>
+      <GokyuzuSahne saat={saat} dk={dk} bant={true} yuk={150} scrim={true}/>
+    </div>
 
-    {/* Altında selamlama — dengeli, simetrik boşluklar */}
-    <div style={{padding:"14px 20px",display:"flex",flexDirection:"column",gap:9}}>
-      <div style={{fontSize:19,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.15}}>
+    {/* Metin — gökyüzünün üzerine bindirilmiş, tek kesintisiz kart hissi */}
+    <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"14px 18px 16px",display:"flex",flexDirection:"column",gap:9}}>
+      <div style={{fontSize:19,fontWeight:800,color:"#fff",letterSpacing:"-0.02em",lineHeight:1.15,textShadow:"0 1px 6px rgba(0,0,0,.28)"}}>
         {d.selam}{ad?", "+ad:""}
       </div>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <span style={{fontSize:18,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em",lineHeight:1,flexShrink:0}}>
-          {ss}:{mm}<span style={{fontSize:11.5,color:C.t3,fontWeight:700}}>:{sn}</span>
+        <span style={{fontSize:18,fontWeight:800,color:"#fff",fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em",lineHeight:1,flexShrink:0,textShadow:"0 1px 6px rgba(0,0,0,.28)"}}>
+          {ss}:{mm}<span style={{fontSize:11.5,color:"rgba(255,255,255,.72)",fontWeight:700}}>:{sn}</span>
         </span>
-        <span style={{width:1,height:14,background:C.border,display:"block",flexShrink:0}}/>
-        <span style={{fontSize:12,color:C.t2,fontWeight:500,flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tarih}</span>
-        <button onClick={onDunya} style={{flexShrink:0,background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"7px 12px",fontSize:11.5,fontWeight:700,color:P,cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontFamily:"inherit",transition:"all .14s",whiteSpace:"nowrap"}}
-          onMouseEnter={e=>{e.currentTarget.style.background=C.bg;e.currentTarget.style.borderColor="#CBD5E1";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor=C.border;}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P} strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+        <span style={{width:1,height:14,background:"rgba(255,255,255,.35)",display:"block",flexShrink:0}}/>
+        <span style={{fontSize:12,color:"rgba(255,255,255,.88)",fontWeight:500,flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 1px 5px rgba(0,0,0,.24)"}}>{tarih}</span>
+        <button onClick={onDunya} style={{flexShrink:0,background:"rgba(255,255,255,.16)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",border:"1px solid rgba(255,255,255,.32)",borderRadius:10,padding:"7px 12px",fontSize:11.5,fontWeight:700,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontFamily:"inherit",transition:"all .14s",whiteSpace:"nowrap"}}
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.28)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.16)";}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
             <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>
           </svg>
           Dünya saatleri
