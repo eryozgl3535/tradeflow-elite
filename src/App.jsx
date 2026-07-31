@@ -3943,31 +3943,54 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
 
 function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya,onTema}){
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
-  return <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
+  const ikonBtn={width:40,height:40,borderRadius:11,background:"rgba(255,255,255,0.14)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"relative",transition:"background .14s"};
+  const ikonGir=e=>{e.currentTarget.style.background="rgba(255,255,255,0.26)";};
+  const ikonCik=e=>{e.currentTarget.style.background="rgba(255,255,255,0.14)";};
+  return <div style={{display:"flex",alignItems:"stretch",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
     <SelamSaat ad={ad} C={C} P={P} onDunya={onDunya}/>
-    <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-      <div style={{position:"relative",background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"7px 14px",display:"flex",alignItems:"center",gap:9,minWidth:190,cursor:"pointer"}}>
-        <Ik n="canta" s={18} c={P} w={1.7}/>
+
+    {/* Sağ panel — teal gradyan kart, sol kartla aynı yükseklik */}
+    <div style={{flex:1,minWidth:420,height:150,background:GRAD,borderRadius:18,padding:"0 20px",display:"flex",alignItems:"center",gap:14,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
+
+      {/* Sektör seçici */}
+      <div style={{position:"relative",flex:1,minWidth:0,display:"flex",alignItems:"center",gap:11,cursor:"pointer",padding:"10px 12px",borderRadius:12,transition:"background .14s"}}
+        onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";}}
+        onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
+        <Ik n="canta" s={20} c="rgba(255,255,255,0.92)" w={1.7}/>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:9.5,color:C.t3,fontWeight:700,letterSpacing:"0.04em",lineHeight:1.2}}>İŞ SEKTÖRÜNÜZ</div>
-          <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{isKolu||"Sektör seçin…"}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.68)",fontWeight:600,letterSpacing:"0.03em",lineHeight:1.25}}>İş Sektörünüz</div>
+          <div style={{fontSize:15,fontWeight:700,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.35}}>{isKolu||"Sektör seçin…"}</div>
         </div>
-        <Ik n="asagi" s={14} c={C.t3} w={2}/>
+        <Ik n="asagi" s={15} c="rgba(255,255,255,0.75)" w={2}/>
         <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}} title="İş sektörünüzü seçin">
           {!isKolu&&<option value="" disabled>İş sektörünüzü seçin</option>}
           {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
         </select>
       </div>
-      <button onClick={onTema} title="Tema ve Görünüm" style={{width:42,height:42,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><Ik n="palet" s={19} c={C.t2} w={1.7}/></button>
-      <button onClick={onAsistan} title="Asistan" style={{width:42,height:42,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><Ik n="pano" s={19} c={C.t2} w={1.8}/></button>
-      <button onClick={onAra} style={{width:42,height:42,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}><Ik n="ara" s={19} c={C.t2} w={1.8}/></button>
-      <button onClick={onBildirim} style={{width:46,height:46,borderRadius:"50%",background:C.card,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",boxShadow:C.sh,position:"relative",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <Ik n="zil" s={19} c={C.t2} w={1.8}/>
-        {okunmamis>0&&<span style={{position:"absolute",top:-2,right:-2,minWidth:19,height:19,borderRadius:10,background:C.red,color:"#fff",fontSize:10,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px",border:"2px solid "+C.bg}}>{okunmamis}</span>}
-      </button>
-      <button onClick={onYeniIs} style={{background:P,border:"none",borderRadius:14,padding:"13px 22px",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 4px 14px ${P}55`,display:"flex",alignItems:"center",gap:7}}>
-        <span style={{fontSize:17,lineHeight:1}}>+</span> {T.yeniIs}
-      </button>
+
+      {/* İkon butonları */}
+      <div style={{display:"flex",alignItems:"center",gap:9,flexShrink:0}}>
+        <button onClick={onTema} title="Tema ve Görünüm" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
+          <Ik n="palet" s={19} c="#fff" w={1.7}/>
+        </button>
+        <button onClick={onAsistan} title="Asistan" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
+          <Ik n="pano" s={19} c="#fff" w={1.8}/>
+        </button>
+        <button onClick={onAra} title="Ara" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
+          <Ik n="ara" s={19} c="#fff" w={1.8}/>
+        </button>
+        <button onClick={onBildirim} title="Bildirimler" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
+          <Ik n="zil" s={19} c="#fff" w={1.8}/>
+          {okunmamis>0&&<span style={{position:"absolute",top:-3,right:-3,minWidth:18,height:18,borderRadius:9,background:"#EF4444",color:"#fff",fontSize:9.5,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px",border:"2px solid #2E7490"}}>{okunmamis}</span>}
+        </button>
+
+        {/* Yeni İş */}
+        <button onClick={onYeniIs} style={{background:"rgba(255,255,255,0.16)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:12,padding:"11px 18px",color:"#fff",fontSize:13.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:7,marginLeft:3,whiteSpace:"nowrap",transition:"background .14s",fontFamily:"inherit"}}
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.28)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.16)";}}>
+          <span style={{fontSize:17,lineHeight:1,marginTop:-1}}>+</span> {T.yeniIs}
+        </button>
+      </div>
     </div>
   </div>;
 }
