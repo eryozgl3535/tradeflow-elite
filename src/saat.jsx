@@ -65,11 +65,11 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false})
   const oran=Math.min(1,Math.max(0,(t-dogus)/(batis-dogus)));
   const gOran=gunduz?0:(t>batis?(t-batis)/(24-batis+dogus):(t+24-batis)/(24-batis+dogus));
   const p=gunduz?oran:gOran;
-  const cx=W*0.09+p*(W*0.82);
-  const yayY=bant?H*0.9:44;
-  const tepe=bant?H*0.14:8;
-  const yukselim=Math.sin(p*Math.PI);          // 0=ufuk, 1=tepe noktası
-  const cy=yayY-yukselim*(yayY-tepe);
+  const cx=W*0.1+p*(W*0.8);
+  const ufuk=H*0.62;                                  // ufuk çizgisi
+  const tepe=H*0.13;
+  const yukselim=Math.sin(p*Math.PI);
+  const cy=ufuk-yukselim*(ufuk-tepe);
 
   const {ust,alt}=gokRenkleri(t%24);
   const geceYogunluk=Math.max(0, Math.min(1,
@@ -79,80 +79,117 @@ export function GokyuzuSahne({saat,dk=0,g=64,gen,bant=false,yuk=76,scrim=false})
     t>batis-0.3 ? 0 : 0
   ));
   const geceMi = t<dogus-0.3 || t>batis+1.1;
+  const altinSaat = yukselim<0.42;                    // güneş ufka yakın → sıcak ışık
+  const cisimRenk = geceMi ? "#F6F8FC" : altinSaat ? "#FFB765" : "#FFE08A";
+  const id="s"+Math.round(t*10)+(bant?"b":"k")+W;
 
-  const gunBatimiYakin = (t>batis-1.4 && t<batis+0.6) || (t>dogus-0.3 && t<dogus+1.1);
-  const cisimRenk = geceMi ? "#F4F6FB" : gunBatimiYakin ? "#FFA857" : "#FFD65C";
-  const id="gk"+Math.round(t*10)+(bant?"b":"k")+W;
+  // Ufka yaklaştıkça güneş büyür (atmosferik büyüme yanılsaması)
+  const buyume = bant ? 1+(1-yukselim)*0.9 : 1+(1-yukselim)*0.5;
+  const govdeR = (bant?H*0.115:6)*buyume;
 
-  // Ufka yaklaştıkça güneş/ay büyür ve ışıması güçlenir — dramatik gün doğumu/batımı
-  const buyume = bant ? 1+(1-yukselim)*1.05 : 1+(1-yukselim)*0.55;
-  const govdeR = (bant?H*0.15:6.6)*buyume;
-  const haloR  = (bant?H*0.4:11)*buyume;
-
-  // Dağ silüetleri — gökyüzü rengiyle harmanlanmış, atmosferik derinlik
-  const arkaDag = lerpHex(alt,"#140C22",0.5);
-  const onDag   = lerpHex(alt,"#0A0612",0.74);
-  const arkaYol = `M0,${H*0.8} L0,${H*0.7} L${W*0.11},${H*0.6} L${W*0.22},${H*0.68} L${W*0.35},${H*0.52} L${W*0.5},${H*0.66} L${W*0.63},${H*0.55} L${W*0.77},${H*0.7} L${W*0.9},${H*0.58} L${W},${H*0.68} L${W},${H} L0,${H} Z`;
-  const onYol   = `M0,${H} L0,${H*0.86} L${W*0.09},${H*0.74} L${W*0.2},${H*0.85} L${W*0.32},${H*0.7} L${W*0.46},${H*0.83} L${W*0.58},${H*0.68} L${W*0.71},${H*0.82} L${W*0.85},${H*0.72} L${W},${H*0.84} L${W},${H} Z`;
+  // Atmosferik perspektif: uzak dağlar gökyüzüne karışır, yakınlar koyulaşır
+  const pusRenk = lerpHex(alt, cisimRenk, geceMi?0.06:0.3);
+  const dagK = [
+    lerpHex(pusRenk, geceMi?"#1A2138":"#6E5F86", 0.42),
+    lerpHex(pusRenk, geceMi?"#141A2E":"#4E4266", 0.62),
+    lerpHex(pusRenk, geceMi?"#0E1324":"#332B47", 0.80),
+    lerpHex(pusRenk, geceMi?"#080B18":"#1C1830", 0.94),
+  ];
+  const siluet = [
+    `M0,${ufuk*1.02} L${W*0.08},${ufuk*0.90} L${W*0.19},${ufuk*0.99} L${W*0.31},${ufuk*0.84} L${W*0.44},${ufuk*0.97} L${W*0.57},${ufuk*0.86} L${W*0.7},${ufuk*0.98} L${W*0.83},${ufuk*0.88} L${W},${ufuk*0.97} L${W},${H} L0,${H} Z`,
+    `M0,${ufuk*1.1} L${W*0.13},${ufuk*0.97} L${W*0.26},${ufuk*1.08} L${W*0.4},${ufuk*0.93} L${W*0.53},${ufuk*1.06} L${W*0.67},${ufuk*0.95} L${W*0.8},${ufuk*1.07} L${W*0.92},${ufuk*0.98} L${W},${ufuk*1.05} L${W},${H} L0,${H} Z`,
+    `M0,${ufuk*1.2} L${W*0.1},${ufuk*1.1} L${W*0.24},${ufuk*1.22} L${W*0.38},${ufuk*1.06} L${W*0.52},${ufuk*1.2} L${W*0.66},${ufuk*1.08} L${W*0.79},${ufuk*1.21} L${W*0.9},${ufuk*1.11} L${W},${ufuk*1.19} L${W},${H} L0,${H} Z`,
+    `M0,${H*0.88} L${W*0.12},${ufuk*1.24} L${W*0.28},${H*0.9} L${W*0.42},${ufuk*1.2} L${W*0.58},${H*0.92} L${W*0.72},${ufuk*1.22} L${W*0.87},${H*0.9} L${W},${ufuk*1.26} L${W},${H} L0,${H} Z`,
+  ];
 
   return <svg width={bant?"100%":g} height={bant?yuk:g*(H/W)} viewBox={`0 0 ${W} ${H}`}
     preserveAspectRatio={bant?"none":"xMidYMid meet"}
     style={bant?{display:"block"}:{display:"block",borderRadius:13,flexShrink:0}} aria-hidden="true">
     <defs>
+      {/* Çok duraklı gökyüzü — gerçek atmosfer gibi kademeli */}
       <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor={ust}/>
-        <stop offset="62%" stopColor={alt}/>
-        <stop offset="100%" stopColor={lerpHex(alt,cisimRenk,geceMi?0:0.16)}/>
+        <stop offset="0%"   stopColor={lerpHex(ust,"#000010",geceMi?0.18:0.1)}/>
+        <stop offset="26%"  stopColor={ust}/>
+        <stop offset="52%"  stopColor={lerpHex(ust,alt,0.62)}/>
+        <stop offset="72%"  stopColor={alt}/>
+        <stop offset="88%"  stopColor={lerpHex(alt,cisimRenk,geceMi?0.05:0.34)}/>
+        <stop offset="100%" stopColor={lerpHex(alt,cisimRenk,geceMi?0.08:0.5)}/>
       </linearGradient>
-      <radialGradient id={id+"g"} cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor={cisimRenk} stopOpacity="0.6"/>
-        <stop offset="45%" stopColor={cisimRenk} stopOpacity="0.22"/>
+      {/* Güneş çekirdek parlaması */}
+      <radialGradient id={id+"c"} cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stopColor="#FFFFFF" stopOpacity={geceMi?0.9:1}/>
+        <stop offset="45%"  stopColor={cisimRenk} stopOpacity="0.95"/>
         <stop offset="100%" stopColor={cisimRenk} stopOpacity="0"/>
       </radialGradient>
+      {/* Geniş atmosferik yayılma (bloom) */}
+      <radialGradient id={id+"b"} cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stopColor={cisimRenk} stopOpacity={geceMi?0.3:0.55}/>
+        <stop offset="35%"  stopColor={cisimRenk} stopOpacity={geceMi?0.14:0.26}/>
+        <stop offset="100%" stopColor={cisimRenk} stopOpacity="0"/>
+      </radialGradient>
+      {/* Ufuk pusu */}
+      <linearGradient id={id+"p"} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stopColor={pusRenk} stopOpacity="0"/>
+        <stop offset="100%" stopColor={pusRenk} stopOpacity={geceMi?0.35:0.72}/>
+      </linearGradient>
       {scrim && <linearGradient id={id+"s"} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#000000" stopOpacity="0"/>
-        <stop offset="55%" stopColor="#000000" stopOpacity="0"/>
-        <stop offset="100%" stopColor="#000000" stopOpacity={geceMi?0.46:0.4}/>
+        <stop offset="0%"   stopColor="#000000" stopOpacity="0"/>
+        <stop offset="50%"  stopColor="#000000" stopOpacity="0.05"/>
+        <stop offset="100%" stopColor="#000000" stopOpacity={geceMi?0.5:0.44}/>
       </linearGradient>}
     </defs>
 
     <rect x="0" y="0" width={W} height={H} fill={`url(#${id})`}/>
 
-    {/* Yıldızlar — geceye yaklaştıkça belirir, parıldar */}
+    {/* Yıldızlar */}
     {geceYogunluk>0.08 && <g opacity={Math.min(1,geceYogunluk*1.15)}>
-      <style>{`@keyframes tfTwinkle{0%,100%{opacity:.25}50%{opacity:1}}`}</style>
-      {Array.from({length:Math.round(W/6.2)}).map((_,i)=>{
-        const x=(i*23.7)%(W-4)+2, y=(i*17.1)%(H*0.5)+3;
-        const r=i%4===0?1.05:i%3===0?0.75:0.5;
+      <style>{`@keyframes tfTwinkle{0%,100%{opacity:.22}50%{opacity:1}}`}</style>
+      {Array.from({length:Math.round(W/5.5)}).map((_,i)=>{
+        const x=(i*23.7)%(W-4)+2, y=(i*17.1)%(ufuk*0.82)+2;
+        const r=i%5===0?1.1:i%3===0?0.72:0.48;
         return <circle key={i} cx={x} cy={y} r={r} fill="#fff"
-          style={{animation:`tfTwinkle ${2.2+((i*13)%18)/10}s ease-in-out ${((i*7)%20)/10}s infinite`}}/>;
+          style={{animation:`tfTwinkle ${2+((i*13)%20)/10}s ease-in-out ${((i*7)%22)/10}s infinite`}}/>;
       })}
     </g>}
 
-    {/* Bulutlar — sadece gündüz, gökyüzünün üst yarısında */}
-    {!geceMi && oran>0.05 && oran<0.95 && <g opacity={0.42+oran*0.2}>
-      <ellipse cx={W*0.22} cy={H*0.2} rx={W*0.09} ry={H*0.05} fill="#ffffffcc"/>
-      <ellipse cx={W*0.28} cy={H*0.17} rx={W*0.06} ry={H*0.04} fill="#ffffffcc"/>
-      <ellipse cx={W*0.8}  cy={H*0.28} rx={W*0.07} ry={H*0.042} fill="#ffffffa0"/>
+    {/* Geniş atmosferik yayılma — güneşin etrafındaki büyük hâle */}
+    <ellipse cx={cx} cy={cy} rx={W*0.42*buyume} ry={H*0.5*buyume} fill={`url(#${id}b)`}/>
+
+    {/* Işık huzmeleri — gün doğumu/batımında yumuşak ışınlar */}
+    {!geceMi && altinSaat && <g opacity={0.16}>
+      {[-42,-26,-12,0,12,26,42].map(a=>{
+        const rad=(a-90)*Math.PI/180, uz=H*1.5;
+        return <line key={a} x1={cx} y1={cy} x2={cx+Math.cos(rad)*uz} y2={cy+Math.sin(rad)*uz}
+          stroke={cisimRenk} strokeWidth={W*0.035} strokeLinecap="round"/>;
+      })}
     </g>}
 
-    {/* Arka dağ katmanı — sisli, uzak, güneşin ARKASINDA */}
-    <path d={arkaYol} fill={arkaDag} opacity="0.85"/>
+    {/* Alttan aydınlanan ince bulut şeritleri — gün batımının imzası */}
+    {!geceMi && <g>
+      {[
+        {y:H*0.2,  w:0.3,  x:0.1,  o:0.5},
+        {y:H*0.3,  w:0.24, x:0.55, o:0.42},
+        {y:H*0.41, w:0.38, x:0.24, o:0.36},
+        {y:H*0.48, w:0.2,  x:0.7,  o:0.3},
+      ].map((c,i)=>
+        <ellipse key={i} cx={W*c.x+W*c.w/2} cy={c.y} rx={W*c.w/2} ry={H*0.022}
+          fill={altinSaat?lerpHex("#FFFFFF",cisimRenk,0.55):"#FFFFFF"} opacity={c.o}/>
+      )}
+    </g>}
 
-    {/* Güneş/Ay — ışıma halkası + gövde, ufka yaklaştıkça büyür */}
-    <circle cx={cx} cy={cy} r={haloR} fill={`url(#${id}g)`}/>
-    <circle cx={cx} cy={cy} r={govdeR} fill={cisimRenk}/>
-    {geceMi && <circle cx={cx+govdeR*0.4} cy={cy-govdeR*0.34} r={govdeR*0.84} fill={ust}/>}
-    {!geceMi && yukselim>0.55 && [0,45,90,135,180,225,270,315].map(a=>{
-      const rad=(a*Math.PI)/180, r1=govdeR*1.28, r2=govdeR*1.7;
-      return <line key={a} x1={cx+Math.cos(rad)*r1} y1={cy+Math.sin(rad)*r1}
-        x2={cx+Math.cos(rad)*r2} y2={cy+Math.sin(rad)*r2} stroke={cisimRenk} strokeWidth={bant?1.6:1.2} strokeLinecap="round" opacity="0.55"/>;
-    })}
+    {/* Güneş/Ay — çekirdek */}
+    <circle cx={cx} cy={cy} r={govdeR*2.6} fill={`url(#${id}c)`}/>
+    <circle cx={cx} cy={cy} r={govdeR} fill={geceMi?cisimRenk:"#FFFFFF"} opacity={geceMi?1:0.96}/>
+    {geceMi && <circle cx={cx+govdeR*0.38} cy={cy-govdeR*0.32} r={govdeR*0.85} fill={lerpHex(ust,alt,0.3)}/>}
 
-    {/* Ön dağ katmanı — yakın, koyu, güneşin bir kısmını örter (tam senin fotoğraftaki gibi) */}
-    <path d={onYol} fill={onDag}/>
+    {/* Dört katmanlı dağ silsilesi — atmosferik perspektifle derinlik */}
+    {siluet.map((yol,i)=>
+      <path key={i} d={yol} fill={dagK[i]} opacity={i===0?0.72:i===1?0.85:1}/>
+    )}
 
-    {/* Alt scrim — üstüne yazı bindirilecekse okunabilirlik için yumuşak karartma */}
+    {/* Ufuk pusu — dağların arasına sızan atmosfer */}
+    <rect x="0" y={ufuk*0.8} width={W} height={H-ufuk*0.8} fill={`url(#${id}p)`}/>
+
     {scrim && <rect x="0" y="0" width={W} height={H} fill={`url(#${id}s)`}/>}
   </svg>;
 }
