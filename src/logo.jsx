@@ -28,7 +28,7 @@ export function TFLogo({ boyut = 40, yazi = false, koyu = false, ortala = true, 
   const CIZGI = koyu ? "#4A5568" : "#C3CBD8";
 
   // yazılı sürüm daha uzun: 300x210, sade monogram: 300x140
-  const H = yazi ? 210 : 140;
+  const H = yazi ? 218 : 150;
   const serif = "Georgia,'Times New Roman',Times,serif";
 
   return (
@@ -40,25 +40,27 @@ export function TFLogo({ boyut = 40, yazi = false, koyu = false, ortala = true, 
       role="img"
       aria-label="TradeFlow Elite"
     >
-      {/* ── Monogram ── */}
-      <text x="88" y="118" textAnchor="middle" fontFamily={serif} fontSize="132"
-            fontWeight="700" fill={T} letterSpacing="-2">T</text>
-      <text x="196" y="118" textAnchor="middle" fontFamily={serif} fontSize="132"
-            fontWeight="700" fill={F} letterSpacing="-2">F</text>
+      {/* ── Monogram — harfler yatay sıkıştırılmış (dar & uzun serif görünümü) ── */}
+      <g transform="scale(0.55 1)">
+        <text x="204" y="140" textAnchor="middle" fontFamily={serif} fontSize="180"
+              fontWeight="700" fill={T}>T</text>
+        <text x="327" y="140" textAnchor="middle" fontFamily={serif} fontSize="180"
+              fontWeight="700" fill={F}>F</text>
+      </g>
 
-      {/* Eğik kesik — iki harfin arasından geçer, uçları sivri */}
-      <path d="M187 9 L192 9 L130 123 L125 123 Z" fill={T} />
+      {/* Eğik kesik — ince, harflerin arasından geçer */}
+      <path d="M182 15 L186 15 L114 138 L110 138 Z" fill={T} />
 
       {yazi && (
         <>
           {/* TRADEFLOW */}
-          <text x="150" y="166" textAnchor="middle" fontFamily={serif} fontSize="30"
+          <text x="150" y="176" textAnchor="middle" fontFamily={serif} fontSize="30"
                 fontWeight="600" fill={YAZI} letterSpacing="7.5">TRADEFLOW</text>
 
           {/* ── ERAİ + iki yana ince çizgi ── */}
-          <line x1="52"  y1="191" x2="104" y2="191" stroke={CIZGI} strokeWidth="1.4" />
-          <line x1="196" y1="191" x2="248" y2="191" stroke={CIZGI} strokeWidth="1.4" />
-          <text x="152" y="198" textAnchor="middle" fontFamily={serif} fontSize="23"
+          <line x1="52"  y1="199" x2="104" y2="199" stroke={CIZGI} strokeWidth="1.4" />
+          <line x1="196" y1="199" x2="248" y2="199" stroke={CIZGI} strokeWidth="1.4" />
+          <text x="152" y="206" textAnchor="middle" fontFamily={serif} fontSize="23"
                 fontWeight="700" letterSpacing="8" fill={YAZI}>
             ERA<tspan fill={KIRM}>İ</tspan>
           </text>
@@ -78,13 +80,15 @@ export function TFLogoYatay({ boyut = 34, koyu = false, st }) {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: boyut * 0.3, ...st }}>
-      <svg viewBox="0 0 300 140" height={boyut} width={boyut * (300 / 140)}
+      <svg viewBox="0 0 300 150" height={boyut} width={boyut * (300 / 150)}
            style={{ display: "block", flexShrink: 0 }} role="img" aria-label="TradeFlow">
-        <text x="88" y="118" textAnchor="middle" fontFamily={serif} fontSize="132"
-              fontWeight="700" fill={T} letterSpacing="-2">T</text>
-        <text x="196" y="118" textAnchor="middle" fontFamily={serif} fontSize="132"
-              fontWeight="700" fill={F} letterSpacing="-2">F</text>
-        <path d="M187 9 L192 9 L130 123 L125 123 Z" fill={T} />
+        <g transform="scale(0.55 1)">
+          <text x="204" y="140" textAnchor="middle" fontFamily={serif} fontSize="180"
+                fontWeight="700" fill={T}>T</text>
+          <text x="327" y="140" textAnchor="middle" fontFamily={serif} fontSize="180"
+                fontWeight="700" fill={F}>F</text>
+        </g>
+        <path d="M182 15 L186 15 L114 138 L110 138 Z" fill={T} />
       </svg>
       <div style={{ lineHeight: 1.15 }}>
         <div style={{ fontFamily: serif, fontSize: boyut * 0.44, fontWeight: 600,
