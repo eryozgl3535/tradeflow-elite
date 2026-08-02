@@ -47,7 +47,7 @@ export function TFLogo({ boyut = 40, yazi = false, koyu = false, ortala = true, 
             fontWeight="700" fill={F} letterSpacing="-2">F</text>
 
       {/* Eğik kesik — iki harfin arasından geçer, uçları sivri */}
-      <path d="M175 8 L162 62 L138 132 L151 78 Z" fill={T} />
+      <path d="M172 6 L182 6 L142 134 L132 134 Z" fill={T} />
 
       {yazi && (
         <>
@@ -56,10 +56,10 @@ export function TFLogo({ boyut = 40, yazi = false, koyu = false, ortala = true, 
                 fontWeight="600" fill={YAZI} letterSpacing="7.5">TRADEFLOW</text>
 
           {/* ── ERAİ + iki yana ince çizgi ── */}
-          <line x1="60"  y1="192" x2="112" y2="192" stroke={CIZGI} strokeWidth="1.1" />
-          <line x1="188" y1="192" x2="240" y2="192" stroke={CIZGI} strokeWidth="1.1" />
-          <text x="150" y="197" textAnchor="middle" fontFamily={serif} fontSize="17"
-                fontWeight="600" letterSpacing="6.5" fill={YAZI}>
+          <line x1="52"  y1="191" x2="104" y2="191" stroke={CIZGI} strokeWidth="1.4" />
+          <line x1="196" y1="191" x2="248" y2="191" stroke={CIZGI} strokeWidth="1.4" />
+          <text x="152" y="198" textAnchor="middle" fontFamily={serif} fontSize="23"
+                fontWeight="700" letterSpacing="8" fill={YAZI}>
             ERA<tspan fill={KIRM}>İ</tspan>
           </text>
         </>
@@ -84,7 +84,7 @@ export function TFLogoYatay({ boyut = 34, koyu = false, st }) {
               fontWeight="700" fill={T} letterSpacing="-2">T</text>
         <text x="196" y="118" textAnchor="middle" fontFamily={serif} fontSize="132"
               fontWeight="700" fill={F} letterSpacing="-2">F</text>
-        <path d="M175 8 L162 62 L138 132 L151 78 Z" fill={T} />
+        <path d="M172 6 L182 6 L142 134 L132 134 Z" fill={T} />
       </svg>
       <div style={{ lineHeight: 1.15 }}>
         <div style={{ fontFamily: serif, fontSize: boyut * 0.44, fontWeight: 600,
