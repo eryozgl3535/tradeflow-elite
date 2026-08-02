@@ -3895,7 +3895,7 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme,acilVade=0}){
   ];
   return <aside style={{width:252,flexShrink:0,background:C.card,borderRight:`1px solid ${C.border}`,height:"100vh",position:"sticky",top:0,display:"flex",flexDirection:"column",padding:"26px 16px 20px",boxSizing:"border-box"}}>
     <div style={{padding:"0 8px 24px",marginBottom:20,borderBottom:`1px solid ${C.border}`}}>
-      <TFLogo boyut={82} koyu={koyuMu(C.bg)}/>
+      <TFLogo boyut={112} koyu={koyuMu(C.bg)}/>
     </div>
     <nav style={{display:"flex",flexDirection:"column",gap:2}}>
       {items.map(m=>{
@@ -4227,7 +4227,7 @@ function GirisEkrani({onGiris}){
     <div style={{width:"100%",maxWidth:400,background:"#fff",borderRadius:24,padding:"36px 28px",boxShadow:"0 12px 40px rgba(27,42,74,0.15)"}}>
       {/* Logo */}
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
-        <TFLogo boyut={96}/>
+        <TFLogo boyut={104}/>
         <div style={{display:"flex",gap:6,margin:"14px auto 4px",background:"#EDF0F5",borderRadius:12,padding:4,maxWidth:290}}>
           {[["isveren","💼 İşveren"],["usta","👷 Usta / Çalışan"]].map(([v,l])=><button key={v} onClick={()=>{setTip(v);setHata("");if(v==="usta")setMod("giris");}} style={{flex:1,background:tip===v?"#fff":"transparent",border:"none",borderRadius:9,padding:"9px 4px",fontSize:12.5,fontWeight:700,color:tip===v?"#1C4E60":"#6B7280",cursor:"pointer",boxShadow:tip===v?"0 1px 3px rgba(16,24,40,0.1)":"none"}}>{l}</button>)}
         </div>
@@ -4752,7 +4752,7 @@ export default function TradeFlow(){
   if(oturumKontrol){
     return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
       <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
-        <TFLogo boyut={118} koyu={koyuMu(C.bg)}/>
+        <TFLogo boyut={132} koyu={koyuMu(C.bg)}/>
       </div>
       <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
     </div>;
@@ -4776,7 +4776,7 @@ export default function TradeFlow(){
   if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
     {/* Logo */}
     <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
-      <TFLogo boyut={118} koyu={koyuMu(C.bg)}/>
+      <TFLogo boyut={132} koyu={koyuMu(C.bg)}/>
     </div>
     <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
   </div>;
