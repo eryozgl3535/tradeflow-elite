@@ -47,7 +47,7 @@ export function TFLogo({ boyut = 40, yazi = false, koyu = false, ortala = true, 
             fontWeight="700" fill={F} letterSpacing="-2">F</text>
 
       {/* Eğik kesik — iki harfin arasından geçer, uçları sivri */}
-      <path d="M172 6 L182 6 L142 134 L132 134 Z" fill={T} />
+      <path d="M187 9 L192 9 L130 123 L125 123 Z" fill={T} />
 
       {yazi && (
         <>
@@ -84,7 +84,7 @@ export function TFLogoYatay({ boyut = 34, koyu = false, st }) {
               fontWeight="700" fill={T} letterSpacing="-2">T</text>
         <text x="196" y="118" textAnchor="middle" fontFamily={serif} fontSize="132"
               fontWeight="700" fill={F} letterSpacing="-2">F</text>
-        <path d="M172 6 L182 6 L142 134 L132 134 Z" fill={T} />
+        <path d="M187 9 L192 9 L130 123 L125 123 Z" fill={T} />
       </svg>
       <div style={{ lineHeight: 1.15 }}>
         <div style={{ fontFamily: serif, fontSize: boyut * 0.44, fontWeight: 600,
