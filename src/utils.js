@@ -80,11 +80,11 @@ export function faturaPdf(f,isletme,T){
   const w=window.open("","_blank");
   if(!w){alert("Açılır pencere engellendi.");return;}
   const kalemSat=(f.kalemler||[]).map((k,i)=>"<tr><td>"+(i+1)+"</td><td>"+k.tanim+"</td><td style='text-align:center'>"+k.miktar+"</td><td style='text-align:right'>"+Number(k.birim).toLocaleString("tr-TR")+" TL</td><td style='text-align:right'>"+(k.miktar*k.birim).toLocaleString("tr-TR")+" TL</td></tr>").join("");
-  const stil="body{font-family:Arial,sans-serif;padding:32px;color:#111;max-width:800px;margin:0 auto}h1{font-size:20px;color:#2563EB;margin:0}.ust{display:flex;justify-content:space-between;border-bottom:3px solid #2563EB;padding-bottom:16px;margin-bottom:18px}.firma{font-size:11px;color:#555;line-height:1.5}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}th{background:#EFF6FF;border:1px solid #cbd5e1;padding:8px;text-align:left}td{border:1px solid #cbd5e1;padding:8px}.toplam{margin-top:14px;margin-left:auto;width:300px;font-size:13px}.toplam div{display:flex;justify-content:space-between;padding:5px 10px}.toplam .g{background:#2563EB;color:#fff;font-weight:bold;font-size:15px;border-radius:6px}.ettn{font-size:9px;color:#999;font-family:monospace;margin-top:24px}";
+  const stil="body{font-family:Arial,sans-serif;padding:32px;color:#111;max-width:800px;margin:0 auto}h1{font-size:20px;color:#2563EB;margin:0}.ust{display:flex;justify-content:space-between;border-bottom:3px solid #2563EB;padding-bottom:16px;margin-bottom:18px}.firma{font-size:11px;color:#555;line-height:1.5}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}th{background:#EFF6FF;border:1px solid #cbd5e1;padding:8px;text-align:left}td{border:1px solid #cbd5e1;padding:8px}.toplam{margin-top:14px;margin-left:auto;width:300px;font-size:13px}.toplam div{display:flex;justify-content:space-between;padding:5px 10px}.toplam .g{background:#2563EB;color:#fff;font-weight:bold;font-size:15px;border-radius:6px}.uyari{margin-top:28px;padding:12px 14px;border:1px solid #F6D18B;background:#FDF8EC;border-radius:6px;font-size:10px;color:#7A5B12;line-height:1.6}";
   const logoHtml=isletme?.logo?"<img src='"+isletme.logo+"' style='height:52px;margin-bottom:6px'/><br>":"";
-  w.document.write("<html><head><title>Fatura "+f.no+"</title><style>"+stil+"</style></head><body>"+
+  w.document.write("<html><head><title>Proforma "+f.no+"</title><style>"+stil+"</style></head><body>"+
     "<div class='ust'><div>"+logoHtml+"<h1>"+(isletme?.ad||"TradeFlow")+"</h1><div class='firma'>"+(isletme?.yetkili||"")+"<br>"+(isletme?.telefon||"")+"<br>"+(isletme?.adres||"")+(isletme?.vergiNo?"<br>VKN: "+isletme.vergiNo:"")+"</div></div>"+
-    "<div style='text-align:right;font-size:12px'><b style='font-size:16px;color:#2563EB'>FATURA</b><br>No: "+f.no+"<br>"+T.tarihL+": "+f.tarih+"<br>"+(f.jobRef||"")+"</div></div>"+
+    "<div style='text-align:right;font-size:12px'><b style='font-size:16px;color:#2563EB'>PROFORMA FATURA</b><br>Belge No: "+f.no+"<br>"+T.tarihL+": "+f.tarih+"<br>"+(f.jobRef||"")+"</div></div>"+
     "<div style='font-size:13px;margin-bottom:4px'><b>"+T.musteri+":</b> "+(f.alici?.ad||f.musteri)+(f.alici?.vkn?" · VKN: "+f.alici.vkn:"")+"</div>"+
     (f.alici?.adres?"<div style='font-size:12px;color:#555;margin-bottom:6px'>"+f.alici.adres+"</div>":"")+
     "<table><tr><th style='width:30px'>#</th><th>"+T.kalemAdPh+"</th><th style='width:60px;text-align:center'>"+T.adetL+"</th><th style='width:100px;text-align:right'>"+T.birimFiyatL+"</th><th style='width:110px;text-align:right'>"+T.toplam+"</th></tr>"+kalemSat+"</table>"+
@@ -93,7 +93,9 @@ export function faturaPdf(f,isletme,T){
     "<div><span>"+T.kdvL+" %"+(f.kdv||20)+"</span><span>"+(f.kdvT||0).toLocaleString("tr-TR")+" TL</span></div>"+
     (f.tevkifatT>0?"<div style='color:#DC2626'><span>Tevkifat ("+f.tevkifat+"/10)</span><span>-"+f.tevkifatT.toLocaleString("tr-TR")+" TL</span></div>":"")+
     "<div class='g'><span>"+T.genelToplamL+"</span><span>"+f.tutar.toLocaleString("tr-TR")+" TL</span></div></div>"+
-    "<div class='ettn'>ETTN: "+(f.ettn||"")+"</div>"+
+    "<div class='uyari'><b>Bu belge proforma faturadır; resmî fatura yerine geçmez.</b><br>"+
+    "Vergi mevzuatı açısından geçerli fatura, e-Arşiv / e-Fatura sistemi üzerinden veya matbaa basımlı fatura ile düzenlenir. "+
+    "Bu belge yapılan işin bedelini ve dökümünü bilgilendirme amacıyla gösterir.</div>"+
     "<script>window.onload=function(){window.print();}</"+"script></body></html>");
   w.document.close();
 }
