@@ -4750,16 +4750,11 @@ export default function TradeFlow(){
 
   // ── OTURUM KAPISI ──
   if(oturumKontrol){
-    return <div style={{minHeight:"100vh",background:"#F2F2F7",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
-      <div style={{textAlign:"center"}}>
-        <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
-          <TFLogo boyut={112} yazi/>
-        </div>
-        <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:"#9CA3AF"}}>
-          Built by <span style={{color:"#2E7490",fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
-        </div>
-        <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
+    return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
+      <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
+        <TFLogo boyut={112} yazi koyu={koyuMu(C.bg)}/>
       </div>
+      <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
     </div>;
   }
   if(!kullanici){
@@ -4782,10 +4777,6 @@ export default function TradeFlow(){
     {/* Logo */}
     <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
       <TFLogo boyut={112} yazi koyu={koyuMu(C.bg)}/>
-    </div>
-    {/* Built by ERAİ — ERA mavi, İ pembe */}
-    <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:C.t3}}>
-      Built by <span style={{color:P,fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
     </div>
     <style>{`@keyframes tfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.94);opacity:0.78}}`}</style>
   </div>;
