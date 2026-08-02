@@ -5,6 +5,7 @@ import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 import { EglenceKosesi } from "./eglence.jsx";
 import { Ik, MODUL_IKON, LedImza } from "./ikonlar.jsx";
+import { TFLogo, koyuMu } from "./logo.jsx";
 import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } from "./saat.jsx";
 import { PiyasaSeridi } from "./piyasa.jsx";
 import { NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
@@ -3894,13 +3895,8 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme,acilVade=0}){
   ];
   return <aside style={{width:252,flexShrink:0,background:C.card,borderRight:`1px solid ${C.border}`,height:"100vh",position:"sticky",top:0,display:"flex",flexDirection:"column",padding:"26px 16px 20px",boxSizing:"border-box"}}>
     <div style={{padding:"0 8px 24px",marginBottom:20,borderBottom:`1px solid ${C.border}`}}>
-      <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:2,marginBottom:8}}>
-        <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:32,fontWeight:700,color:P,lineHeight:1}}>T</span>
-        <span style={{fontSize:25,color:GOLD,fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -3px"}}>/</span>
-        <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:32,fontWeight:700,color:C.t2,lineHeight:1}}>F</span>
-      </div>
-      <div style={{textAlign:"center",fontSize:13,fontWeight:700,color:C.t1,letterSpacing:"0.19em"}}>TRADEFLOW</div>
-      <div style={{textAlign:"center",fontSize:9,fontWeight:600,color:GOLD,letterSpacing:"0.42em",marginTop:3}}>ELITE</div>
+      <TFLogo boyut={78} yazi koyu={koyuMu(C.bg)}/>
+      <div style={{textAlign:"center",fontSize:8.5,fontWeight:600,color:GOLD,letterSpacing:"0.42em",marginTop:7}}>ELITE</div>
     </div>
     <nav style={{display:"flex",flexDirection:"column",gap:2}}>
       {items.map(m=>{
@@ -4232,11 +4228,7 @@ function GirisEkrani({onGiris}){
     <div style={{width:"100%",maxWidth:400,background:"#fff",borderRadius:24,padding:"36px 28px",boxShadow:"0 12px 40px rgba(27,42,74,0.15)"}}>
       {/* Logo */}
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
-        <div style={{display:"flex",alignItems:"baseline",gap:2,marginBottom:8}}>
-          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:44,fontWeight:700,color:"#1C4E60",lineHeight:1}}>T</span>
-          <span style={{fontSize:34,color:"#C9A24B",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -4px"}}>/</span>
-          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:44,fontWeight:700,color:"#6B7280",lineHeight:1}}>F</span>
-        </div>
+        <TFLogo boyut={92} yazi/>
         <div style={{fontSize:16,fontWeight:600,color:"#111827",letterSpacing:"0.12em"}}>TRADEFLOW</div>
         <div style={{fontSize:11,fontWeight:600,color:"#6B7280",letterSpacing:"0.34em",marginTop:1}}>ELITE</div>
         <div style={{display:"flex",gap:6,margin:"14px auto 4px",background:"#EDF0F5",borderRadius:12,padding:4,maxWidth:290}}>
@@ -4763,13 +4755,10 @@ export default function TradeFlow(){
   if(oturumKontrol){
     return <div style={{minHeight:"100vh",background:"#F2F2F7",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
       <div style={{textAlign:"center"}}>
-        <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:1,animation:"tfPulse 1.7s ease-in-out infinite"}}>
-          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:"#2E7490",lineHeight:1}}>T</span>
-          <span style={{fontSize:44,color:"#C9A24B",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -5px"}}>/</span>
-          <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:"#6B7280",lineHeight:1}}>F</span>
+        <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
+          <TFLogo boyut={112} yazi/>
         </div>
-        <div style={{fontSize:20,fontWeight:700,color:"#111827",letterSpacing:"0.15em",marginTop:14}}>TRADEFLOW</div>
-        <div style={{fontSize:11,fontWeight:600,color:"#C9A24B",letterSpacing:"0.44em",marginTop:5}}>ELITE</div>
+        <div style={{fontSize:10,fontWeight:600,color:"#C9A24B",letterSpacing:"0.44em",marginTop:8}}>ELITE</div>
         <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:"#9CA3AF"}}>
           Built by <span style={{color:"#2E7490",fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
         </div>
@@ -4795,13 +4784,10 @@ export default function TradeFlow(){
   }
   if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
     {/* Logo */}
-    <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:1,animation:"tfPulse 1.7s ease-in-out infinite"}}>
-      <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:P,lineHeight:1}}>T</span>
-      <span style={{fontSize:44,color:GOLD,fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -5px"}}>/</span>
-      <span style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:58,fontWeight:700,color:C.t2,lineHeight:1}}>F</span>
+    <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
+      <TFLogo boyut={112} yazi koyu={koyuMu(C.bg)}/>
     </div>
-    <div style={{fontSize:20,fontWeight:700,color:C.t1,letterSpacing:"0.15em",marginTop:14}}>TRADEFLOW</div>
-    <div style={{fontSize:11,fontWeight:600,color:GOLD,letterSpacing:"0.44em",marginTop:5}}>ELITE</div>
+    <div style={{fontSize:10,fontWeight:600,color:GOLD,letterSpacing:"0.44em",marginTop:8}}>ELITE</div>
     {/* Built by ERAİ — ERA mavi, İ pembe */}
     <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:C.t3}}>
       Built by <span style={{color:P,fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
@@ -4822,7 +4808,7 @@ export default function TradeFlow(){
 
         {!MASAUSTU&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 16px 12px",background:C.bg,position:"sticky",top:0,zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{display:"flex",alignItems:"baseline"}}><span style={{fontFamily:"Georgia,serif",fontSize:26,fontWeight:800,color:"#2E7490",lineHeight:1}}>T</span><span style={{fontSize:20,color:"#7FB3C2",fontWeight:300,display:"inline-block",transform:"skewX(-14deg) scaleY(1.15)",margin:"0 -2px"}}>/</span><span style={{fontFamily:"Georgia,serif",fontSize:26,fontWeight:800,color:"#173F4E",lineHeight:1}}>F</span></div>
+            <TFLogo boyut={30} ortala={false} koyu={koyuMu(C.bg)}/>
             <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,color:"#2E7490",letterSpacing:"0.3em",display:"flex",alignItems:"center",gap:5}}>ELITE <span style={{color:C.t3}}>·</span> <LedImza boyut={10} metin="ERAİ" inline={true}/></div></div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
