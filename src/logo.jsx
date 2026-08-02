@@ -47,8 +47,8 @@ export function TFLogo({ boyut = 112, koyu = false, sade = false, led = true, or
     {led && <>
       <style>{`
         @keyframes tfEraiIsik{
-          0%   { background-position: -70% 0; }
-          100% { background-position: 170% 0; }
+          0%   { background-position: 170% 0; }
+          100% { background-position: -70% 0; }
         }
         .tf-erai-led{
           position:absolute; left:0; right:0;
