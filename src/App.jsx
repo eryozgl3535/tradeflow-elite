@@ -655,7 +655,33 @@ const updateDurum = (T) => {
 let nId = 8; let fatNo = 1;
 const initJobs = [];
 
-const gelirData=[{d:"Pzt",v:4200},{d:"Sal",v:5100},{d:"Çar",v:3800},{d:"Per",v:6200},{d:"Cum",v:7100},{d:"Cmt",v:5400},{d:"Paz",v:6800}];
+
+// ─── Gerçek son 7 günün gelirini işlerden hesaplar (demo veri değil) ───
+const GUN_KISA=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
+function son7GunGelir(jobs=[]){
+  const bugun=new Date();bugun.setHours(0,0,0,0);
+  const seri=[];
+  for(let i=6;i>=0;i--){
+    const g=new Date(bugun.getTime()-i*86400000);
+    const iso=g.toISOString().slice(0,10);
+    const v=jobs.filter(j=>j.durum==="tamamlandi"&&(j.tarih||"").slice(0,10)===iso)
+                .reduce((s,j)=>s+(j.tutar||0),0);
+    seri.push({d:GUN_KISA[g.getDay()],v});
+  }
+  return seri;
+}
+
+// ─── Boş durum: veri yokken yönlendirici mesaj ───
+function BosDurum({ikon="grafik",baslik,mesaj,btn,onBtn,yuk=170}){
+  return <div style={{height:yuk,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,textAlign:"center",padding:"0 14px"}}>
+    <div style={{width:46,height:46,borderRadius:14,background:P+"12",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <Ik n={ikon} s={23} c={P} w={1.7}/>
+    </div>
+    <div style={{fontSize:13.5,fontWeight:700,color:C.t1}}>{baslik}</div>
+    <div style={{fontSize:11.5,color:C.t3,lineHeight:1.55,maxWidth:230}}>{mesaj}</div>
+    {btn&&<button onClick={onBtn} style={{marginTop:3,background:P,border:"none",borderRadius:10,padding:"9px 18px",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{btn}</button>}
+  </div>;
+}
 
 // ─── ATOMLAR ────────────────────────────────────────────────────
 const Sh=({children,s,onClick})=><div onClick={onClick} style={{background:C.card,borderRadius:16,boxShadow:C.sh,...s}}>{children}</div>;
@@ -1102,8 +1128,20 @@ function GelirGiderDetay({jobs,giderler,onKapat,T}){
   const netKar=toplamGelir-toplamGider;
   const katToplam={};giderler.forEach(g=>{katToplam[g.kategori]=(katToplam[g.kategori]||0)+g.tutar;});
 
-  // Haftalık veri — gelir sabit örnek, gider ve net türetilir
-  const giderData=gelirData.map((d,i)=>({...d,g:Math.round(d.v*(0.3+i*0.04)),n:d.v-Math.round(d.v*(0.3+i*0.04))}));
+  // Haftalık veri — gerçek işlerden ve giderlerden hesaplanır
+  const giderData=(()=>{
+    const bugun=new Date();bugun.setHours(0,0,0,0);
+    const cikti=[];
+    for(let i=6;i>=0;i--){
+      const gun=new Date(bugun.getTime()-i*86400000);
+      const iso=gun.toISOString().slice(0,10);
+      const v=jobs.filter(j=>j.durum==="tamamlandi"&&(j.tarih||"").slice(0,10)===iso).reduce((a,j)=>a+(j.tutar||0),0);
+      const g=giderler.filter(x=>(x.tarih||"").slice(0,10)===iso).reduce((a,x)=>a+(x.tutar||0),0);
+      cikti.push({d:GUN_KISA[gun.getDay()],v,g,n:v-g});
+    }
+    return cikti;
+  })();
+  const haftaVeriVar=giderData.some(x=>x.v>0||x.g>0);
   const grafikVeri={
     gelir:{key:"v",renk:C.green,ad:T.toplamGelir},
     gider:{key:"g",renk:C.red,ad:T.toplamGider},
@@ -1320,7 +1358,9 @@ const Charts=memo(function Charts({jobs,giderler,T,onTahsil}){
         <div style={{marginBottom:5}}><div style={{fontSize:10,color:C.t3}}>{T.toplamGelir}</div><span style={{fontSize:13,fontWeight:800,color:C.green}}>{fmt(toplamGelir)}</span></div>
         <div style={{marginBottom:5}}><div style={{fontSize:10,color:C.t3}}>{T.toplamGider}</div><span style={{fontSize:13,fontWeight:800,color:C.red}}>{fmt(toplamGider)}</span></div>
         <div style={{marginBottom:8}}><div style={{fontSize:10,color:C.t3}}>{T.netKar}</div><div style={{fontSize:14,fontWeight:800,color:netKar>=0?C.t1:C.red}}>{fmt(netKar)}</div></div>
-        <ResponsiveContainer width="100%" height={50}><LineChart data={gelirData}><Line type="monotone" dataKey="v" stroke={P} strokeWidth={2.5} dot={false}/></LineChart></ResponsiveContainer>
+        {(()=>{const sr=son7GunGelir(jobs);return sr.some(x=>x.v>0)
+          ? <ResponsiveContainer width="100%" height={50}><LineChart data={sr}><Line type="monotone" dataKey="v" stroke={P} strokeWidth={2.5} dot={false}/></LineChart></ResponsiveContainer>
+          : <div style={{height:50,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10.5,color:C.t3,textAlign:"center",lineHeight:1.5}}>İlk işini tamamlayınca<br/>haftalık grafiğin burada çıkar</div>;})()}
       </Sh>
       {/* Tahsilat kartı */}
       <Sh onClick={()=>setModal("tahsilat")} s={{flex:1,padding:"14px",cursor:"pointer",position:"relative"}}>
@@ -3892,7 +3932,9 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme,acilVade=0}){
   </aside>;
 })
 
-const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,onDetayTahsilat}){
+const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,onDetayTahsilat,onYeniIs}){
+  const seri=son7GunGelir(jobs);
+  const veriVar=jobs.length>0||giderler.length>0;
   const tahsilE=jobs.filter(j=>j.durum==="tamamlandi").reduce((s,j)=>s+j.tutar,0);
   const aktifT=jobs.filter(j=>j.durum==="aktif").reduce((s,j)=>s+j.tutar,0);
   const beklT=jobs.filter(j=>j.durum==="bekliyor").reduce((s,j)=>s+j.tutar,0);
@@ -3904,23 +3946,34 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
   return <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,padding:"0 28px 16px"}}>
     <Sh s={{padding:"20px 22px"}}>
       <div style={{fontSize:15,fontWeight:700,color:C.t1,marginBottom:14}}>{T.gelirGider}</div>
+      {!veriVar
+        ? <BosDurum ikon="trend" baslik="Henüz kayıt yok"
+            mesaj="İlk işini ekle — kazancın ve giderin burada grafikleşmeye başlasın."
+            btn="+ Yeni İş Ekle" onBtn={onYeniIs} yuk={232}/>
+        : <>
       <div style={{display:"flex",gap:28,marginBottom:14}}>
         <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}><span style={{width:8,height:8,borderRadius:"50%",background:C.green,display:"inline-block"}}/><span style={{fontSize:12,color:C.t2}}>{T.toplamGelir}</span></div><div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(toplamGelir)}</div></div>
         <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}><span style={{width:8,height:8,borderRadius:"50%",background:C.red,display:"inline-block"}}/><span style={{fontSize:12,color:C.t2}}>{T.toplamGider}</span></div><div style={{fontSize:17,fontWeight:800,color:C.t1}}>{fmt(toplamGider)}</div></div>
         <div><div style={{fontSize:12,color:C.t2,marginBottom:3}}>{T.netKar}</div><div style={{fontSize:17,fontWeight:800,color:netKar>=0?C.t1:C.red}}>{fmt(netKar)}</div></div>
       </div>
       <ResponsiveContainer width="100%" height={170}>
-        <AreaChart data={gelirData} margin={{top:4,right:4,left:-24,bottom:0}}>
+        <AreaChart data={seri} margin={{top:4,right:4,left:-24,bottom:0}}>
           <defs><linearGradient id="gelirFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.green} stopOpacity={0.28}/><stop offset="100%" stopColor={C.green} stopOpacity={0}/></linearGradient></defs>
           <XAxis dataKey="d" tick={{fontSize:11,fill:C.t3}} axisLine={false} tickLine={false}/>
           <Tooltip contentStyle={{fontSize:11,borderRadius:8,background:C.card,border:`1px solid ${C.border}`}} formatter={v=>fmt(v)}/>
           <Area type="monotone" dataKey="v" stroke={C.green} strokeWidth={2.5} fill="url(#gelirFill)" dot={false}/>
         </AreaChart>
       </ResponsiveContainer>
+      </>}
       <div style={{textAlign:"right",marginTop:8}}><button onClick={onDetayGelir} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 16px",color:C.t1,fontSize:12,fontWeight:600,cursor:"pointer"}}>{T.detayL}</button></div>
     </Sh>
     <Sh s={{padding:"20px 22px"}}>
       <div style={{fontSize:15,fontWeight:700,color:C.t1,marginBottom:14}}>{T.tahsilatDurumu}</div>
+      {toplamTahsilat<=0
+        ? <BosDurum ikon="cuzdan" baslik="Tahsilat kaydı yok"
+            mesaj="Tamamlanan ve tahsilat bekleyen işlerin oranı burada görünecek."
+            yuk={232}/>
+        : <>
       <div style={{display:"flex",alignItems:"center",gap:20}}>
         <div style={{position:"relative",width:160,flexShrink:0}}>
           <PieChart width={160} height={160}><Pie data={pie} cx={80} cy={80} innerRadius={54} outerRadius={78} dataKey="val" startAngle={90} endAngle={-270} strokeWidth={0}>{pie.map((d,i)=><Cell key={i} fill={d.color}/>)}</Pie></PieChart>
@@ -3936,6 +3989,7 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
           </div>)}
         </div>
       </div>
+      </>}
       <div style={{textAlign:"right",marginTop:8}}><button onClick={onDetayTahsilat} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 16px",color:C.t1,fontSize:12,fontWeight:600,cursor:"pointer"}}>{T.detayL}</button></div>
     </Sh>
   </div>;
@@ -4779,7 +4833,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
