@@ -3896,7 +3896,6 @@ const Sidebar=memo(function Sidebar({sekme,setSekme,T,isletme,acilVade=0}){
   return <aside style={{width:252,flexShrink:0,background:C.card,borderRight:`1px solid ${C.border}`,height:"100vh",position:"sticky",top:0,display:"flex",flexDirection:"column",padding:"26px 16px 20px",boxSizing:"border-box"}}>
     <div style={{padding:"0 8px 24px",marginBottom:20,borderBottom:`1px solid ${C.border}`}}>
       <TFLogo boyut={78} yazi koyu={koyuMu(C.bg)}/>
-      <div style={{textAlign:"center",fontSize:8.5,fontWeight:600,color:GOLD,letterSpacing:"0.42em",marginTop:7}}>ELITE</div>
     </div>
     <nav style={{display:"flex",flexDirection:"column",gap:2}}>
       {items.map(m=>{
@@ -4229,8 +4228,6 @@ function GirisEkrani({onGiris}){
       {/* Logo */}
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
         <TFLogo boyut={92} yazi/>
-        <div style={{fontSize:16,fontWeight:600,color:"#111827",letterSpacing:"0.12em"}}>TRADEFLOW</div>
-        <div style={{fontSize:11,fontWeight:600,color:"#6B7280",letterSpacing:"0.34em",marginTop:1}}>ELITE</div>
         <div style={{display:"flex",gap:6,margin:"14px auto 4px",background:"#EDF0F5",borderRadius:12,padding:4,maxWidth:290}}>
           {[["isveren","💼 İşveren"],["usta","👷 Usta / Çalışan"]].map(([v,l])=><button key={v} onClick={()=>{setTip(v);setHata("");if(v==="usta")setMod("giris");}} style={{flex:1,background:tip===v?"#fff":"transparent",border:"none",borderRadius:9,padding:"9px 4px",fontSize:12.5,fontWeight:700,color:tip===v?"#1C4E60":"#6B7280",cursor:"pointer",boxShadow:tip===v?"0 1px 3px rgba(16,24,40,0.1)":"none"}}>{l}</button>)}
         </div>
@@ -4758,7 +4755,6 @@ export default function TradeFlow(){
         <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
           <TFLogo boyut={112} yazi/>
         </div>
-        <div style={{fontSize:10,fontWeight:600,color:"#C9A24B",letterSpacing:"0.44em",marginTop:8}}>ELITE</div>
         <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:"#9CA3AF"}}>
           Built by <span style={{color:"#2E7490",fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
         </div>
@@ -4787,7 +4783,6 @@ export default function TradeFlow(){
     <div style={{animation:"tfPulse 1.7s ease-in-out infinite"}}>
       <TFLogo boyut={112} yazi koyu={koyuMu(C.bg)}/>
     </div>
-    <div style={{fontSize:10,fontWeight:600,color:GOLD,letterSpacing:"0.44em",marginTop:8}}>ELITE</div>
     {/* Built by ERAİ — ERA mavi, İ pembe */}
     <div style={{fontSize:12.5,fontWeight:700,letterSpacing:"0.08em",marginTop:36,color:C.t3}}>
       Built by <span style={{color:P,fontWeight:800}}>ERA</span><span style={{color:"#EC4899",fontWeight:800}}>İ</span>
@@ -4809,7 +4804,7 @@ export default function TradeFlow(){
         {!MASAUSTU&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 16px 12px",background:C.bg,position:"sticky",top:0,zIndex:50}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <TFLogo boyut={30} ortala={false} koyu={koyuMu(C.bg)}/>
-            <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,color:"#2E7490",letterSpacing:"0.3em",display:"flex",alignItems:"center",gap:5}}>ELITE <span style={{color:C.t3}}>·</span> <LedImza boyut={10} metin="ERAİ" inline={true}/></div></div>
+            <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.3em",display:"flex",alignItems:"center"}}><LedImza boyut={10} metin="ERAİ" inline={true}/></div></div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div onClick={()=>setSekme("bildiri")} style={{position:"relative",cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-bell" style={{fontSize:22,color:C.t1}} aria-hidden="true"/>{okunmamis>0&&<span style={{position:"absolute",top:5,right:5,width:9,height:9,borderRadius:"50%",background:"#2E7490",border:"2px solid "+C.bg}}/>}</div>
