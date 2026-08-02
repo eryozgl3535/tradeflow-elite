@@ -1574,17 +1574,16 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   const tevkifatT=tevkifat>0?Math.round(kdvT*tevkifat/10):0;
   const genel=matrah+kdvT-tevkifatT;
   const belgeNo="TFE"+new Date().getFullYear()+String(fatNo).padStart(9,"0");
-  const ettn=("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx").replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&0x3|0x8)).toString(16);});
   const simdi=new Date();
 
   const whatsappPaylas=()=>{
-    const metin=`🧾 *FATURA — ${isletme.ad}*\n\nSayın ${alici.ad},\n\nFatura No: ${belgeNo}\nTarih: ${simdi.toLocaleDateString("tr-TR")}\n\n${kalemler.map(k=>`• ${k.tanim}: ${(k.miktar*k.birim).toLocaleString("tr-TR")} TL`).join("\n")}\n\nToplam: ${ara.toLocaleString("tr-TR")} TL${iskontoT>0?`\nİskonto (%${iskonto}): -${iskontoT.toLocaleString("tr-TR")} TL`:""}\nKDV (%${kdv}): ${kdvT.toLocaleString("tr-TR")} TL${tevkifatT>0?`\nTevkifat (${tevkifat}/10): -${tevkifatT.toLocaleString("tr-TR")} TL`:""}\n*ÖDENECEK: ${genel.toLocaleString("tr-TR")} TL*\n\n${isletme.telefon||""}`;
+    const metin=`🧾 *PROFORMA FATURA — ${isletme.ad}*\n\nSayın ${alici.ad},\n\nBelge No: ${belgeNo}\nTarih: ${simdi.toLocaleDateString("tr-TR")}\n\n${kalemler.map(k=>`• ${k.tanim}: ${(k.miktar*k.birim).toLocaleString("tr-TR")} TL`).join("\n")}\n\nToplam: ${ara.toLocaleString("tr-TR")} TL${iskontoT>0?`\nİskonto (%${iskonto}): -${iskontoT.toLocaleString("tr-TR")} TL`:""}\nKDV (%${kdv}): ${kdvT.toLocaleString("tr-TR")} TL${tevkifatT>0?`\nTevkifat (${tevkifat}/10): -${tevkifatT.toLocaleString("tr-TR")} TL`:""}\n*ÖDENECEK: ${genel.toLocaleString("tr-TR")} TL*\n\n_Bu belge proforma faturadır, resmî fatura yerine geçmez._\n\n${isletme.telefon||""}`;
     window.open("https://wa.me/?text="+encodeURIComponent(metin),"_blank");
   };
   const yazdir=()=>{window.print();};
 
   const faturaKes=()=>{
-    const fatura={no:belgeNo,jobRef:job.ref,musteri:alici.ad,tutar:genel,tarih:simdi.toLocaleDateString("tr-TR"),ettn,alici,kalemler,kdv,ara,iskonto:Number(iskonto)||0,iskontoT,kdvT,tevkifat,tevkifatT};
+    const fatura={no:belgeNo,jobRef:job.ref,musteri:alici.ad,tutar:genel,tarih:simdi.toLocaleDateString("tr-TR"),alici,kalemler,kdv,ara,iskonto:Number(iskonto)||0,iskontoT,kdvT,tevkifat,tevkifatT};
     onKesildi(fatura);
     fatNo++;
     // TradeFlow GİB'e fatura GÖNDERMEZ. Belge kaydedilir, kullanıcı resmî
@@ -1616,7 +1615,6 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
       <div style={{border:"1px solid #ccc",borderRadius:8,padding:10,marginBottom:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:4,fontSize:10}}>
         <div><b>Fatura No:</b> {belgeNo}</div><div><b>Fatura Tipi:</b> SATIŞ</div>
         <div><b>Tarih:</b> {simdi.toLocaleDateString("tr-TR")}</div><div><b>Senaryo:</b> e-Arşiv</div>
-        <div style={{gridColumn:"1/3"}}><b>ETTN:</b> <span style={{fontFamily:"monospace",fontSize:9}}>{ettn}</span></div>
       </div>
       <table style={{width:"100%",borderCollapse:"collapse",marginBottom:12,fontSize:10}}>
         <thead><tr style={{background:"#f0f0f0"}}>{["#","Mal/Hizmet","Miktar","Birim Fiyat","KDV %","KDV Tutarı","Tutar"].map(h=><th key={h} style={{border:"1px solid #ccc",padding:"5px 4px",fontWeight:700,fontSize:9}}>{h}</th>)}</tr></thead>
@@ -1653,9 +1651,16 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
 
   return <BottomSheet onKapat={onKapat}>
     <div style={{fontSize:17,fontWeight:700,color:C.t1,marginBottom:4}}>{T.faturaKes}</div>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
       <div style={{fontSize:12,color:C.t2}}>{job.ref} · KDV %{kdv}</div>
       <span onClick={()=>{onKapat();onGibAc&&onGibAc("bilgi");}} style={{fontSize:10,background:C.amberBg,color:C.amber,padding:"3px 10px",borderRadius:20,fontWeight:700,cursor:"pointer"}}>ℹ️ e-Fatura rehberi →</span>
+    </div>
+    <div style={{background:"#FDF8EC",border:"1px solid #F6D18B",borderRadius:12,padding:"11px 13px",marginBottom:14,display:"flex",gap:9,alignItems:"flex-start"}}>
+      <span style={{fontSize:15,lineHeight:1.2,flexShrink:0}}>ℹ️</span>
+      <div style={{fontSize:11,color:"#7A5B12",lineHeight:1.6}}>
+        <b>Bu belge proforma faturadır</b> — müşteriye iş bedelini ve dökümünü göstermek içindir.
+        Resmî fatura yerine geçmez; vergi açısından geçerli fatura e-Arşiv / e-Fatura sistemi üzerinden düzenlenir.
+      </div>
     </div>
     <Inp value={alici.ad} onChange={e=>setAlici(a=>({...a,ad:e.target.value}))} placeholder={T.aliciAdiPh}/>
     <div style={{display:"flex",gap:10}}><div style={{flex:1}}><Inp value={alici.vkn} onChange={e=>setAlici(a=>({...a,vkn:e.target.value}))} placeholder="VKN / TCKN"/></div><div style={{flex:1}}><Inp value={alici.adres} onChange={e=>setAlici(a=>({...a,adres:e.target.value}))} placeholder="Adres"/></div></div>
@@ -2886,7 +2891,6 @@ function FaturalarTab({faturalar,jobs,onFaturaKes,onFaturaSil,T,isletme}){
         </div>
       </div>
       <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{f.musteri}</div>
-      <div style={{fontSize:10,color:C.t3,fontFamily:"monospace",margin:"3px 0"}}>ETTN: {f.ettn.slice(0,18)}...</div>
       <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}><span style={{fontSize:11,color:C.t3}}>{f.tarih} · {f.jobRef}</span><span style={{fontSize:15,fontWeight:800,color:C.green}}>{fmt(f.tutar)}</span></div>
       {/* Silme onayı */}
       {silOnayId===f.no&&<div style={{background:C.redBg,borderRadius:12,padding:12,marginTop:10}}>
