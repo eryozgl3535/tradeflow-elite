@@ -4186,7 +4186,8 @@ function GirisEkrani({onGiris}){
     if(tip==="usta"){setHata("Usta şifreni patronun sıfırlar — Ekip Yönetimi'nden.");return;}
     if(!email){setHata("Önce yukarıya e-posta adresini yaz, sonra tekrar dokun.");return;}
     try{
-      await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+      const redirectUrl=typeof __VITE_APP_URL__!=="undefined"?__VITE_APP_URL__:window.location.origin;
+      await supabase.auth.resetPasswordForEmail(email,{redirectTo:redirectUrl});
       setBilgi("📧 Sıfırlama bağlantısı "+email+" adresine gönderildi. Gelen kutunu (ve spam klasörünü) kontrol et — bağlantıya tıklayınca yeni şifre ekranı açılacak.");
     }catch(e){setHata("Gönderilemedi — e-posta adresini kontrol edip tekrar dene.");}
   };
