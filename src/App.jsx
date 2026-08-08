@@ -1029,13 +1029,14 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </div>
-    {/* İstatistik kartları — 2x2 grid, image1 tarzı */}
+    {/* İstatistik kartları — 2x2 grid */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-      {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 12px",cursor:"pointer",boxShadow:C.sh}}>
+      {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 12px",cursor:"pointer",boxShadow:C.sh,position:"relative"}}>
         <div style={{width:32,height:32,borderRadius:10,background:k.c+"18",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:9}}>
           <i className={`ti ${k.ic}`} style={{fontSize:16,color:k.c}} aria-hidden="true"/>
         </div>
-        <div style={{fontSize:10.5,fontWeight:700,color:C.t2,marginBottom:3}}>{k.l}</div>
+        <i className="ti ti-chevron-right" style={{position:"absolute",top:14,right:12,fontSize:13,color:C.t3}} aria-hidden="true"/>
+        <div style={{fontSize:10.5,fontWeight:700,color:k.c,marginBottom:3}}>{k.l}</div>
         <div style={{fontSize:16.5,fontWeight:800,color:C.t1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{k.v}</div>
         <div style={{fontSize:9.5,color:C.t3,marginTop:1}}>{k.sub}</div>
       </div>)}
@@ -1069,24 +1070,21 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         })}
       </div>;
     })()}
-    {/* Hızlı İşlemler — renkli daire ikonlar, image1 tarzı */}
-    <Sh s={{padding:"18px 14px 16px",marginBottom:16,borderRadius:20}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 16px"}}>
+    {/* Hızlı İşlemler — sade ikon + etiket, kart/rozet yok */}
+    <Sh s={{padding:"18px 12px 20px",marginBottom:16,borderRadius:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 18px"}}>
         <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Hızlı İşlemler</div>
         <div onClick={onOzellestir} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>{T.duzenle} <i className="ti ti-pencil" style={{fontSize:13}} aria-hidden="true"/></div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:7}}>
-        {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7,cursor:"pointer",border:`1px solid ${C.border}`,borderRadius:15,padding:"12px 2px 10px",background:C.card}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",columnGap:6,rowGap:20}}>
+        {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,cursor:"pointer"}}>
           <div style={{position:"relative"}}>
-            <div style={{width:46,height:46,borderRadius:"50%",background:m.c,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 10px ${m.c}4D`}}>
-              <i className={`ti ${m.ic}`} style={{fontSize:20,color:"#fff"}} aria-hidden="true"/>
+            <div style={{width:50,height:50,borderRadius:"50%",background:m.c,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 10px ${m.c}40`}}>
+              <i className={`ti ${m.ic}`} style={{fontSize:22,color:"#fff"}} aria-hidden="true"/>
             </div>
             {m.nokta&&<span style={{position:"absolute",top:-1,right:-1,width:11,height:11,borderRadius:"50%",background:"#E74694",border:`2px solid ${C.card}`}}/>}
           </div>
-          <div style={{fontSize:9.5,fontWeight:700,color:C.t1,textAlign:"center",lineHeight:1.15}}>{m.l}</div>
-          <div style={{width:18,height:18,borderRadius:"50%",background:m.c,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <i className="ti ti-chevron-right" style={{fontSize:10,color:"#fff"}} aria-hidden="true"/>
-          </div>
+          <div style={{fontSize:10,fontWeight:700,color:C.t1,textAlign:"center",lineHeight:1.15}}>{m.l}</div>
         </div>)}
       </div>
     </Sh>
