@@ -125,6 +125,45 @@ function UstaPanel({kullanici}){
   const bugunku=acikIsler.filter(j=>(j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)).length;
   const bh=((veri&&veri.ad)||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 
+  // ── İstatistikler: bu hafta / bu ay / toplam tamamlanan (sadece kendi işleri, finansal veri yok) ──
+  const simdi=new Date();
+  const haftaBasi=new Date(simdi);haftaBasi.setDate(simdi.getDate()-simdi.getDay());haftaBasi.setHours(0,0,0,0);
+  const ayBasi=new Date(simdi.getFullYear(),simdi.getMonth(),1);
+  const bitenTarihli=(j)=>{const t=j.tarih?new Date(j.tarih):null;return t&&!isNaN(t);};
+  const buHaftaBiten=bitenler.filter(j=>bitenTarihli(j)&&new Date(j.tarih)>=haftaBasi).length;
+  const buAyBiten=bitenler.filter(j=>bitenTarihli(j)&&new Date(j.tarih)>=ayBasi).length;
+  const toplamBiten=bitenler.length;
+
+  // ── Rozet sistemi: toplam tamamlanan işe göre kademeli ──
+  const ROZETLER=[
+    {esik:0,ad:"Çırak",ikon:"🔰",renk:"#94A3B8"},
+    {esik:5,ad:"Bronz Usta",ikon:"🥉",renk:"#B45309"},
+    {esik:15,ad:"Gümüş Usta",ikon:"🥈",renk:"#64748B"},
+    {esik:30,ad:"Altın Usta",ikon:"🥇",renk:"#D97706"},
+    {esik:50,ad:"Elmas Usta",ikon:"💎",renk:"#0EA5E9"},
+  ];
+  let rozetIdx=0;
+  for(let i=0;i<ROZETLER.length;i++){if(toplamBiten>=ROZETLER[i].esik)rozetIdx=i;}
+  const aktifRozet=ROZETLER[rozetIdx];
+  const sonrakiRozet=ROZETLER[rozetIdx+1]||null;
+  const rozetIlerleme=sonrakiRozet?Math.min(100,Math.round(((toplamBiten-aktifRozet.esik)/(sonrakiRozet.esik-aktifRozet.esik))*100)):100;
+
+  // ── Günün sözü: tarihe göre deterministik, her gün aynı söz ──
+  const SOZLER=[
+    "Ustalık, işi bir kere değil, her seferinde doğru yapmaktır.",
+    "Bugün bıraktığın iz, yarın senin adın olur.",
+    "İyi bir usta aleti değil, işini konuşturur.",
+    "Küçük işler özenle yapılınca büyük güven doğurur.",
+    "Zanaat sabırla, ustalık tekrarla gelir.",
+    "Her tamamlanan iş, bir sonraki için referanstır.",
+    "Temiz iş, temiz isim bırakır.",
+    "En iyi reklam, memnun müşterinin gülüşüdür.",
+    "Detaylara verdiğin önem, seni fark ettirir.",
+    "Bugün de bir eve huzur götürüyorsun.",
+  ];
+  const yilinGunu=Math.floor((simdi-new Date(simdi.getFullYear(),0,0))/864e5);
+  const gununSozu=SOZLER[yilinGunu%SOZLER.length];
+
   const IsKart=(j)=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
     <div onClick={()=>setSecili(secili===j.id?null:j.id)} style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}}>
       <div style={{width:44,height:44,borderRadius:12,background:j.iconBg||C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{j.icon||"🔧"}</div>
@@ -141,6 +180,9 @@ function UstaPanel({kullanici}){
         {j.musteriTelefon&&<button onClick={()=>window.open("tel:"+j.musteriTelefon)} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}>📞</button>}
       </div>}
       {j.malzemeler&&<div style={{background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2,whiteSpace:"pre-wrap",marginBottom:10}}>🧰 {j.malzemeler}</div>}
+      {(j.fotolar||[]).length>0&&<div style={{display:"flex",gap:8,overflowX:"auto",marginBottom:10,paddingBottom:2}}>
+        {j.fotolar.map((f,i)=><img key={i} src={f} alt={"foto"+i} style={{width:64,height:64,borderRadius:10,objectFit:"cover",border:`1px solid ${C.border}`,flexShrink:0}}/>)}
+      </div>}
       {j.not&&<div style={{background:"#FBF6EA",borderRadius:11,padding:"9px 11px",fontSize:11.5,color:"#92600A",whiteSpace:"pre-wrap",marginBottom:10}}>📝 {j.not}</div>}
       {j.durum!=="tamamlandi"&&<>
         <div style={{display:"flex",alignItems:"center",gap:4,margin:"4px 0 10px"}}>
@@ -158,10 +200,13 @@ function UstaPanel({kullanici}){
     <div style={{width:"100%",maxWidth:520,padding:"48px 14px 96px"}}>
       {/* Üst kimlik kartı */}
       <Sh s={{padding:"16px",marginBottom:14,display:"flex",alignItems:"center",gap:13}}>
-        <div style={{width:52,height:52,borderRadius:"50%",background:GRAD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:"#fff",flexShrink:0}}>{bh}</div>
+        <div style={{position:"relative",flexShrink:0}}>
+          <div style={{width:52,height:52,borderRadius:"50%",background:GRAD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:"#fff"}}>{bh}</div>
+          <div style={{position:"absolute",bottom:-4,right:-4,width:22,height:22,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,boxShadow:"0 1px 4px rgba(0,0,0,0.15)"}}>{aktifRozet.ikon}</div>
+        </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{(veri&&veri.ad)||"Usta"}</div>
-          <div style={{fontSize:11,color:C.t3}}>👷 {(veri&&veri.rol)||"Usta"} · Usta Paneli</div>
+          <div style={{fontSize:11,color:C.t3}}>👷 {(veri&&veri.rol)||"Usta"} · {aktifRozet.ad}</div>
         </div>
         <div style={{textAlign:"right"}}><span style={{fontSize:10,fontWeight:700,letterSpacing:"0.3em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:10,fontWeight:700,color:"#E4335A"}}>İ</span></div>
       </Sh>
@@ -187,6 +232,41 @@ function UstaPanel({kullanici}){
       </>}
       {sekme==="profil"&&<>
         <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>👤 Hesabım</div>
+
+        {/* Rozet Kartı */}
+        <Sh s={{padding:"18px 16px",marginBottom:12,background:`linear-gradient(135deg,${aktifRozet.renk}22,${aktifRozet.renk}08)`,border:`1px solid ${aktifRozet.renk}33`}}>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <div style={{width:56,height:56,borderRadius:16,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>{aktifRozet.ikon}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{aktifRozet.ad}</div>
+              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{toplamBiten} iş tamamladın</div>
+            </div>
+          </div>
+          {sonrakiRozet&&<div style={{marginTop:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,color:C.t3,marginBottom:5}}>
+              <span>Sonraki: {sonrakiRozet.ikon} {sonrakiRozet.ad}</span>
+              <span>{toplamBiten}/{sonrakiRozet.esik}</span>
+            </div>
+            <div style={{height:7,background:"#fff",borderRadius:6,overflow:"hidden"}}>
+              <div style={{height:"100%",width:rozetIlerleme+"%",background:aktifRozet.renk,borderRadius:6,transition:"width 0.4s"}}/>
+            </div>
+          </div>}
+        </Sh>
+
+        {/* İstatistikler */}
+        <div style={{display:"flex",gap:10,marginBottom:12}}>
+          {[["Bu Hafta",buHaftaBiten,"#2563EB"],["Bu Ay",buAyBiten,"#0E9F6E"],["Toplam",toplamBiten,"#7C3AED"]].map(([l,v,r])=><Sh key={l} s={{flex:1,padding:"12px 8px",textAlign:"center"}}>
+            <div style={{fontSize:19,fontWeight:800,color:r}}>{v}</div>
+            <div style={{fontSize:9.5,color:C.t3,marginTop:2}}>{l} Tamamlanan</div>
+          </Sh>)}
+        </div>
+
+        {/* Günün Sözü */}
+        <Sh s={{padding:"14px 16px",marginBottom:12,background:"#F5F3FF"}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#7C3AED",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>💬 Günün Sözü</div>
+          <div style={{fontSize:12.5,color:"#4C1D95",lineHeight:1.5,fontStyle:"italic"}}>"{gununSozu}"</div>
+        </Sh>
+
         <Sh s={{padding:"6px 0",marginBottom:12}}>
           <SifreDegistir onBitti={()=>{}} gomulu/>
         </Sh>
