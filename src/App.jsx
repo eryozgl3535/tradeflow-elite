@@ -992,12 +992,19 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const ipDokunBas=(e)=>{ipDokunRef.current=e.touches[0].clientX;};
   const ipDokunBit=(e)=>{if(ipDokunRef.current==null)return;const dx=e.changedTouches[0].clientX-ipDokunRef.current;if(Math.abs(dx)>34){setIpucuIx(i=>(i+(dx<0?1:-1)+ipuclari.length)%ipuclari.length);}ipDokunRef.current=null;};
   return <div style={{padding:"14px 16px 0"}}>
-    {/* Karşılama */}
-    <div style={{padding:"6px 2px 4px",marginBottom:20,display:"flex",alignItems:"center",gap:14}}>
-      <GokyuzuSahne saat={saat} dk={new Date().getMinutes()} g={62}/>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:23,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.2}}>{selam}{ad?", "+ad:""}</div>
-        <div style={{fontSize:12.5,color:C.t3,marginTop:4}}>{DILIM_METIN[dilim].alt}</div>
+    {/* Karşılama — fotoğraflı hero */}
+    <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:18,minHeight:224,boxShadow:"0 10px 28px rgba(16,24,40,0.16)"}}>
+      <img src="https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=900&auto=format&fit=crop" alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+      <div style={{position:"absolute",inset:0,background:({sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",ogle:"linear-gradient(180deg,rgba(10,20,35,0.08) 0%,rgba(10,20,35,0.04) 38%,rgba(8,16,28,0.55) 100%)",aksam:"linear-gradient(180deg,rgba(60,25,15,0.18) 0%,rgba(50,20,15,0.08) 38%,rgba(35,14,12,0.68) 100%)",gece:"linear-gradient(180deg,rgba(6,10,24,0.42) 0%,rgba(6,10,24,0.28) 38%,rgba(4,7,20,0.82) 100%)"})[dilim]}}/>
+      <div style={{position:"relative",padding:"18px 20px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:224}}>
+        <div style={{fontSize:26,fontWeight:800,color:"#fff",letterSpacing:"-0.02em",lineHeight:1.15,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
+        <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:14,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"7px 14px",alignSelf:"flex-start",boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}>
+          <i className="ti ti-clock" style={{fontSize:14,color:"#1C4E60"}} aria-hidden="true"/>
+          <span style={{fontSize:12.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
+          <span style={{width:3,height:3,borderRadius:"50%",background:"#9CA3AF"}}/>
+          <span style={{fontSize:12.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span>
+        </div>
       </div>
     </div>
     {/* Yeni İş Ekle + İpucu kartları — yan yana */}
@@ -1022,20 +1029,17 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </div>
-    {/* İstatistik şeridi — tek kart, 4 sütun, renkli alt çizgiler */}
-    <Sh s={{padding:"16px 6px",marginBottom:16,borderRadius:18}}>
-      <div style={{display:"flex"}}>
-        {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{flex:1,padding:"2px 10px",cursor:"pointer",borderRight:i<3?`1px solid ${C.border}`:"none"}}>
-          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
-            <i className={`ti ${k.ic}`} style={{fontSize:14,color:k.c}} aria-hidden="true"/>
-            <span style={{fontSize:9.5,fontWeight:700,color:C.t2,lineHeight:1.1}}>{k.l}</span>
-          </div>
-          <div style={{fontSize:15,fontWeight:800,color:C.t1,whiteSpace:"nowrap"}}>{k.v}</div>
-          <div style={{fontSize:9,color:C.t3,marginBottom:8}}>{k.sub}</div>
-          <div style={{height:4,borderRadius:3,background:k.c}}/>
-        </div>)}
-      </div>
-    </Sh>
+    {/* İstatistik kartları — 2x2 grid, image1 tarzı */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+      {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 12px",cursor:"pointer",boxShadow:C.sh}}>
+        <div style={{width:32,height:32,borderRadius:10,background:k.c+"18",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:9}}>
+          <i className={`ti ${k.ic}`} style={{fontSize:16,color:k.c}} aria-hidden="true"/>
+        </div>
+        <div style={{fontSize:10.5,fontWeight:700,color:C.t2,marginBottom:3}}>{k.l}</div>
+        <div style={{fontSize:16.5,fontWeight:800,color:C.t1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{k.v}</div>
+        <div style={{fontSize:9.5,color:C.t3,marginTop:1}}>{k.sub}</div>
+      </div>)}
+    </div>
     {/* 🔔 VADE HATIRLATMALARI */}
     {(()=>{
       const hatirlatmalar=vadeHatirlatmalari(jobs,cekSenetler);
