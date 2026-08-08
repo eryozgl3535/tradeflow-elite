@@ -1069,20 +1069,24 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         })}
       </div>;
     })()}
-    {/* Hızlı İşlemler — düz beyaz kutular */}
-    <Sh s={{padding:"18px 16px",marginBottom:16,borderRadius:18}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 14px"}}>
+    {/* Hızlı İşlemler — renkli daire ikonlar, image1 tarzı */}
+    <Sh s={{padding:"18px 14px 16px",marginBottom:16,borderRadius:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 16px"}}>
         <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Hızlı İşlemler</div>
         <div onClick={onOzellestir} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>{T.duzenle} <i className="ti ti-pencil" style={{fontSize:13}} aria-hidden="true"/></div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:9}}>
-        {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}}>
-          <div style={{width:"100%",aspectRatio:"1",borderRadius:15,background:C.card,border:"1px solid #EDF0F4",boxShadow:"0 1px 2px rgba(16,24,40,0.05)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
-            <i className={`ti ${m.ic}`} style={{fontSize:23,color:m.c}} aria-hidden="true"/>
-            {m.nokta&&<span style={{position:"absolute",top:7,right:7,width:8,height:8,borderRadius:"50%",background:"#E74694"}}/>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:7}}>
+        {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7,cursor:"pointer",border:`1px solid ${C.border}`,borderRadius:15,padding:"12px 2px 10px",background:C.card}}>
+          <div style={{position:"relative"}}>
+            <div style={{width:46,height:46,borderRadius:"50%",background:m.c,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 10px ${m.c}4D`}}>
+              <i className={`ti ${m.ic}`} style={{fontSize:20,color:"#fff"}} aria-hidden="true"/>
+            </div>
+            {m.nokta&&<span style={{position:"absolute",top:-1,right:-1,width:11,height:11,borderRadius:"50%",background:"#E74694",border:`2px solid ${C.card}`}}/>}
           </div>
-          <div style={{fontSize:10,fontWeight:600,color:C.t1,textAlign:"center",lineHeight:1.2}}>{m.l}</div>
-          <div style={{width:22,height:3,borderRadius:2,background:m.c,marginTop:-2}}/>
+          <div style={{fontSize:9.5,fontWeight:700,color:C.t1,textAlign:"center",lineHeight:1.15}}>{m.l}</div>
+          <div style={{width:18,height:18,borderRadius:"50%",background:m.c,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <i className="ti ti-chevron-right" style={{fontSize:10,color:"#fff"}} aria-hidden="true"/>
+          </div>
         </div>)}
       </div>
     </Sh>
@@ -1098,7 +1102,10 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         <i className="ti ti-chevron-down" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
         <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>{IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}</select>
       </div>
-      <button onClick={onOzellestir} style={{width:52,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:C.sh}}><i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/></button>
+      <button onClick={onOzellestir} style={{width:68,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,boxShadow:C.sh}}>
+        <i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/>
+        <span style={{fontSize:9.5,fontWeight:700}}>Ayarlar</span>
+      </button>
     </div>
     {/* ⏰ Yaklaşan çek/senet */}
     {/* Gelir - Gider Özeti */}
@@ -1108,7 +1115,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         <div onClick={()=>setSekme("raporlar")} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer"}}>{T.buAy} ▾</div>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{flex:1,background:"#F6F8FA",borderRadius:14,padding:"12px 12px"}}>
+        <div style={{flex:1,background:"#EAF0FA",borderRadius:14,padding:"12px 12px"}}>
           <div style={{fontSize:11,color:C.t3}}>{T.toplamGelir}</div>
           <div style={{fontSize:17,fontWeight:800,color:C.t1,margin:"2px 0 4px"}}>{fmt(tahsil)}</div>
           {gelirD!==null&&<div><span style={{fontSize:10.5,fontWeight:800,color:"#0E9F6E"}}>↑ %{Math.abs(gelirD)}</span><div style={{fontSize:9,color:C.t3,marginTop:2}}>Geçen aya göre</div></div>}
@@ -1117,7 +1124,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
           <svg width="106" height="106" viewBox="0 0 106 106"><circle cx="53" cy="53" r="44" fill="none" stroke="#E8ECF1" strokeWidth="10"/><circle cx="53" cy="53" r="44" fill="none" stroke={P} strokeWidth="10" strokeLinecap="round" strokeDasharray={cevre} strokeDashoffset={cevre*(1-Math.max(Math.min(karOran,100),0)/100)} transform="rotate(-90 53 53)"/></svg>
           <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:19,fontWeight:800,color:C.t1}}>%{karOran}</span><span style={{fontSize:10,color:C.t3}}>Kâr Oranı</span></div>
         </div>
-        <div style={{flex:1,background:"#F6F8FA",borderRadius:14,padding:"12px 12px",textAlign:"right"}}>
+        <div style={{flex:1,background:"#FDF2E9",borderRadius:14,padding:"12px 12px",textAlign:"right"}}>
           <div style={{fontSize:11,color:C.t3}}>{T.toplamGider}</div>
           <div style={{fontSize:17,fontWeight:800,color:C.t1,margin:"2px 0 4px"}}>{fmt(gider)}</div>
           {giderD!==null&&<div><span style={{fontSize:10.5,fontWeight:800,color:"#E02424"}}>↓ %{Math.abs(giderD)}</span><div style={{fontSize:9,color:C.t3,marginTop:2}}>Geçen aya göre</div></div>}
