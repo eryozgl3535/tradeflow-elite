@@ -4270,7 +4270,7 @@ function GirisEkrani({onGiris}){
   const L=trMi?{
     girisYap:"Giriş Yap",kayitOl:"Kayıt Ol",hesabaGiris:"Hesabınıza giriş yapın",yeniHesap:"Yeni hesap oluşturun",
     eposta:"E-posta",sifre:"Şifre",sifrePh:"En az 6 karakter",bekle:"Lütfen bekleyin...",
-    beniHatirla:"Beni hatırla",acikKal:"şifre sormadan açık kal",
+    beniHatirla:"Beni hatırla",acikKal:"e-postanı hatırlar, açık kal",
     hesapYok:"Hesabın yok mu? ",hesapVar:"Zaten hesabın var mı? ",
     hataGerekli:"E-posta ve şifre gerekli",hataKisa:"Şifre en az 6 karakter olmalı",hataYanlis:"E-posta veya şifre hatalı",hataKayitli:"Bu e-posta zaten kayıtlı, giriş yapın",hataOnay:"E-posta onayı gerekli. Gelen kutunuzu kontrol edin.",hataGenel:"Bir hata oluştu",
   }:{
@@ -4282,9 +4282,9 @@ function GirisEkrani({onGiris}){
   };
   const [mod,setMod]=useState("giris"); // giris | kayit
   const [tip,setTip]=useState("isveren"); // isveren | usta
-  const [email,setEmail]=useState("");
+  const [email,setEmail]=useState(()=>{try{return localStorage.getItem("tf_son_email")||"";}catch{return "";}});
   const [sifre,setSifre]=useState("");
-  const [beniHatirla,setBeniHatirla]=useState(true); // varsayılan: açık kal
+  const [beniHatirla,setBeniHatirla]=useState(()=>{try{return localStorage.getItem("tf_beni_hatirla")!=="0";}catch{return true;}}); // varsayılan: açık kal
   const [yukleniyor,setYukleniyor]=useState(false);
   const [hata,setHata]=useState("");
   const [bilgi,setBilgi]=useState("");
@@ -4322,11 +4322,19 @@ function GirisEkrani({onGiris}){
     if(!email||!sifre){setHata(tip==="usta"?"Kullanıcı adı ve şifre gerekli":L.hataGerekli);return;}
     if(sifre.length<6){setHata(L.hataKisa);return;}
     setYukleniyor(true);
+    const hatirlaKaydet=()=>{
+      try{
+        localStorage.setItem("tf_beni_hatirla",beniHatirla?"1":"0");
+        if(beniHatirla)localStorage.setItem("tf_son_email",email);
+        else localStorage.removeItem("tf_son_email");
+      }catch(e){}
+    };
     if(tip==="usta"){ // 👷 Usta girişi: kullanıcı adı → dahili e-posta
       try{
         const ka=email.trim().toLowerCase().replace(/\s/g,"");
         const {data,error}=await supabase.auth.signInWithPassword({email:ka+USTA_EK,password:sifre});
         if(error)throw error;
+        hatirlaKaydet();
         onGiris(data.user);
       }catch(e){setHata("Kullanıcı adı veya şifre hatalı. Patronunuzdan bilgilerinizi kontrol edin.");}
       setYukleniyor(false);
@@ -4339,16 +4347,19 @@ function GirisEkrani({onGiris}){
         if(error)throw error;
         // E-posta onayı kapalı olduğunda signUp direkt oturum döner → hemen içeri al
         if(data.session&&data.user){
+          hatirlaKaydet();
           onGiris(data.user);
         }else{
           // Onay hâlâ açıksa (Supabase ayarı) yedek: giriş dene
           const {data:d2,error:e2}=await supabase.auth.signInWithPassword({email,password:sifre});
           if(e2)throw e2;
+          hatirlaKaydet();
           onGiris(d2.user);
         }
       }else{
         const {data,error}=await supabase.auth.signInWithPassword({email,password:sifre});
         if(error)throw error;
+        hatirlaKaydet();
         onGiris(data.user);
       }
     }catch(e){
