@@ -997,7 +997,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <img src="https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=900&auto=format&fit=crop" alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
       <div style={{position:"absolute",inset:0,background:({sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",ogle:"linear-gradient(180deg,rgba(10,20,35,0.08) 0%,rgba(10,20,35,0.04) 38%,rgba(8,16,28,0.55) 100%)",aksam:"linear-gradient(180deg,rgba(60,25,15,0.18) 0%,rgba(50,20,15,0.08) 38%,rgba(35,14,12,0.68) 100%)",gece:"linear-gradient(180deg,rgba(6,10,24,0.42) 0%,rgba(6,10,24,0.28) 38%,rgba(4,7,20,0.82) 100%)"})[dilim]}}/>
       <div style={{position:"relative",padding:"18px 20px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:224}}>
-        <div style={{fontSize:26,fontWeight:800,color:"#fff",letterSpacing:"-0.02em",lineHeight:1.15,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
+        <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.2,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
         <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
         <div style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:14,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"7px 14px",alignSelf:"flex-start",boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}>
           <i className="ti ti-clock" style={{fontSize:14,color:"#1C4E60"}} aria-hidden="true"/>
