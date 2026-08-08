@@ -42,6 +42,20 @@ const TEMALAR = {
   gunbatimi: {...LIGHT, bg:"#F7EFE5", card:"#FFFFFF", border:"#EBDCC8", purpleBg:"#F5E5CE", amberBg:"#FBEBC8", inputBg:"#FFFDF9"},
   lavanta: {...LIGHT, bg:"#F0EEF8", card:"#FFFFFF", border:"#DFDAEE", purpleBg:"#E6E0F5", blueBg:"#E0DEF5", inputBg:"#FCFBFF"},
   gul: {...LIGHT, bg:"#F7EDF0", card:"#FFFFFF", border:"#ECDAE0", purpleBg:"#F5DEE6", redBg:"#FADCE3", inputBg:"#FFFBFC"},
+  mercan: {...LIGHT, bg:"#FBEAE6", card:"#FFFFFF", border:"#F2D2C7", purpleBg:"#F8DFD6", redBg:"#F8D8CB", inputBg:"#FFFBFA"},
+  nane: {...LIGHT, bg:"#E7F6EF", card:"#FFFFFF", border:"#CBE9DA", purpleBg:"#DCF0E4", greenBg:"#CDF0DE", inputBg:"#FAFEFC"},
+  gokyuzu: {...LIGHT, bg:"#E7F3FC", card:"#FFFFFF", border:"#CEE5F6", purpleBg:"#DDECF8", blueBg:"#CFE6F8", inputBg:"#FAFDFF"},
+  kum: {...LIGHT, bg:"#F7F2E8", card:"#FFFFFF", border:"#EBE0C9", purpleBg:"#F2EAD7", amberBg:"#F4E5C1", inputBg:"#FFFEFA"},
+  seftali: {...LIGHT, bg:"#FDF1EA", card:"#FFFFFF", border:"#F6DFC9", purpleBg:"#FBE8D9", amberBg:"#F9E1C3", inputBg:"#FFFCF9"},
+  zumrut: {...LIGHT, bg:"#E5F3EC", card:"#FFFFFF", border:"#C7E4D5", purpleBg:"#D9EEE2", greenBg:"#C9EDDA", inputBg:"#F9FEFB"},
+  safir: {...LIGHT, bg:"#E7EEFC", card:"#FFFFFF", border:"#CFDCF6", purpleBg:"#DDE6F8", blueBg:"#CFDFF8", inputBg:"#FAFBFF"},
+  ametist: {...LIGHT, bg:"#F3EAFA", card:"#FFFFFF", border:"#E2CEF2", purpleBg:"#ECDCF7", blueBg:"#EAD9F5", inputBg:"#FDFAFF"},
+  bal: {...LIGHT, bg:"#FCF3E3", card:"#FFFFFF", border:"#F4E3BE", purpleBg:"#FAEDD3", amberBg:"#F8E7BC", inputBg:"#FFFDF8"},
+  nar: {...LIGHT, bg:"#FBEAEC", card:"#FFFFFF", border:"#F4D2D6", purpleBg:"#F9DEE1", redBg:"#F7D3D8", inputBg:"#FFFAFB"},
+  zeytin: {...LIGHT, bg:"#F2F3E4", card:"#FFFFFF", border:"#E4E5C4", purpleBg:"#ECEDD5", greenBg:"#E7E9C4", inputBg:"#FDFEF8"},
+  turkuaz: {...LIGHT, bg:"#E6F6F5", card:"#FFFFFF", border:"#C9E9E7", purpleBg:"#DBF1EF", blueBg:"#CDEEEB", inputBg:"#FAFFFE"},
+  gece: {...LIGHT, bg:"#EAEDF6", card:"#FFFFFF", border:"#D3D9EC", purpleBg:"#E1E5F5", blueBg:"#DCE1F4", inputBg:"#FBFCFF"},
+  toprak: {...LIGHT, bg:"#F5EDE7", card:"#FFFFFF", border:"#E7D6C9", purpleBg:"#F0E3D8", amberBg:"#EEDDC7", inputBg:"#FEFBF9"},
 };
 const TEMA_LISTE = [
   ["acik","☀️","Açık","#F2F2F7"],
@@ -50,6 +64,20 @@ const TEMA_LISTE = [
   ["gunbatimi","🌅","Günbatımı","#F2D9AE"],
   ["lavanta","💜","Lavanta","#CFC5EC"],
   ["gul","🌸","Gül","#EDC3D1"],
+  ["mercan","🪸","Mercan","#F0AC93"],
+  ["nane","🌱","Nane","#95DDB8"],
+  ["gokyuzu","☁️","Gökyüzü","#A6D0F0"],
+  ["kum","🏖️","Kum","#E4D3A9"],
+  ["seftali","🍑","Şeftali","#F3C39A"],
+  ["zumrut","💚","Zümrüt","#6FCB9B"],
+  ["safir","💎","Safir","#8FB0EE"],
+  ["ametist","🔮","Ametist","#C79EEA"],
+  ["bal","🍯","Bal","#EFC873"],
+  ["nar","🍎","Nar","#E88A94"],
+  ["zeytin","🫒","Zeytin","#B9BE7E"],
+  ["turkuaz","🌊","Turkuaz","#7FD4CC"],
+  ["gece","🌌","Gece Mavisi","#9CA8DD"],
+  ["toprak","🏺","Toprak","#D3A986"],
 ];
 
 // ═══ ABONELİK PLANLARI ═══
@@ -4929,66 +4957,6 @@ export default function TradeFlow(){
   const statClick=(go)=>{if(go==="stat-aktif"){setIslerFiltre("aktif");setSekme("isler");}else if(go==="stat-bekleyen"){setIslerFiltre("bekliyor");setSekme("isler");}else if(go==="stat-tamamlandi"){setIslerFiltre("tamamlandi");setSekme("isler");}else if(go==="stat-tahsil"){setTahsilatFiltre("tahsil");setSekme("tahsilatlar");}else if(go==="stat-btahsilat"){setTahsilatFiltre("bekleyen");setSekme("tahsilatlar");}};
   _h.current={yeniIsKilit,statClick,goster,setIsKolu,plan};
   const okunmamis=bildirimler.filter(b=>!b.okundu).length;
-  
-  // ═══ SPONSOR 48 SAAT TIMER (Supabase) ═══
-  const [showSponsors, setShowSponsors] = useState(false);
-  
-  useEffect(() => {
-    const checkSponsorStatus = async () => {
-      try {
-        // Sponsor bölümü ayarlarını kontrol et
-        const { data, error } = await supabase
-          .from('sponsor_settings')
-          .select('sponsor_start_time')
-          .single();
-        
-        if (data && !error) {
-          const startTime = new Date(data.sponsor_start_time);
-          const now = new Date();
-          const hoursElapsed = (now - startTime) / (1000 * 60 * 60);
-          
-          // 48 saat geçmedi mi?
-          if (hoursElapsed < 48) {
-            setShowSponsors(true);
-          } else {
-            setShowSponsors(false);
-          }
-        } else {
-          // Tablo yoksa, sponsor göster ve tablo oluştur
-          setShowSponsors(true);
-        }
-      } catch (e) {
-        console.log("Sponsor check:", e);
-        setShowSponsors(true); // Hata durumunda göster
-      }
-    };
-    
-    checkSponsorStatus();
-    // Her 1 saatte bir kontrol et
-    const interval = setInterval(checkSponsorStatus, 60 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ═══ Sponsors Bölümü ═══
-  const Sponsors=memo(()=>(
-    <div style={{padding:"24px 14px",textAlign:"center",borderTop:`1px solid ${C.border}`,background:C.bg,marginTop:16}}>
-      <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:16,letterSpacing:"0.05em"}}>{TT.destekleyenlerL||"DESTEKLEYENLER"}</div>
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:16,marginBottom:20,flexWrap:"wrap"}}>
-        {[
-          {img:"/alka-teknik.jpg",ad:"ALKA TEKNİK",alt:"ALKA TEKNİK - Teknik Hizmetler"},
-          {img:"/alka-havuz.jpg",ad:"ALKA HAVUZ",alt:"ALKA HAVUZ - Volkan Gülcemal"},
-          {img:"/luxe-pools.jpg",ad:"LUXE POOLS",alt:"LUXE POOLS - Premium Havuz Tasarımı"}
-        ].map((s,i)=>(
-          <div key={i} style={{flex:"0 1 120px"}}>
-            <img src={s.img} alt={s.alt} style={{width:"100%",maxWidth:"120px",height:"auto",borderRadius:12,objectFit:"contain"}} />
-          </div>
-        ))}
-      </div>
-      <div style={{fontSize:12,color:C.t2,fontStyle:"italic",lineHeight:1.6}}>
-        Bu platformun geliştirilmesine katkı sağlayan <span style={{fontWeight:700,color:C.t1}}>Enes Gülcemal</span>'e değerli desteğinden dolayı teşekkür ederiz.
-      </div>
-    </div>
-  ));
 
   const NAV=[{id:"anasayfa",icon:"ti-home",label:T.anaSayfa},{id:"isler",icon:"ti-clipboard-text",label:T.isAkislari},{id:"fab",icon:"+",label:""},{id:"bildiri",icon:"ti-bell",label:T.bildirimlerT},{id:"profil",icon:"ti-user",label:T.profil}];
 
@@ -5053,7 +5021,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}{showSponsors&&<Sponsors />}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
