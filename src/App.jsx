@@ -317,13 +317,15 @@ function UstaPanel({kullanici}){
   </div>;
 }
 function SifreDegistir({onBitti,gomulu}){
-  const [s1,setS1]=useState("");const [msg,setMsg]=useState("");
+  const [s1,setS1]=useState("");const [s2,setS2]=useState("");const [msg,setMsg]=useState("");
   return <div style={{padding:gomulu?"0 14px 14px":0}}>
     <div style={{fontSize:gomulu?13:16,fontWeight:800,color:C.t1,marginBottom:12,padding:gomulu?"12px 14px 0":0}}>🔑 Şifre Değiştir</div>
     <input type="password" value={s1} onChange={e=>setS1(e.target.value)} placeholder="Yeni şifre (en az 6 karakter)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
+    <input type="password" value={s2} onChange={e=>setS2(e.target.value)} placeholder="Yeni şifre (tekrar)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
     {msg&&<div style={{fontSize:12,color:msg.startsWith("✅")?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
     <button onClick={async()=>{
       if(s1.length<6){setMsg("Şifre en az 6 karakter olmalı");return;}
+      if(s1!==s2){setMsg("⚠️ Şifreler aynı değil — tekrar kontrol et");return;}
       const {error}=await supabase.auth.updateUser({password:s1});
       if(error){setMsg("Değiştirilemedi — tekrar deneyin");}else{setMsg("✅ Şifren değişti!");setTimeout(onBitti,1200);}
     }} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Kaydet</button>
@@ -2844,6 +2846,11 @@ function GibEkrani({onKapat,isletme,gibAyar,setGibAyar,goster}){
   </div>;
 }
 
+function SifreDegistirModal({onKapat}){
+  return <BottomSheet onKapat={onKapat}>
+    <SifreDegistir onBitti={onKapat} gomulu/>
+  </BottomSheet>;
+}
 function KdvModal({kdv,onSec,onKapat}){
   const [deger,setDeger]=useState(kdv);
   return <BottomSheet onKapat={onKapat}>
@@ -3958,12 +3965,19 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
       <Row icon="📜" label={T.gizlilik} sub={T.kvkkSub} onClick={()=>onAc("gizlilik")}/>
     </Sh>
 
+    {/* Hesabım / Güvenlik */}
+    <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>👤 Hesabım</div>
+    <Sh s={{marginBottom:14,overflow:"hidden"}}>
+      <Row icon="🔑" label="Şifre Değiştir" sub="Hesap güvenliğin için yeni şifre belirle" onClick={()=>setModal("sifre")}/>
+    </Sh>
+
     <Sh s={{marginBottom:18,overflow:"hidden"}}><Row icon="🚪" label={T.cikisYap} sub={kullaniciEmail} danger onClick={onCikis}/></Sh>
     <div style={{textAlign:"center",padding:"8px 0 4px"}}>
       <div style={{fontSize:12,color:C.t3,fontWeight:600}}>TradeFlow Elite v1.0.0</div>
       <div style={{fontSize:10,color:C.t3,marginTop:2}}>© 2026 TradeFlow · Tüm hakları saklıdır</div>
     </div>
 
+    {modal==="sifre"&&<SifreDegistirModal onKapat={()=>setModal(null)}/>}
     {modal==="dil"&&<DilSecimModal secili={dil} onSec={setDil} onKapat={()=>setModal(null)}/>}
     {modal==="para"&&<SecimModal baslik={T.paraBirimiB+" · "+kurKaynakAd()} secenekler={[{value:"TL",label:"Türk Lirası",icon:"₺"},{value:"USD",label:"Dolar ($"+KURLAR.USD+" TL)",icon:"$"},{value:"EUR",label:"Euro (€"+KURLAR.EUR+" TL)",icon:"€"}]} secili={para} onSec={(v)=>{setPara(v);goster("Para birimi: "+v);}} onKapat={()=>setModal(null)}/>}
     {modal==="kdv"&&<KdvModal kdv={kdv} onSec={(v)=>{setKdv(v);goster("KDV: %"+v);}} onKapat={()=>setModal(null)}/>}
