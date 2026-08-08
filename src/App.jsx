@@ -4180,16 +4180,23 @@ function GirisEkrani({onGiris}){
   const [sifreSifirlamaYukleniyor,setSifreSifirlamaYukleniyor]=useState(false);
   const [sifreSifirlamaHata,setSifreSifirlamaHata]=useState("");
   const [sifreSifirlamaBilgi,setSifreSifirlamaBilgi]=useState("");
+  const [sifreUnuttumModal,setSifreUnuttumModal]=useState(false);
+  const [sifreUnuttumEmail,setSifreUnuttumEmail]=useState("");
 
-  const sifremiUnuttum=async()=>{
+  const sifremiUnuttum=()=>{
     setHata("");setBilgi("");
-    if(tip==="usta"){setHata("Usta şifreni patronun sıfırlar — Ekip Yönetimi'nden.");return;}
-    if(!email){setHata("Önce yukarıya e-posta adresini yaz, sonra tekrar dokun.");return;}
+    setSifreUnuttumEmail("");
+    setSifreUnuttumModal(true);
+  };
+  const sifreUnuttumGonder=async()=>{
+    setHata("");setBilgi("");
+    if(!sifreUnuttumEmail){setHata("E-posta adresini girin");return;}
     try{
-      const redirectUrl=typeof __VITE_APP_URL__!=="undefined"?__VITE_APP_URL__:window.location.origin;
-      await supabase.auth.resetPasswordForEmail(email,{redirectTo:redirectUrl});
-      setBilgi("📧 Sıfırlama bağlantısı "+email+" adresine gönderildi. Gelen kutunu (ve spam klasörünü) kontrol et — bağlantıya tıklayınca yeni şifre ekranı açılacak.");
-    }catch(e){setHata("Gönderilemedi — e-posta adresini kontrol edip tekrar dene.");}
+      const redirectUrl=window.location.origin;
+      await supabase.auth.resetPasswordForEmail(sifreUnuttumEmail,{redirectTo:redirectUrl});
+      setBilgi("✅ Sıfırlama linki "+sifreUnuttumEmail+" adresine gönderildi!\n\n📧 Gelen kutunu (spam klasörünü de) kontrol et\n\n🔑 E-postadaki linke tıkla ve yeni şifre oluştur");
+      setSifreUnuttumModal(false);
+    }catch(e){setHata("⚠️ E-posta gönderilemedi. E-posta adresini kontrol edip tekrar dene.");}
   };
   const gonder=async()=>{
     setHata("");setBilgi("");
@@ -4235,7 +4242,8 @@ function GirisEkrani({onGiris}){
     setYukleniyor(false);
   };
 
-  return <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#EAF1FF,#F2F2F7)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
+  return <>
+  <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#EAF1FF,#F2F2F7)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
     <div style={{width:"100%",maxWidth:400,background:"#fff",borderRadius:24,padding:"36px 28px",boxShadow:"0 12px 40px rgba(27,42,74,0.15)"}}>
       {/* Logo */}
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
@@ -4256,7 +4264,7 @@ function GirisEkrani({onGiris}){
         <div style={{fontSize:11,color:"#6B7280",fontWeight:600,marginBottom:6,textTransform:"uppercase"}}>{L.sifre}</div>
         <input type="password" value={sifre} onChange={e=>setSifre(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")gonder();}} placeholder={L.sifrePh}
           style={{width:"100%",boxSizing:"border-box",background:"#F9FAFB",border:"1px solid #E5E7EB",borderRadius:12,padding:"13px 15px",fontSize:14,outline:"none"}}/>
-        {mod==="giris"&&tip!=="usta"&&<div onClick={sifremiUnuttum} style={{fontSize:12,fontWeight:700,color:"#2E7490",cursor:"pointer",textAlign:"right",marginTop:8}}>Şifremi unuttum</div>}
+        {mod==="giris"&&tip!=="usta"&&<div onClick={sifremiUnuttum} style={{fontSize:13,fontWeight:700,color:"#2E7490",cursor:"pointer",textAlign:"right",marginTop:12,textDecoration:"underline"}}>Şifremi unuttum?</div>}
       </div>
 
       {/* Beni hatırla */}
@@ -4279,8 +4287,42 @@ function GirisEkrani({onGiris}){
         </span>
       </div>
     </div>
-  </div>;
-}
+  </div>
+
+  {/* Şifre Unuttum Modal */}
+  {sifreUnuttumModal && (
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999}}>
+      <div style={{background:"white",borderRadius:16,padding:28,width:"90%",maxWidth:420,boxShadow:"0 20px 50px rgba(0,0,0,0.3)"}}>
+        <h2 style={{fontSize:20,fontWeight:700,marginBottom:10,color:"#1F2937"}}>Şifrenizi Sıfırlayın</h2>
+        <p style={{fontSize:14,color:"#6B7280",marginBottom:20}}>Lütfen hesabınızla ilişkili e-posta adresini girin</p>
+        
+        <input type="email" value={sifreUnuttumEmail} onChange={(e)=>setSifreUnuttumEmail(e.target.value)} 
+          placeholder="ornek@email.com" 
+          style={{width:"100%",boxSizing:"border-box",padding:"13px 15px",border:"1px solid #E5E7EB",borderRadius:12,fontSize:14,marginBottom:14,outline:"none",background:"#F9FAFB"}} 
+          onKeyDown={(e)=>{if(e.key==="Enter")sifreUnuttumGonder();}} 
+          autoFocus/>
+        
+        {hata&&<div style={{color:"#DC2626",fontSize:13,marginBottom:14,background:"#FEE2E2",padding:"10px 12px",borderRadius:8}}>⚠️ {hata}</div>}
+        
+        <div style={{display:"flex",gap:12}}>
+          <button onClick={()=>{setSifreUnuttumModal(false);setHata("");}} 
+            style={{flex:1,padding:"12px",border:"1px solid #E5E7EB",borderRadius:12,background:"white",color:"#6B7280",fontWeight:600,cursor:"pointer",fontSize:14,transition:"all 0.2s"}} 
+            onMouseEnter={(e)=>e.target.style.background="#F9FAFB"} 
+            onMouseLeave={(e)=>e.target.style.background="white"}>
+            İptal
+          </button>
+          <button onClick={sifreUnuttumGonder} 
+            style={{flex:1,padding:"12px",background:"#1C4E60",color:"white",borderRadius:12,border:"none",fontWeight:600,cursor:"pointer",fontSize:14,transition:"all 0.2s",boxShadow:"0 4px 12px rgba(28,78,96,0.3)"}} 
+            onMouseEnter={(e)=>e.target.style.background="#153a4d"} 
+            onMouseLeave={(e)=>e.target.style.background="#1C4E60"}>
+            Gönder
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+  </>;
+};
 
 export default function TradeFlow(){
   const [sekme,setSekme]=useState("anasayfa");
