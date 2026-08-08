@@ -10,7 +10,7 @@ import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } 
 import { PiyasaSeridi } from "./piyasa.jsx";
 import { NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
-import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf } from "./utils.js";
+import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf, ustaIsRaporuPdf } from "./utils.js";
 
 
 const LIGHT = {
@@ -164,6 +164,12 @@ function UstaPanel({kullanici}){
   const yilinGunu=Math.floor((simdi-new Date(simdi.getFullYear(),0,0))/864e5);
   const gununSozu=SOZLER[yilinGunu%SOZLER.length];
 
+  // ── Karşılama: saat/gün dilimi ──
+  const saatSimdi=simdi.getHours();
+  const dilim=gunDilimi(saatSimdi);
+  const selam=DILIM_METIN[dilim].selam;
+  const ustaAd=((veri&&veri.ad)||"").split(" ")[0]||"";
+
   const IsKart=(j)=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
     <div onClick={()=>setSecili(secili===j.id?null:j.id)} style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}}>
       <div style={{width:44,height:44,borderRadius:12,background:j.iconBg||C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{j.icon||"🔧"}</div>
@@ -198,6 +204,14 @@ function UstaPanel({kullanici}){
 
   return <div style={{minHeight:"100vh",background:C.bg,fontFamily:"-apple-system,sans-serif",display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:520,padding:"48px 14px 96px"}}>
+      {/* Karşılama — gökyüzü sahnesi */}
+      <div style={{padding:"2px 2px 4px",marginBottom:16,display:"flex",alignItems:"center",gap:14}}>
+        <GokyuzuSahne saat={saatSimdi} dk={simdi.getMinutes()} g={56}/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:20,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.2}}>{selam}{ustaAd?", "+ustaAd:""}</div>
+          <div style={{fontSize:12,color:C.t3,marginTop:3}}>{DILIM_METIN[dilim].alt}</div>
+        </div>
+      </div>
       {/* Üst kimlik kartı */}
       <Sh s={{padding:"16px",marginBottom:14,display:"flex",alignItems:"center",gap:13}}>
         <div style={{position:"relative",flexShrink:0}}>
@@ -224,6 +238,7 @@ function UstaPanel({kullanici}){
         <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>📋 İşlerim</div>
         {veri&&acikIsler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Şu an atanmış açık işin yok. Patronun iş atadığında burada görünecek. 💪</div></Sh>}
         {acikIsler.map(IsKart)}
+        <div style={{marginTop:16}}><PiyasaSeridi C={C} P={P}/></div>
       </>}
       {sekme==="biten"&&<>
         <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>✅ Bitirdiklerim</div>
@@ -266,6 +281,16 @@ function UstaPanel({kullanici}){
           <div style={{fontSize:10,fontWeight:700,color:"#7C3AED",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>💬 Günün Sözü</div>
           <div style={{fontSize:12.5,color:"#4C1D95",lineHeight:1.5,fontStyle:"italic"}}>"{gununSozu}"</div>
         </Sh>
+
+        {/* İş Raporum PDF */}
+        <button onClick={()=>ustaIsRaporuPdf(tum,(veri&&veri.ad)||"Usta")} style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 15px",marginBottom:12,display:"flex",alignItems:"center",gap:11,cursor:"pointer",boxShadow:C.sh}}>
+          <div style={{width:36,height:36,borderRadius:11,background:"#FEE2E2",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:17}}>📄</div>
+          <div style={{flex:1,textAlign:"left"}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.t1}}>İş Raporumu İndir</div>
+            <div style={{fontSize:10.5,color:C.t3,marginTop:1}}>Tüm işlerin PDF özeti (tutar içermez)</div>
+          </div>
+          <span style={{fontSize:13,color:C.t3}}>›</span>
+        </button>
 
         <Sh s={{padding:"6px 0",marginBottom:12}}>
           <SifreDegistir onBitti={()=>{}} gomulu/>

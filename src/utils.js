@@ -215,6 +215,23 @@ export function excelFaturalar(faturalar,isletme){
   altBilgi(doc);
   pdfVer(doc,"tradeflow-faturalar-"+new Date().toISOString().slice(0,10)+".pdf");
 }
+export function ustaIsRaporuPdf(isler,ustaAd){
+  const doc=yeniPdf();
+  pdfBaslik(doc,"İş Raporum — "+(ustaAd||"Usta"),{ad:"TradeFlow Elite",yetkili:ustaAd});
+  const tamamlanan=(isler||[]).filter(j=>j.durum==="tamamlandi");
+  const acik=(isler||[]).filter(j=>j.durum!=="tamamlandi");
+  let y=ozetKutulari(doc,34,[["Tamamlanan İş",tamamlanan.length,[5,150,105]],["Devam Eden İş",acik.length,[245,158,11]],["Toplam",(isler||[]).length]]);
+  const govde=(isler||[]).map(j=>{
+    let detay=j.baslik;
+    if(j.isAdresi)detay+="\nAdres: "+j.isAdresi;
+    if(j.malzemeler)detay+="\nMalzemeler: "+j.malzemeler.split("\n").join(", ");
+    return [j.musteri||"",detay,j.tarih||"",j.durum==="tamamlandi"?"✅ Tamamlandı":"⏳ Devam Ediyor"];
+  });
+  autoTable(doc,{...TABLO_STIL,startY:y,head:[["Müşteri","İş / Adres / Malzeme","Tarih","Durum"]],body:govde,columnStyles:{1:{cellWidth:88}}});
+  altBilgi(doc);
+  pdfVer(doc,"is-raporum-"+(ustaAd||"usta").replace(/[^a-zA-Z0-9ğüşöçıİĞÜŞÖÇ ]/g,"").replace(/ /g,"-")+"-"+new Date().toISOString().slice(0,10)+".pdf");
+}
+
 export function pdfMuhasebeRaporu(jobs,giderler,isletme){
   const doc=yeniPdf();
   pdfBaslik(doc,"Muhasebe Raporu",isletme);
