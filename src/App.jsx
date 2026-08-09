@@ -993,7 +993,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const ipDokunBit=(e)=>{if(ipDokunRef.current==null)return;const dx=e.changedTouches[0].clientX-ipDokunRef.current;if(Math.abs(dx)>34){setIpucuIx(i=>(i+(dx<0?1:-1)+ipuclari.length)%ipuclari.length);}ipDokunRef.current=null;};
   const HERO_FOTO={
     sabah:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=900&auto=format&fit=crop",
-    ogle:"https://images.unsplash.com/photo-1755611532271-4ac09b51f2bc?fm=jpg&q=70&w=900&auto=format&fit=crop",
+    ogle:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=900&auto=format&fit=crop",
     aksam:"https://images.unsplash.com/photo-1600672196900-c98c011a0977?fm=jpg&q=70&w=900&auto=format&fit=crop",
     gece:"https://images.unsplash.com/photo-1756151224665-eba765e8c3b5?fm=jpg&q=70&w=900&auto=format&fit=crop",
   };
