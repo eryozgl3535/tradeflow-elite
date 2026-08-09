@@ -80,6 +80,20 @@ const TEMA_LISTE = [
   ["toprak","🏺","Toprak","#D3A986"],
 ];
 
+// ═══ Karşılama hero fotoğrafları — gün dilimine göre değişir (mobil + masaüstü ortak) ═══
+const HERO_FOTO={
+  sabah:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=1400&auto=format&fit=crop",
+  ogle:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=1400&auto=format&fit=crop",
+  aksam:"https://images.unsplash.com/photo-1600672196900-c98c011a0977?fm=jpg&q=70&w=1400&auto=format&fit=crop",
+  gece:"https://images.unsplash.com/photo-1756151224665-eba765e8c3b5?fm=jpg&q=70&w=1400&auto=format&fit=crop",
+};
+const HERO_OVERLAY={
+  sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",
+  ogle:"linear-gradient(180deg,rgba(10,20,35,0.08) 0%,rgba(10,20,35,0.04) 38%,rgba(8,16,28,0.55) 100%)",
+  aksam:"linear-gradient(180deg,rgba(60,25,15,0.18) 0%,rgba(50,20,15,0.08) 38%,rgba(35,14,12,0.68) 100%)",
+  gece:"linear-gradient(180deg,rgba(6,10,24,0.30) 0%,rgba(6,10,24,0.20) 38%,rgba(4,7,20,0.78) 100%)",
+};
+
 // ═══ ABONELİK PLANLARI ═══
 let PLAN_AKTIF = "starter";
 let TT = {};
@@ -991,17 +1005,11 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const ipDokunRef=useRef(null);
   const ipDokunBas=(e)=>{ipDokunRef.current=e.touches[0].clientX;};
   const ipDokunBit=(e)=>{if(ipDokunRef.current==null)return;const dx=e.changedTouches[0].clientX-ipDokunRef.current;if(Math.abs(dx)>34){setIpucuIx(i=>(i+(dx<0?1:-1)+ipuclari.length)%ipuclari.length);}ipDokunRef.current=null;};
-  const HERO_FOTO={
-    sabah:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=900&auto=format&fit=crop",
-    ogle:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=900&auto=format&fit=crop",
-    aksam:"https://images.unsplash.com/photo-1600672196900-c98c011a0977?fm=jpg&q=70&w=900&auto=format&fit=crop",
-    gece:"https://images.unsplash.com/photo-1756151224665-eba765e8c3b5?fm=jpg&q=70&w=900&auto=format&fit=crop",
-  };
   return <div style={{padding:"14px 16px 0"}}>
     {/* Karşılama — fotoğraflı hero, gün dilimine göre değişen fotoğraf */}
     <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:18,minHeight:224,boxShadow:"0 10px 28px rgba(16,24,40,0.16)"}}>
       <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-      <div style={{position:"absolute",inset:0,background:({sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",ogle:"linear-gradient(180deg,rgba(10,20,35,0.08) 0%,rgba(10,20,35,0.04) 38%,rgba(8,16,28,0.55) 100%)",aksam:"linear-gradient(180deg,rgba(60,25,15,0.18) 0%,rgba(50,20,15,0.08) 38%,rgba(35,14,12,0.68) 100%)",gece:"linear-gradient(180deg,rgba(6,10,24,0.30) 0%,rgba(6,10,24,0.20) 38%,rgba(4,7,20,0.78) 100%)"})[dilim]}}/>
+      <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
       <div style={{position:"relative",padding:"18px 20px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:224}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.2,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
         <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
@@ -1248,17 +1256,16 @@ const QuickActions=memo(function QuickActions({setSekme,T,moduller,onDuzenle}){
         {T.duzenle} <Ik n="kalem" s={13} c={P} w={2}/>
       </div>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:MASAUSTU?"repeat(10,1fr)":"repeat(4,1fr)",gap:MASAUSTU?14:12}}>
+    <div style={{display:"grid",gridTemplateColumns:MASAUSTU?"repeat(10,1fr)":"repeat(4,1fr)",gap:MASAUSTU?18:12}}>
       {gorununler.map(a=>{
         const g=MODUL_IKON[a.id]||{n:"nokta",c:P};
-        return <div key={a.id} onClick={()=>setSekme(a.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7,cursor:"pointer"}}
-          onMouseEnter={e=>{const b=e.currentTarget.firstChild;b.style.transform="translateY(-3px)";b.style.background=g.c+"26";b.style.boxShadow=`0 6px 14px -4px ${g.c}66`;}}
-          onMouseLeave={e=>{const b=e.currentTarget.firstChild;b.style.transform="none";b.style.background=g.c+"16";b.style.boxShadow="none";}}>
-          <div style={{width:"100%",maxWidth:MASAUSTU?92:84,aspectRatio:"1",borderRadius:16,background:g.c+"16",border:`1.5px solid ${g.c}2E`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.16s"}}>
-            <Ik n={g.n} s={MASAUSTU?26:24} c={g.c} w={1.9}/>
+        return <div key={a.id} onClick={()=>setSekme(a.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:9,cursor:"pointer"}}
+          onMouseEnter={e=>{const b=e.currentTarget.firstChild;b.style.transform="translateY(-3px)";b.style.boxShadow=`0 8px 16px -4px ${g.c}66`;}}
+          onMouseLeave={e=>{const b=e.currentTarget.firstChild;b.style.transform="none";b.style.boxShadow=`0 4px 10px ${g.c}40`;}}>
+          <div style={{width:MASAUSTU?58:50,height:MASAUSTU?58:50,borderRadius:"50%",background:g.c,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.16s",boxShadow:`0 4px 10px ${g.c}40`}}>
+            <Ik n={g.n} s={MASAUSTU?26:22} c="#fff" w={1.9}/>
           </div>
-          <span style={{fontSize:MASAUSTU?10.5:11,fontWeight:600,color:C.t1,textAlign:"center",lineHeight:1.2}}>{typeof a.label==="function"?a.label(T):(a.label||a.id)}</span>
-          <div style={{width:26,height:3.5,borderRadius:2,background:g.c,marginTop:-2}}/>
+          <span style={{fontSize:MASAUSTU?11:10,fontWeight:700,color:C.t1,textAlign:"center",lineHeight:1.2}}>{typeof a.label==="function"?a.label(T):(a.label||a.id)}</span>
         </div>;
       })}
     </div>
@@ -4215,7 +4222,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
 }
 
 // 🖥️ Masaüstü hero — mobildeki Yeni İş Ekle + İpucu kartlarının geniş ekran uyarlaması
-const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs,onAc}){
+const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs,onAc,ad}){
   const bugun=new Date().toISOString().slice(0,10);
   const bugunIsler=jobs.filter(j=>j.durum!=="tamamlandi"&&((j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)));
   const [ix,setIx]=useState(0);
@@ -4223,7 +4230,26 @@ const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme
   const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme,onAc);
   useEffect(()=>{const t=setInterval(()=>setIx(i=>(i+1)%ipuclari.length),6500);return ()=>clearInterval(t);},[ipuclari.length]);
   const ip=ipuclari[ix];
-  return <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"20px 28px 16px"}}>
+  const saatSimdi=new Date().getHours();
+  const dilim=gunDilimi(saatSimdi);
+  const selam=DILIM_METIN[dilim].selam;
+  return <>
+    {/* Karşılama — fotoğraflı hero, gün dilimine göre değişir */}
+    <div style={{position:"relative",borderRadius:24,overflow:"hidden",margin:"20px 28px 18px",minHeight:200,boxShadow:"0 10px 28px rgba(16,24,40,0.16)"}}>
+      <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+      <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
+      <div style={{position:"relative",padding:"22px 30px 24px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:200}}>
+        <div style={{fontSize:28,fontWeight:800,color:"#fff",letterSpacing:"-0.02em",lineHeight:1.15,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
+        <div style={{fontSize:14,color:"rgba(255,255,255,0.92)",marginTop:6,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:15,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"8px 16px",alignSelf:"flex-start",boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}>
+          <i className="ti ti-clock" style={{fontSize:15,color:"#1C4E60"}} aria-hidden="true"/>
+          <span style={{fontSize:13,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
+          <span style={{width:3,height:3,borderRadius:"50%",background:"#9CA3AF"}}/>
+          <span style={{fontSize:13,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span>
+        </div>
+      </div>
+    </div>
+  <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"0 28px 16px"}}>
     <button onClick={onYeniIs} style={{background:GRAD,border:"none",borderRadius:20,padding:"22px 24px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.28)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10,transition:"transform 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="none"}>
       <div style={{display:"flex",alignItems:"center",gap:11}}>
@@ -4246,7 +4272,8 @@ const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme
         {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIx(i);}} style={{width:i===ix?14:4.5,height:4.5,borderRadius:3,background:i===ix?ip.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer",flexShrink:0}}/>)}
       </div>
     </div>
-  </div>;
+  </div>
+  </>;
 })
 const DesktopVade=memo(function DesktopVade({jobs,cekSenetler,onKasa,onIsSec}){
   const hatirlatmalar=vadeHatirlatmalari(jobs,cekSenetler);
@@ -5040,7 +5067,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} ad={isletme.yetkili} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
