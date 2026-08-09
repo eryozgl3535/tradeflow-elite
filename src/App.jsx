@@ -1013,22 +1013,20 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </div>
-    {/* Yeni İş Ekle + İpucu kartları — yan yana */}
+    {/* Yeni İş Ekle + İpucu kartları — eşit genişlik, simetrik */}
     <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"stretch"}}>
-      <button onClick={onYeniIs} style={{flex:"0 0 38%",background:GRAD,border:"none",borderRadius:20,padding:"18px 16px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:9}}>
-          <div style={{width:32,height:32,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:17}} aria-hidden="true"/></div>
-          <span style={{fontSize:17.5,fontWeight:800,letterSpacing:"-0.01em"}}>{T.yeniIs} Ekle</span>
-        </div>
-        <div style={{fontSize:12.5,color:"rgba(255,255,255,0.85)",lineHeight:1.45,fontWeight:500}}>Yeni iş ekleyerek gününü planla.</div>
+      <button onClick={onYeniIs} style={{flex:1,background:GRAD,border:"none",borderRadius:20,padding:"16px 14px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:8,minWidth:0}}>
+        <div style={{width:30,height:30,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:15}} aria-hidden="true"/></div>
+        <div style={{fontSize:14.5,fontWeight:800,letterSpacing:"-0.005em",lineHeight:1.2}}>{T.yeniIs} Ekle</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.4,fontWeight:500}}>Gününü planla.</div>
       </button>
-      <div onClick={ipucu.act} onTouchStart={ipDokunBas} onTouchEnd={ipDokunBit} style={{flex:1,background:C.card,borderRadius:20,padding:"14px 14px 10px",cursor:"pointer",boxShadow:C.sh,display:"flex",flexDirection:"column",touchAction:"pan-y"}}>
-        <div style={{display:"flex",gap:10,flex:1}}>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:13.5,fontWeight:800,color:ipucu.renk,marginBottom:4}}>{ipucu.baslik}</div>
-            <div style={{fontSize:12,color:C.t2,lineHeight:1.5}}>{ipucu.metin}</div>
+      <div onClick={ipucu.act} onTouchStart={ipDokunBas} onTouchEnd={ipDokunBit} style={{flex:1,background:C.card,borderRadius:20,padding:"14px 14px 10px",cursor:"pointer",boxShadow:C.sh,display:"flex",flexDirection:"column",touchAction:"pan-y",minWidth:0}}>
+        <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
+          <div style={{width:36,height:36,borderRadius:11,background:ipucu.renk+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ${ipucu.ic}`} style={{fontSize:17,color:ipucu.renk}} aria-hidden="true"/></div>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:12.5,fontWeight:800,color:ipucu.renk,marginBottom:3,lineHeight:1.2}}>{ipucu.baslik}</div>
+            <div style={{fontSize:10.5,color:C.t2,lineHeight:1.42}}>{ipucu.metin}</div>
           </div>
-          <div style={{width:48,height:48,borderRadius:13,background:ipucu.renk+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ${ipucu.ic}`} style={{fontSize:23,color:ipucu.renk}} aria-hidden="true"/></div>
         </div>
         <div style={{display:"flex",justifyContent:"center",gap:5,paddingTop:8,flexWrap:"wrap"}}>
           {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIpucuIx(i);}} style={{width:i===ipucuIx?14:4.5,height:4.5,borderRadius:3,background:i===ipucuIx?ipucu.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer",flexShrink:0}}/>)}
@@ -1135,7 +1133,9 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </Sh>
-        <PiyasaSeridi C={C} P={P}/>
+    <Sh s={{padding:"2px 10px",marginBottom:16}}>
+      <PiyasaSeridi C={C} P={P}/>
+    </Sh>
 {/* LED imza — mobil */}
   </div>;
 });
@@ -1542,6 +1542,10 @@ const Charts=memo(function Charts({jobs,giderler,T,onTahsil}){
 const JobList=memo(function JobList({jobs,onSelect,T,onTum}){
   return <div style={{margin:"0 14px 16px"}}>
     <div style={{fontSize:16,fontWeight:700,color:C.t1,marginBottom:12}}>{T.sonIsAkislari}</div>
+    {jobs.length===0&&<Sh s={{padding:"22px 18px",textAlign:"center",marginBottom:10}}>
+      <div style={{fontSize:28,marginBottom:8}}>📋</div>
+      <div style={{fontSize:13,color:C.t3,lineHeight:1.5}}>Henüz iş eklenmedi.<br/>İlk işini ekleyerek başla.</div>
+    </Sh>}
     {jobs.slice(0,3).map(j=><Sh key={j.id} onClick={()=>onSelect(j)} s={{padding:"14px 16px",marginBottom:10,cursor:"pointer"}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div style={{width:46,height:46,borderRadius:12,background:j.iconBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{j.icon}</div>
@@ -1554,7 +1558,7 @@ const JobList=memo(function JobList({jobs,onSelect,T,onTum}){
         <span style={{color:C.t3,fontSize:16}}>›</span>
       </div>
     </Sh>)}
-    <div onClick={onTum} style={{textAlign:"center",padding:"10px 0"}}><span style={{fontSize:13,color:P,fontWeight:600,cursor:"pointer"}}>{T.tumunuGoruntule} →</span></div>
+    {jobs.length>0&&<div onClick={onTum} style={{textAlign:"center",padding:"10px 0"}}><span style={{fontSize:13,color:P,fontWeight:600,cursor:"pointer"}}>{T.tumunuGoruntule} →</span></div>}
   </div>;
 })
 
