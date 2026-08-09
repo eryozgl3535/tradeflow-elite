@@ -4172,22 +4172,41 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   const ikonBtn={width:40,height:40,borderRadius:11,background:"rgba(255,255,255,0.14)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"relative",transition:"background .14s"};
   const ikonGir=e=>{e.currentTarget.style.background="rgba(255,255,255,0.26)";};
   const ikonCik=e=>{e.currentTarget.style.background="rgba(255,255,255,0.14)";};
+  const saatSimdi=new Date().getHours();
+  const dilim=gunDilimi(saatSimdi);
+  const selam=DILIM_METIN[dilim].selam;
   return <div style={{display:"flex",alignItems:"stretch",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
-    <SelamSaat ad={ad} C={C} P={P} onDunya={onDunya}/>
 
-    {/* Sağ panel — teal gradyan kart, sol kartla aynı yükseklik */}
-    <div style={{flex:1,minWidth:420,height:150,background:GRAD,borderRadius:18,padding:"0 20px",display:"flex",alignItems:"center",gap:14,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
+    {/* Karşılama — fotoğraflı hero, %70 */}
+    <div style={{position:"relative",flex:"7 1 460px",height:150,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
+      <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+      <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
+      <div style={{position:"relative",height:"100%",padding:"16px 22px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
+        <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.15,textShadow:"0 2px 10px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
+        <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",marginTop:3,fontWeight:500,textShadow:"0 1px 6px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"5px 12px",alignSelf:"flex-start"}}>
+          <i className="ti ti-clock" style={{fontSize:12,color:"#1C4E60"}} aria-hidden="true"/>
+          <span style={{fontSize:11.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
+          <span style={{width:2.5,height:2.5,borderRadius:"50%",background:"#9CA3AF"}}/>
+          <span style={{fontSize:11.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span>
+          <span onClick={onDunya} style={{marginLeft:4,paddingLeft:8,borderLeft:"1px solid #E2E8F0",fontSize:10.5,fontWeight:700,color:"#2E7490",cursor:"pointer"}}>🌍 Dünya saatleri</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Sağ panel — İş Sektörünüz + ikon butonları, %30 */}
+    <div style={{flex:"3 1 300px",height:150,background:GRAD,borderRadius:18,padding:"14px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:10,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
 
       {/* Sektör seçici */}
-      <div style={{position:"relative",flex:1,minWidth:0,display:"flex",alignItems:"center",gap:11,cursor:"pointer",padding:"10px 12px",borderRadius:12,transition:"background .14s"}}
+      <div style={{position:"relative",display:"flex",alignItems:"center",gap:10,cursor:"pointer",padding:"8px 10px",borderRadius:12,transition:"background .14s"}}
         onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";}}
         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-        <Ik n="canta" s={20} c="rgba(255,255,255,0.92)" w={1.7}/>
+        <Ik n="canta" s={18} c="rgba(255,255,255,0.92)" w={1.7}/>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.68)",fontWeight:600,letterSpacing:"0.03em",lineHeight:1.25}}>İş Sektörünüz</div>
-          <div style={{fontSize:15,fontWeight:700,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.35}}>{isKolu||"Sektör seçin…"}</div>
+          <div style={{fontSize:9.5,color:"rgba(255,255,255,0.68)",fontWeight:600,letterSpacing:"0.03em",lineHeight:1.25}}>İş Sektörünüz</div>
+          <div style={{fontSize:13.5,fontWeight:700,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.35}}>{isKolu||"Sektör seçin…"}</div>
         </div>
-        <Ik n="asagi" s={15} c="rgba(255,255,255,0.75)" w={2}/>
+        <Ik n="asagi" s={14} c="rgba(255,255,255,0.75)" w={2}/>
         <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}} title="İş sektörünüzü seçin">
           {!isKolu&&<option value="" disabled>İş sektörünüzü seçin</option>}
           {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
@@ -4195,26 +4214,24 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
       </div>
 
       {/* İkon butonları */}
-      <div style={{display:"flex",alignItems:"center",gap:9,flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
         <button onClick={onTema} title="Tema ve Görünüm" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
-          <Ik n="palet" s={19} c="#fff" w={1.7}/>
+          <Ik n="palet" s={18} c="#fff" w={1.7}/>
         </button>
         <button onClick={onAsistan} title="Asistan" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
-          <Ik n="pano" s={19} c="#fff" w={1.8}/>
+          <Ik n="pano" s={18} c="#fff" w={1.8}/>
         </button>
         <button onClick={onAra} title="Ara" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
-          <Ik n="ara" s={19} c="#fff" w={1.8}/>
+          <Ik n="ara" s={18} c="#fff" w={1.8}/>
         </button>
         <button onClick={onBildirim} title="Bildirimler" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
-          <Ik n="zil" s={19} c="#fff" w={1.8}/>
+          <Ik n="zil" s={18} c="#fff" w={1.8}/>
           {okunmamis>0&&<span style={{position:"absolute",top:-3,right:-3,minWidth:18,height:18,borderRadius:9,background:"#EF4444",color:"#fff",fontSize:9.5,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px",border:"2px solid #2E7490"}}>{okunmamis}</span>}
         </button>
-
-        {/* Yeni İş */}
-        <button onClick={onYeniIs} style={{background:"rgba(255,255,255,0.16)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:12,padding:"11px 18px",color:"#fff",fontSize:13.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:7,marginLeft:3,whiteSpace:"nowrap",transition:"background .14s",fontFamily:"inherit"}}
+        <button onClick={onYeniIs} style={{flex:1,background:"rgba(255,255,255,0.16)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:12,padding:"10px 12px",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,whiteSpace:"nowrap",transition:"background .14s",fontFamily:"inherit"}}
           onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.28)";}}
           onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.16)";}}>
-          <span style={{fontSize:17,lineHeight:1,marginTop:-1}}>+</span> {T.yeniIs}
+          <span style={{fontSize:16,lineHeight:1,marginTop:-1}}>+</span> {T.yeniIs}
         </button>
       </div>
     </div>
@@ -4222,7 +4239,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
 }
 
 // 🖥️ Masaüstü hero — mobildeki Yeni İş Ekle + İpucu kartlarının geniş ekran uyarlaması
-const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs,onAc,ad}){
+const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme,jobs,onAc}){
   const bugun=new Date().toISOString().slice(0,10);
   const bugunIsler=jobs.filter(j=>j.durum!=="tamamlandi"&&((j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)));
   const [ix,setIx]=useState(0);
@@ -4230,26 +4247,7 @@ const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme
   const ipuclari=tanitimIpuclari(bugunIsler.length>0,bugunIsMetni,onTakvim,onKasa,setSekme,onAc);
   useEffect(()=>{const t=setInterval(()=>setIx(i=>(i+1)%ipuclari.length),6500);return ()=>clearInterval(t);},[ipuclari.length]);
   const ip=ipuclari[ix];
-  const saatSimdi=new Date().getHours();
-  const dilim=gunDilimi(saatSimdi);
-  const selam=DILIM_METIN[dilim].selam;
-  return <>
-    {/* Karşılama — fotoğraflı hero, gün dilimine göre değişir */}
-    <div style={{position:"relative",borderRadius:24,overflow:"hidden",margin:"20px 28px 18px",minHeight:200,boxShadow:"0 10px 28px rgba(16,24,40,0.16)"}}>
-      <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-      <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
-      <div style={{position:"relative",padding:"22px 30px 24px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:200}}>
-        <div style={{fontSize:28,fontWeight:800,color:"#fff",letterSpacing:"-0.02em",lineHeight:1.15,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
-        <div style={{fontSize:14,color:"rgba(255,255,255,0.92)",marginTop:6,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
-        <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:15,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"8px 16px",alignSelf:"flex-start",boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}>
-          <i className="ti ti-clock" style={{fontSize:15,color:"#1C4E60"}} aria-hidden="true"/>
-          <span style={{fontSize:13,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
-          <span style={{width:3,height:3,borderRadius:"50%",background:"#9CA3AF"}}/>
-          <span style={{fontSize:13,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span>
-        </div>
-      </div>
-    </div>
-  <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"0 28px 16px"}}>
+  return <div style={{display:"grid",gridTemplateColumns:"0.85fr 2.15fr",gap:16,padding:"0 28px 16px"}}>
     <button onClick={onYeniIs} style={{background:GRAD,border:"none",borderRadius:20,padding:"22px 24px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.28)",display:"flex",flexDirection:"column",justifyContent:"center",gap:10,transition:"transform 0.15s"}}
       onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="none"}>
       <div style={{display:"flex",alignItems:"center",gap:11}}>
@@ -4272,8 +4270,7 @@ const DesktopHero=memo(function DesktopHero({T,onYeniIs,onTakvim,onKasa,setSekme
         {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIx(i);}} style={{width:i===ix?14:4.5,height:4.5,borderRadius:3,background:i===ix?ip.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer",flexShrink:0}}/>)}
       </div>
     </div>
-  </div>
-  </>;
+  </div>;
 })
 const DesktopVade=memo(function DesktopVade({jobs,cekSenetler,onKasa,onIsSec}){
   const hatirlatmalar=vadeHatirlatmalari(jobs,cekSenetler);
@@ -5067,7 +5064,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} ad={isletme.yetkili} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
