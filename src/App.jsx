@@ -4874,7 +4874,14 @@ export default function TradeFlow(){
     return ()=>clearInterval(t);
   },[veriYuklendi,ozetSaat,jobs,giderler]);
   const bildirimEkle=(baslik,mesaj,tip,hedef)=>setBildirimler(p=>[{id:Date.now()+Math.random(),baslik,mesaj,tip,hedef:hedef||null,okundu:false,zaman:new Date().toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})},...p]);
-  const bannerGoster=(baslik,mesaj)=>{setBanner({baslik,mesaj});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
+  const bannerGoster=(baslik,mesaj,hedef)=>{setBanner({baslik,mesaj,hedef:hedef||null});setTimeout(()=>setBanner(null),5000);if(typeof Notification!=="undefined"&&Notification.permission==="granted"){try{new Notification(baslik,{body:mesaj});}catch(e){}}};
+  const bildirimGit=(h)=>{
+    if(!h){setSekme("bildiri");return;}
+    if(h.tur==="is"){const j=jobs.find(x=>x.ref===h.ref||x.id===h.id);if(j){setSekme("isler");setSecili(j);}else{goster("Bu iş silinmiş olabilir");setSekme("bildiri");}}
+    else if(h.tur==="kasa"){setEkran("kasa");}
+    else if(h.tur==="sekme"){setIslerFiltre(null);setTahsilatFiltre(null);setSekme(h.sekme);}
+    else{setSekme("bildiri");}
+  };
 
   useEffect(()=>{
     // ── ANLIK KUR SİSTEMİ ──
@@ -4920,26 +4927,27 @@ export default function TradeFlow(){
   useEffect(()=>{
     const iv=setInterval(()=>{
       const simdi=Date.now();
-      setJobs(prev=>{let deg=false;const yeni=prev.map(j=>{if(j.hatirlatma&&!j.hatirlatildi&&new Date(j.hatirlatma).getTime()<=simdi){deg=true;bildirimEkle("⏰ Hatırlatma: "+j.baslik,j.musteri+" - "+fmt(j.tutar),"hatirlatma",{tur:"is",id:j.id});bannerGoster("⏰ İş Hatırlatması",j.baslik+" ("+j.musteri+")");return {...j,hatirlatildi:true};}return j;});return deg?yeni:prev;});
+      setJobs(prev=>{let deg=false;const yeni=prev.map(j=>{if(j.hatirlatma&&!j.hatirlatildi&&new Date(j.hatirlatma).getTime()<=simdi){deg=true;bildirimEkle("⏰ Hatırlatma: "+j.baslik,j.musteri+" - "+fmt(j.tutar),"hatirlatma",{tur:"is",id:j.id});bannerGoster("⏰ İş Hatırlatması",j.baslik+" ("+j.musteri+")",{tur:"is",id:j.id,ref:j.ref});return {...j,hatirlatildi:true};}return j;});return deg?yeni:prev;});
     },20000);
     return ()=>clearInterval(iv);
   },[]);
 
-  const jobEkle=(j)=>{setJobs(p=>[j,...p]);bildirimEkle("✅ Yeni iş eklendi",j.baslik+" · "+j.musteri,"is");goster("İş eklendi ✓");};
+  const jobEkle=(j)=>{setJobs(p=>[j,...p]);bildirimEkle("✅ Yeni iş eklendi",j.baslik+" · "+j.musteri,"is",{tur:"is",id:j.id,ref:j.ref});goster("İş eklendi ✓");};
   const jobGuncelle=(j)=>{setJobs(p=>p.map(x=>x.id===j.id?j:x));goster("💾 İş güncellendi ✓");};
   const durumDegis=(id,d)=>{
     setJobs(p=>p.map(j=>j.id===id?{...j,durum:d}:j));
     if(d==="tamamlandi"){
       const j=jobs.find(x=>x.id===id);
       if(j){
-        bildirimEkle("✅ İş tamamlandı",j.baslik,"is");
+        bildirimEkle("✅ İş tamamlandı",j.baslik,"is",{tur:"is",id:j.id,ref:j.ref});
         // Periyodik iş — bir sonraki dönem için otomatik yeni iş oluştur
         if(j.tekrar&&j.tekrar!=="yok"){
           const gun=j.tekrar==="haftalik"?7:j.tekrar==="aylik"?30:365;
           const yeniTarih=new Date(Date.now()+gun*864e5).toISOString().slice(0,10);
           const cid=nId;nId++;
-          setJobs(p=>[{...j,id:cid,ref:"IS-"+String(cid).padStart(4,"0"),tarih:yeniTarih,durum:"bekliyor",hatirlatildi:false,odemeler:[],hatirlatma:null},...p]);
-          bildirimEkle("🔁 Periyodik iş oluşturuldu",j.baslik+" → "+yeniTarih,"is");
+          const yeniRef="IS-"+String(cid).padStart(4,"0");
+          setJobs(p=>[{...j,id:cid,ref:yeniRef,tarih:yeniTarih,durum:"bekliyor",hatirlatildi:false,odemeler:[],hatirlatma:null},...p]);
+          bildirimEkle("🔁 Periyodik iş oluşturuldu",j.baslik+" → "+yeniTarih,"is",{tur:"is",id:cid,ref:yeniRef});
           goster("🔁 Sonraki dönem işi oluşturuldu: "+yeniTarih);
         }
       }
@@ -4951,7 +4959,7 @@ export default function TradeFlow(){
       const odemeler=[...(j.odemeler||[]),odeme];
       const toplam=odemeler.reduce((s,o)=>s+o.tutar,0);
       // Tamamı ödendiyse otomatik tamamla
-      if(toplam>=j.tutar){bildirimEkle("💰 Tamamı tahsil edildi",j.baslik,"is");return {...j,odemeler,durum:"tamamlandi"};}
+      if(toplam>=j.tutar){bildirimEkle("💰 Tamamı tahsil edildi",j.baslik,"is",{tur:"is",id:j.id,ref:j.ref});return {...j,odemeler,durum:"tamamlandi"};}
       return {...j,odemeler};
     }));
     goster("💰 "+fmt(odeme.tutar)+" tahsil edildi ✓");
@@ -4963,16 +4971,16 @@ export default function TradeFlow(){
     if(j){
       setSonSilinen(j);
       setTimeout(()=>setSonSilinen(s=>s&&s.id===j.id?null:s),6000);
-      bildirimEkle("🗑️ İş silindi",j.baslik,"is");
+      bildirimEkle("🗑️ İş silindi",j.baslik,"is",{tur:"sekme",sekme:"isler"});
     }
   };
   const geriAl=()=>{if(sonSilinen){setJobs(p=>[sonSilinen,...p]);goster("↩️ Geri alındı ✓");setSonSilinen(null);}};
   const faturaKesildi=(f)=>{
     setFaturalar(p=>[f,...p]);
     setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j)); // iş artık "kesilmedi" listesinde görünmez
-    bildirimEkle("🧾 Fatura kesildi",f.no+" · "+f.musteri,"fatura");goster("Fatura kesildi ✓ "+f.no);
+    bildirimEkle("🧾 Fatura kesildi",f.no+" · "+f.musteri,"fatura",{tur:"sekme",sekme:"faturalar"});goster("Fatura kesildi ✓ "+f.no);
   };
-  const teklifDonustur=(t)=>{const cid=nId;nId++;setJobs(p=>[{id:cid,ref:"IS-"+String(cid).padStart(4,"0"),baslik:t.baslik,musteri:t.musteri,tarih:new Date().toISOString().slice(0,10),durum:"bekliyor",tutar:t.tutar,icon:"🏷️",iconBg:"#FEE2E2",hatirlatma:null,hatirlatildi:false,odemeler:[]},...p]);setTeklifler(p=>p.filter(x=>x.id!==t.id));goster("Teklif işe dönüştürüldü ✓");bildirimEkle("🏷️ Teklif kabul edildi",t.baslik,"is");};
+  const teklifDonustur=(t)=>{const cid=nId;nId++;const yeniRef="IS-"+String(cid).padStart(4,"0");setJobs(p=>[{id:cid,ref:yeniRef,baslik:t.baslik,musteri:t.musteri,tarih:new Date().toISOString().slice(0,10),durum:"bekliyor",tutar:t.tutar,icon:"🏷️",iconBg:"#FEE2E2",hatirlatma:null,hatirlatildi:false,odemeler:[]},...p]);setTeklifler(p=>p.filter(x=>x.id!==t.id));goster("Teklif işe dönüştürüldü ✓");bildirimEkle("🏷️ Teklif kabul edildi",t.baslik,"is",{tur:"is",id:cid,ref:yeniRef});};
   const verileriSifirla=()=>{if(window.confirm("Tüm veriler silinecek. Emin misiniz?")){setJobs([]);setTeklifler([]);setGiderler([]);setFaturalar([]);setBildirimler([]);goster("Veriler sıfırlandı");}};
   const disaAktar=()=>{const data=JSON.stringify({jobs,teklifler,giderler,faturalar,isletme,gibAyar,musteriKayitlari,tarih:new Date().toISOString()},null,2);const blob=new Blob([data],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="tradeflow-yedek.json";a.click();URL.revokeObjectURL(url);goster("📤 Veriler indirildi");};
   const iceAktar=(e)=>{
@@ -5041,7 +5049,7 @@ export default function TradeFlow(){
       {MASAUSTU&&<Sidebar sekme={sekme} setSekme={sekmeGecS} T={T} isletme={isletme}/>}
       <div style={{width:"100%",maxWidth:MASAUSTU?1180:APP_W,display:"flex",flexDirection:"column",minHeight:"100vh",margin:MASAUSTU?"0 auto":undefined}}>
 
-        {banner&&<div onClick={()=>{setBanner(null);setSekme("bildiri");}} style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 28px)",maxWidth:452,background:C.card,borderRadius:16,boxShadow:C.sh2,padding:"14px 16px",zIndex:3000,display:"flex",gap:12,alignItems:"center",cursor:"pointer",border:`1px solid ${C.border}`}}>
+        {banner&&<div onClick={()=>{setBanner(null);bildirimGit(banner.hedef);}} style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 28px)",maxWidth:452,background:C.card,borderRadius:16,boxShadow:C.sh2,padding:"14px 16px",zIndex:3000,display:"flex",gap:12,alignItems:"center",cursor:"pointer",border:`1px solid ${C.border}`}}>
           <div style={{width:40,height:40,borderRadius:11,background:C.amberBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⏰</div>
           <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{banner.baslik}</div><div style={{fontSize:12,color:C.t2}}>{banner.mesaj}</div></div>
           <span style={{color:C.t3,fontSize:12}}>›</span>
@@ -5072,13 +5080,13 @@ export default function TradeFlow(){
           onYeniIsIcin={(ad)=>{setYeniIsMusteri(ad);setYeniAc(true);}}
           onGiderIcin={(ad)=>{setGiderMusteri(ad);setGiderAc(true);}}
           onKayitSil={(ad)=>{setMusteriKayitlari(p=>p.filter(m=>m.ad!==ad));goster("Kayıt silindi");}}
-          onMusteriEkle={(m)=>{if(plan==="starter"&&musteriKayitlari.length>=PLAN_LIMIT.starter.musteri){setPlanAc((T.limitMusteri||"Başlangıç planında en fazla {n} müşteri kaydedilebilir").replace("{n}",PLAN_LIMIT.starter.musteri));return;}setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is");}} onMusteriSil={(ad)=>{
+          onMusteriEkle={(m)=>{if(plan==="starter"&&musteriKayitlari.length>=PLAN_LIMIT.starter.musteri){setPlanAc((T.limitMusteri||"Başlangıç planında en fazla {n} müşteri kaydedilebilir").replace("{n}",PLAN_LIMIT.starter.musteri));return;}setMusteriKayitlari(p=>[...p,m]);goster("👤 Müşteri eklendi ✓");bildirimEkle("👤 Yeni müşteri",m.ad,"is",{tur:"sekme",sekme:"musteriler"});}} onMusteriSil={(ad)=>{
           // Bağımsız kayıttan sil
           setMusteriKayitlari(p=>p.filter(m=>m.ad!==ad));
           // O müşterinin işlerini de sil (isteğe bağlı — onay modalında uyarıldı)
           setJobs(p=>p.filter(j=>j.musteri!==ad));
           goster("🗑️ Müşteri silindi ✓");
-          bildirimEkle("🗑️ Müşteri silindi",ad,"is");
+          bildirimEkle("🗑️ Müşteri silindi",ad,"is",{tur:"sekme",sekme:"musteriler"});
         }}/>}
           {sekme==="teklifler"&&<TekliflerTab teklifler={teklifler} onYeni={()=>setTeklifAc(true)} onDonustur={teklifDonustur} onSil={(id)=>{setTeklifler(p=>p.filter(t=>t.id!==id));goster(T.sil+" ✓");}} onDurumDegis={(id,d)=>{setTeklifler(p=>p.map(t=>t.id===id?{...t,durum_t:d}:t));goster(d==="onaylandi"?"✅ "+T.tamamlandi:"❌");}} T={T} isletme={isletme}/>}
           {sekme==="raporlar"&&<><div style={{padding:"12px 14px 0",display:"flex",gap:6,flexWrap:"wrap"}}>{Object.entries(DONEMLER).map(([id,ad])=><button key={id} onClick={()=>setRaporDonem(id)} style={{background:raporDonem===id?P:C.card,color:raporDonem===id?"#fff":C.t2,border:`1px solid ${raporDonem===id?P:C.border}`,borderRadius:20,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>{ad}</button>)}</div><RaporlarTab jobs={donemFiltre(jobs)} giderler={donemFiltre(giderler)} T={T} ekip={ekip}/></>}
@@ -5103,10 +5111,7 @@ export default function TradeFlow(){
           {sekme==="bildiri"&&<BildirimlerTab bildirimler={bildirimler} onOkundu={()=>setBildirimler(p=>p.map(b=>({...b,okundu:true})))} T={T}
             onGit={(b)=>{
               setBildirimler(p=>p.map(x=>x.id===b.id?{...x,okundu:true}:x));
-              const h=b.hedef;if(!h)return;
-              if(h.tur==="is"){const j=jobs.find(x=>x.ref===h.ref||x.id===h.id);if(j){setSekme("isler");setSecili(j);}else{goster("Bu iş silinmiş olabilir");}}
-              else if(h.tur==="kasa"){setEkran("kasa");}
-              else if(h.tur==="sekme"){setIslerFiltre(null);setTahsilatFiltre(null);setSekme(h.sekme);}
+              bildirimGit(b.hedef);
             }}/>}
           {sekme==="profil"&&<ProfilSekmesi jobs={jobs} dil={dil} setDil={setDil} tema={tema} setTema={setTema} plan={plan} denemeKalan={denemeKalan} onPlanAc={()=>setPlanAc(true)} sesEfekt={sesEfekt} setSesEfekt={(v)=>{setSesEfekt(v);if(v)calSes("basari");}} ozetSaat={ozetSaat} setOzetSaat={(v)=>{setOzetSaat(v);if(v)goster("🌙 Gün sonu özeti: "+v);}} raporDonemAd={DONEMLER[raporDonem]} onRaporDonem={()=>{const sira=["buAy","son3Ay","buYil","tumu"];const yeni=sira[(sira.indexOf(raporDonem)+1)%sira.length];setRaporDonem(yeni);goster("📊 "+(T.donemL||"Dönem")+": "+DONEMLER[yeni]);}} karanlik={karanlik} setKaranlik={(v)=>{setKaranlik(v);goster(v?"🌙 Karanlık mod":"☀️ Açık mod");}} para={para} setPara={setPara} kdv={kdv} setKdv={setKdv} isletme={isletme} setIsletme={setIsletme} T={T} goster={goster} onAc={setEkran} gibAyar={gibAyar} setGibAyar={setGibAyar} gibAcSekme={gibAcSekme} onGibActemizle={()=>setGibAcSekme(null)} onCikis={cikisYap} kullaniciEmail={kullanici?.email} onKarne={statClick} kilitSure={kilitSure} onKilitAyarla={kilitAyarla} onYedekAl={yedekAl} onYedekYukle={yedekYukle}/>}
         </div>
@@ -5141,7 +5146,7 @@ export default function TradeFlow(){
           <button onClick={geriAl} style={{background:P,border:"none",borderRadius:8,padding:"6px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>↩️ Geri Al</button>
         </div>}
         {teklifAc&&<TeklifModal T={T} kdv={kdv} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
-        {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is");}}/>}
+        {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is",{tur:"sekme",sekme:"giderler"});}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T} jobs={jobs} giderler={giderler} faturalar={faturalar} musteriKayitlari={musteriKayitlari} isletme={isletme}/>}
         {ekran==="takvim"&&<TakvimEkrani onKapat={()=>setEkran(null)} jobs={jobs} onIsSec={(j)=>{setEkran(null);setSecili(j);}}/>}
