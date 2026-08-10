@@ -54,7 +54,7 @@ export function usePiyasa(){
 }
 
 // ─── Piyasa şeridi ───
-export function PiyasaSeridi({C,P,masaustu=false}){
+export function PiyasaSeridi({C,P,masaustu=false,T={}}){
   const {veri,onceki,zaman,yukleniyor,cevrimdisi,yenile} = usePiyasa();
 
   const kalemler = [
@@ -82,10 +82,10 @@ export function PiyasaSeridi({C,P,masaustu=false}){
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:11}}>
       <div style={{display:"flex",alignItems:"center",gap:7}}>
         <span style={{width:7,height:7,borderRadius:"50%",background:cevrimdisi?"#94A3B8":"#0E9F6E",display:"block",boxShadow:cevrimdisi?"none":"0 0 0 3px #0E9F6E22"}}/>
-        <span style={{fontSize:13,fontWeight:800,color:C.t1}}>💱 Canlı Piyasa</span>
+        <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{T.piyasaCanli||"💱 Canlı Piyasa"}</span>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:10,color:C.t3}}>{cevrimdisi?"çevrimdışı":guncelleme?guncelleme:""}</span>
+        <span style={{fontSize:10,color:C.t3}}>{cevrimdisi?(T.piyasaCevrimdisi||"çevrimdışı"):guncelleme?guncelleme:""}</span>
         <button onClick={yenile} aria-label="Yenile" style={{background:C.bg,border:"none",borderRadius:8,cursor:"pointer",padding:6,display:"flex",color:C.t3}}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 11.5A8 8 0 1 0 18.4 16"/><path d="M20 5.5v6h-6"/>
@@ -95,7 +95,7 @@ export function PiyasaSeridi({C,P,masaustu=false}){
     </div>
     <div style={{display:"flex",gap:8,overflowX:"auto"}}>
       {yukleniyor && !veri
-        ? <span style={{fontSize:11.5,color:C.t3,padding:"8px 0"}}>Piyasa yükleniyor…</span>
+        ? <span style={{fontSize:11.5,color:C.t3,padding:"8px 0"}}>{T.piyasaYukleniyor||"Piyasa yükleniyor…"}</span>
         : kalemler.map(k=>{
           const y=yon(k);
           return <div key={k.kod} style={{flex:"1 0 auto",minWidth:82,background:k.renk+"12",border:`1px solid ${k.renk}28`,borderRadius:13,padding:"9px 11px"}}>

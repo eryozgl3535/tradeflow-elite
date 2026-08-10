@@ -178,11 +178,11 @@ function UstaPanel({kullanici}){
 
   // ── Rozet sistemi: toplam tamamlanan işe göre kademeli ──
   const ROZETLER=[
-    {esik:0,ad:"Çırak",ikon:"🔰",renk:"#94A3B8"},
-    {esik:5,ad:"Bronz Usta",ikon:"🥉",renk:"#B45309"},
-    {esik:15,ad:"Gümüş Usta",ikon:"🥈",renk:"#64748B"},
-    {esik:30,ad:"Altın Usta",ikon:"🥇",renk:"#D97706"},
-    {esik:50,ad:"Elmas Usta",ikon:"💎",renk:"#0EA5E9"},
+    {esik:0,ad:T.rozetCirak||"Çırak",ikon:"🔰",renk:"#94A3B8"},
+    {esik:5,ad:T.rozetBronz||"Bronz Usta",ikon:"🥉",renk:"#B45309"},
+    {esik:15,ad:T.rozetGumus||"Gümüş Usta",ikon:"🥈",renk:"#64748B"},
+    {esik:30,ad:T.rozetAltin||"Altın Usta",ikon:"🥇",renk:"#D97706"},
+    {esik:50,ad:T.rozetElmas||"Elmas Usta",ikon:"💎",renk:"#0EA5E9"},
   ];
   let rozetIdx=0;
   for(let i=0;i<ROZETLER.length;i++){if(toplamBiten>=ROZETLER[i].esik)rozetIdx=i;}
@@ -191,25 +191,15 @@ function UstaPanel({kullanici}){
   const rozetIlerleme=sonrakiRozet?Math.min(100,Math.round(((toplamBiten-aktifRozet.esik)/(sonrakiRozet.esik-aktifRozet.esik))*100)):100;
 
   // ── Günün sözü: tarihe göre deterministik, her gün aynı söz ──
-  const SOZLER=[
-    "Ustalık, işi bir kere değil, her seferinde doğru yapmaktır.",
-    "Bugün bıraktığın iz, yarın senin adın olur.",
-    "İyi bir usta aleti değil, işini konuşturur.",
-    "Küçük işler özenle yapılınca büyük güven doğurur.",
-    "Zanaat sabırla, ustalık tekrarla gelir.",
-    "Her tamamlanan iş, bir sonraki için referanstır.",
-    "Temiz iş, temiz isim bırakır.",
-    "En iyi reklam, memnun müşterinin gülüşüdür.",
-    "Detaylara verdiğin önem, seni fark ettirir.",
-    "Bugün de bir eve huzur götürüyorsun.",
-  ];
+  const SOZLER=[T.soz1,T.soz2,T.soz3,T.soz4,T.soz5,T.soz6,T.soz7,T.soz8,T.soz9,T.soz10].filter(Boolean);
   const yilinGunu=Math.floor((simdi-new Date(simdi.getFullYear(),0,0))/864e5);
   const gununSozu=SOZLER[yilinGunu%SOZLER.length];
 
   // ── Karşılama: saat/gün dilimi ──
   const saatSimdi=simdi.getHours();
   const dilim=gunDilimi(saatSimdi);
-  const selam=DILIM_METIN[dilim].selam;
+  const DILIM_KEY={sabah:["selamSabah","altSabah"],ogle:["selamOgle","altOgle"],aksam:["selamAksam","altAksam"],gece:["selamGece","altGece"]}[dilim];
+  const selam=T[DILIM_KEY[0]]||DILIM_METIN[dilim].selam;
   const ustaAd=((veri&&veri.ad)||"").split(" ")[0]||"";
 
   const IsKart=(j)=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
@@ -251,7 +241,7 @@ function UstaPanel({kullanici}){
         <GokyuzuSahne saat={saatSimdi} dk={simdi.getMinutes()} g={56}/>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:20,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.2}}>{selam}{ustaAd?", "+ustaAd:""}</div>
-          <div style={{fontSize:12,color:C.t3,marginTop:3}}>{DILIM_METIN[dilim].alt}</div>
+          <div style={{fontSize:12,color:C.t3,marginTop:3}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
         </div>
       </div>
       {/* Üst kimlik kartı */}
@@ -268,7 +258,7 @@ function UstaPanel({kullanici}){
       </Sh>
       {/* Özet sayılar */}
       <div style={{display:"flex",gap:10,marginBottom:16}}>
-        {[["Aktif İşim",acikIsler.length,P],["Bugünkü",bugunku,"#F59E0B"],["Bitirdiğim",bitenler.length,"#0E9F6E"]].map(([l,v,r])=><Sh key={l} s={{flex:1,padding:"12px 8px",textAlign:"center"}}>
+        {[[T.ustaAktifIsim||"Aktif İşim",acikIsler.length,P],[T.ustaBugunku||"Bugünkü",bugunku,"#F59E0B"],[T.ustaBitirdigim||"Bitirdiğim",bitenler.length,"#0E9F6E"]].map(([l,v,r])=><Sh key={l} s={{flex:1,padding:"12px 8px",textAlign:"center"}}>
           <div style={{fontSize:20,fontWeight:800,color:r}}>{v}</div>
           <div style={{fontSize:10,color:C.t3,marginTop:2}}>{l}</div>
         </Sh>)}
@@ -277,18 +267,18 @@ function UstaPanel({kullanici}){
       {!veri&&!hata&&<div style={{textAlign:"center",color:C.t3,padding:"40px 0"}}>Yükleniyor...</div>}
 
       {sekme==="isler"&&<>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>📋 İşlerim</div>
-        {veri&&acikIsler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Şu an atanmış açık işin yok. Patronun iş atadığında burada görünecek. 💪</div></Sh>}
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>📋 {T.ustaIslerim||"İşlerim"}</div>
+        {veri&&acikIsler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>{T.ustaBosIs||"Şu an atanmış açık işin yok. Patronun iş atadığında burada görünecek. 💪"}</div></Sh>}
         {acikIsler.map(IsKart)}
-        <div style={{marginTop:16}}><PiyasaSeridi C={C} P={P}/></div>
+        <div style={{marginTop:16}}><PiyasaSeridi C={C} P={P} T={T}/></div>
       </>}
       {sekme==="biten"&&<>
         <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>✅ Bitirdiklerim</div>
-        {veri&&bitenler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>Henüz tamamlanan işin yok — ilk işini bitirince burada listelenecek.</div></Sh>}
+        {veri&&bitenler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>{T.ustaBosBiten||"Henüz tamamlanan işin yok — ilk işini bitirince burada listelenecek."}</div></Sh>}
         {bitenler.map(IsKart)}
       </>}
       {sekme==="profil"&&<>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>👤 Hesabım</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>👤 {T.ustaHesabim||"Hesabım"}</div>
 
         {/* Rozet Kartı */}
         <Sh s={{padding:"18px 16px",marginBottom:12,background:`linear-gradient(135deg,${aktifRozet.renk}22,${aktifRozet.renk}08)`,border:`1px solid ${aktifRozet.renk}33`}}>
@@ -296,12 +286,12 @@ function UstaPanel({kullanici}){
             <div style={{width:56,height:56,borderRadius:16,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>{aktifRozet.ikon}</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{aktifRozet.ad}</div>
-              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{toplamBiten} iş tamamladın</div>
+              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{(T.rozetTamamladin||"{n} iş tamamladın").replace("{n}",toplamBiten)}</div>
             </div>
           </div>
           {sonrakiRozet&&<div style={{marginTop:14}}>
             <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,color:C.t3,marginBottom:5}}>
-              <span>Sonraki: {sonrakiRozet.ikon} {sonrakiRozet.ad}</span>
+              <span>{T.rozetSonraki||"Sonraki"}: {sonrakiRozet.ikon} {sonrakiRozet.ad}</span>
               <span>{toplamBiten}/{sonrakiRozet.esik}</span>
             </div>
             <div style={{height:7,background:"#fff",borderRadius:6,overflow:"hidden"}}>
@@ -312,15 +302,15 @@ function UstaPanel({kullanici}){
 
         {/* İstatistikler */}
         <div style={{display:"flex",gap:10,marginBottom:12}}>
-          {[["Bu Hafta",buHaftaBiten,"#2563EB"],["Bu Ay",buAyBiten,"#0E9F6E"],["Toplam",toplamBiten,"#7C3AED"]].map(([l,v,r])=><Sh key={l} s={{flex:1,padding:"12px 8px",textAlign:"center"}}>
+          {[[T.statBuHafta||"Bu Hafta",buHaftaBiten,"#2563EB"],[T.statBuAy||"Bu Ay",buAyBiten,"#0E9F6E"],[T.statToplam||"Toplam",toplamBiten,"#7C3AED"]].map(([l,v,r])=><Sh key={l} s={{flex:1,padding:"12px 8px",textAlign:"center"}}>
             <div style={{fontSize:19,fontWeight:800,color:r}}>{v}</div>
-            <div style={{fontSize:9.5,color:C.t3,marginTop:2}}>{l} Tamamlanan</div>
+            <div style={{fontSize:9.5,color:C.t3,marginTop:2}}>{l} {T.statTamamlanan||"Tamamlanan"}</div>
           </Sh>)}
         </div>
 
         {/* Günün Sözü */}
         <Sh s={{padding:"14px 16px",marginBottom:12,background:"#F5F3FF"}}>
-          <div style={{fontSize:10,fontWeight:700,color:"#7C3AED",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>💬 Günün Sözü</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#7C3AED",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>💬 {T.gununSozuBaslik||"Günün Sözü"}</div>
           <div style={{fontSize:12.5,color:"#4C1D95",lineHeight:1.5,fontStyle:"italic"}}>"{gununSozu}"</div>
         </Sh>
 
@@ -328,8 +318,8 @@ function UstaPanel({kullanici}){
         <button onClick={()=>ustaIsRaporuPdf(tum,(veri&&veri.ad)||"Usta")} style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 15px",marginBottom:12,display:"flex",alignItems:"center",gap:11,cursor:"pointer",boxShadow:C.sh}}>
           <div style={{width:36,height:36,borderRadius:11,background:"#FEE2E2",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:17}}>📄</div>
           <div style={{flex:1,textAlign:"left"}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.t1}}>İş Raporumu İndir</div>
-            <div style={{fontSize:10.5,color:C.t3,marginTop:1}}>Tüm işlerin PDF özeti (tutar içermez)</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{T.pdfRaporBaslik||"İş Raporumu İndir"}</div>
+            <div style={{fontSize:10.5,color:C.t3,marginTop:1}}>{T.pdfRaporAlt||"Tüm işlerin PDF özeti (tutar içermez)"}</div>
           </div>
           <span style={{fontSize:13,color:C.t3}}>›</span>
         </button>
@@ -337,13 +327,13 @@ function UstaPanel({kullanici}){
         <Sh s={{padding:"6px 0",marginBottom:12}}>
           <SifreDegistir onBitti={()=>{}} gomulu/>
         </Sh>
-        <button onClick={()=>supabase.auth.signOut()} style={{width:"100%",background:C.redBg,border:"none",borderRadius:14,padding:"14px 0",color:C.red,fontSize:14,fontWeight:700,cursor:"pointer"}}>🚪 Çıkış Yap</button>
+        <button onClick={()=>supabase.auth.signOut()} style={{width:"100%",background:C.redBg,border:"none",borderRadius:14,padding:"14px 0",color:C.red,fontSize:14,fontWeight:700,cursor:"pointer"}}>🚪 {T.cikisYap||"Çıkış Yap"}</button>
         <div style={{textAlign:"center",marginTop:16,fontSize:11,color:C.t3}}>TradeFlow Elite · Usta Sürümü</div>
       </>}
 
       {/* Alt menü */}
       <div style={{position:"fixed",bottom:10,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 24px)",maxWidth:496,background:C.card,display:"flex",alignItems:"center",padding:"9px 8px",borderRadius:24,boxShadow:"0 10px 30px rgba(80,60,140,0.16)",border:`1px solid ${C.border}`,zIndex:100}}>
-        {[["isler","📋","İşlerim"],["harcama","🧾","Harcama"],["biten","✅","Bitenler"],["profil","👤","Hesabım"]].map(([id,ik,l])=>{
+        {[["isler","📋",T.ustaIslerim||"İşlerim"],["harcama","🧾",T.ustaHarcama||"Harcama"],["biten","✅",T.ustaBitenler||"Bitenler"],["profil","👤",T.ustaHesabim||"Hesabım"]].map(([id,ik,l])=>{
           const aktif=sekme===id&&id!=="harcama";
           return <div key={id} onClick={()=>id==="harcama"?setHarcamaAc(true):setSekme(id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"7px 0 5px",background:aktif?"#DCE7F8":"transparent",borderRadius:15,margin:"0 3px"}}>
             <span style={{fontSize:19}}>{ik}</span>
@@ -962,7 +952,8 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const ad=(yetkili||"").split(" ")[0]||"";
   const saat=new Date().getHours();
   const dilim=gunDilimi(saat);
-  const selam=DILIM_METIN[dilim].selam;
+  const DILIM_KEY={sabah:["selamSabah","altSabah"],ogle:["selamOgle","altOgle"],aksam:["selamAksam","altAksam"],gece:["selamGece","altGece"]}[dilim];
+  const selam=T[DILIM_KEY[0]]||DILIM_METIN[dilim].selam;
   const buAy=new Date().toISOString().slice(0,7);
   const gecenAy=(()=>{const d=new Date();d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,7);})();
   const bugun=new Date().toISOString().slice(0,10);
@@ -1012,7 +1003,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
       <div style={{position:"relative",padding:"18px 20px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:224}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.2,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
-        <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
+        <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
         <div style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:14,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"7px 14px",alignSelf:"flex-start",boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}>
           <i className="ti ti-clock" style={{fontSize:14,color:"#1C4E60"}} aria-hidden="true"/>
           <span style={{fontSize:12.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
@@ -1142,7 +1133,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
       </div>
     </Sh>
     <Sh s={{padding:"2px 10px",marginBottom:16}}>
-      <PiyasaSeridi C={C} P={P}/>
+      <PiyasaSeridi C={C} P={P} T={T}/>
     </Sh>
 {/* LED imza — mobil */}
   </div>;
@@ -4174,7 +4165,8 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   const ikonCik=e=>{e.currentTarget.style.background="rgba(255,255,255,0.14)";};
   const saatSimdi=new Date().getHours();
   const dilim=gunDilimi(saatSimdi);
-  const selam=DILIM_METIN[dilim].selam;
+  const DILIM_KEY={sabah:["selamSabah","altSabah"],ogle:["selamOgle","altOgle"],aksam:["selamAksam","altAksam"],gece:["selamGece","altGece"]}[dilim];
+  const selam=T[DILIM_KEY[0]]||DILIM_METIN[dilim].selam;
   return <div style={{display:"flex",alignItems:"stretch",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
 
     {/* Karşılama — fotoğraflı hero, %70 */}
@@ -4183,13 +4175,13 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
       <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
       <div style={{position:"relative",height:"100%",padding:"16px 22px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.15,textShadow:"0 2px 10px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
-        <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",marginTop:3,fontWeight:500,textShadow:"0 1px 6px rgba(0,0,0,0.4)"}}>{DILIM_METIN[dilim].alt}</div>
+        <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",marginTop:3,fontWeight:500,textShadow:"0 1px 6px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"5px 12px",alignSelf:"flex-start"}}>
           <i className="ti ti-clock" style={{fontSize:12,color:"#1C4E60"}} aria-hidden="true"/>
           <span style={{fontSize:11.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
           <span style={{width:2.5,height:2.5,borderRadius:"50%",background:"#9CA3AF"}}/>
           <span style={{fontSize:11.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span>
-          <span onClick={onDunya} style={{marginLeft:4,paddingLeft:8,borderLeft:"1px solid #E2E8F0",fontSize:10.5,fontWeight:700,color:"#2E7490",cursor:"pointer"}}>🌍 Dünya saatleri</span>
+          <span onClick={onDunya} style={{marginLeft:4,paddingLeft:8,borderLeft:"1px solid #E2E8F0",fontSize:10.5,fontWeight:700,color:"#2E7490",cursor:"pointer"}}>{T.dunyaSaatleriKisa||"🌍 Dünya saatleri"}</span>
         </div>
       </div>
     </div>
@@ -4203,8 +4195,8 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
         <Ik n="canta" s={18} c="rgba(255,255,255,0.92)" w={1.7}/>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:9.5,color:"rgba(255,255,255,0.68)",fontWeight:600,letterSpacing:"0.03em",lineHeight:1.25}}>İş Sektörünüz</div>
-          <div style={{fontSize:13.5,fontWeight:700,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.35}}>{isKolu||"Sektör seçin…"}</div>
+          <div style={{fontSize:9.5,color:"rgba(255,255,255,0.68)",fontWeight:600,letterSpacing:"0.03em",lineHeight:1.25}}>{T.desktopSektorunuz||"İş Sektörünüz"}</div>
+          <div style={{fontSize:13.5,fontWeight:700,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.35}}>{isKolu||T.desktopSektorSecin||"Sektör seçin…"}</div>
         </div>
         <Ik n="asagi" s={14} c="rgba(255,255,255,0.75)" w={2}/>
         <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}} title="İş sektörünüzü seçin">
@@ -5034,7 +5026,7 @@ export default function TradeFlow(){
     </div>;
   }
   if(USTA_MI){
-    return <UstaPanel kullanici={kullanici}/>;
+    return <UstaPanel kullanici={kullanici} T={T}/>;
   }
   if(!veriYuklendi)return <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
     {/* Logo */}
@@ -5072,7 +5064,7 @@ export default function TradeFlow(){
         {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
-          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
+          {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true} T={T}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
           {sekme==="isler"&&<IslerTab jobs={jobs} onSelect={setSecili} T={T} filtre={islerFiltre}/>}
           {sekme==="faturalar"&&<FaturalarTab faturalar={faturalar} jobs={jobs} isletme={isletme} onFaturaKes={setFatJob} onFaturaSil={(no)=>{const f=faturalar.find(x=>x.no===no);if(f){copeAt("fatura",f);setJobs(p=>p.map(j=>j.ref===f.jobRef?{...j,faturalandi:true}:j));}setFaturalar(p=>p.filter(x=>x.no!==no));goster("🗑️ Fatura silindi — Çöp Kutusu'nda 30 gün durur");}} T={T}/>}
           {sekme==="tahsilatlar"&&<TahsilatlarTab jobs={jobs} onTahsil={(id)=>{durumDegis(id,"tamamlandi");goster("💰 Tahsil edildi ✓");}} onSil={(id)=>{setJobs(p=>p.filter(j=>j.id!==id));goster("🗑️ Tahsilat kaydı silindi");}} filtre={tahsilatFiltre} T={T}/>}
