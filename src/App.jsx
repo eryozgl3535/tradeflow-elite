@@ -4178,7 +4178,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   return <div style={{display:"flex",alignItems:"stretch",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
 
     {/* Karşılama — fotoğraflı hero, %70 */}
-    <div style={{position:"relative",flex:"7 1 460px",height:150,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
+    <div style={{position:"relative",flex:"7 1 460px",minHeight:150,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
       <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
       <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
       <div style={{position:"relative",height:"100%",padding:"16px 22px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
@@ -4195,7 +4195,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
     </div>
 
     {/* Sağ panel — İş Sektörünüz + ikon butonları, %30 */}
-    <div style={{flex:"3 1 300px",height:150,background:GRAD,borderRadius:18,padding:"14px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:10,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
+    <div style={{flex:"3 1 300px",minHeight:150,background:GRAD,borderRadius:18,padding:"14px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:10,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
 
       {/* Sektör seçici */}
       <div style={{position:"relative",display:"flex",alignItems:"center",gap:10,cursor:"pointer",padding:"8px 10px",borderRadius:12,transition:"background .14s"}}
