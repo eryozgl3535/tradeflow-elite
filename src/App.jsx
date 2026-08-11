@@ -2235,8 +2235,15 @@ const ASISTAN_BILGI_EN=[
   {k:["price","pro","subscription"],c:"⚡ Pro plan (₺199/mo) is planned: unlimited jobs, PDF invoices, integrations. Everything is free for now."},
   {k:["help","support","problem","error","broken"],c:"🆘 Trouble? Describe your problem here and I will guide you. White screen? Refresh with Ctrl+Shift+R or sign out and back in."},
 ];
-function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitlari=[],isletme={}}){
+function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitlari=[],isletme={},ilkSoru=null,sesliBasla=false}){
   const TR_Mi=(T.anaSayfa==="Ana Sayfa");
+  const [sesliMod,setSesliMod]=useState(!!sesliBasla); // cevapları yüksek sesle oku
+  const [dinliyor,setDinliyor]=useState(false);
+  const [mikDestek,setMikDestek]=useState(true);
+  const tanimaRef=useRef(null);
+  const cevapRef=useRef(null);
+  const sesliModRef=useRef(!!sesliBasla);
+  sesliModRef.current=sesliMod;
   const [mesajlar,setMesajlar]=useState([{rol:"bot",metin:TR_Mi?"👋 Merhaba! Ben TradeFlow asistanın. İşletmenle ilgili her şeyi sorabilirsin: \"Bu ay ne kazandım?\", \"Kim borçlu?\", \"Ahmet Bey'in durumu ne?\" ya da uygulama kullanımı hakkında soru sor.":T.asistanHosgeldin}]);
   const [giris,setGiris]=useState("");
   const [yaziyor,setYaziyor]=useState(false);
@@ -2306,8 +2313,15 @@ function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitl
     return null;
   };
 
+  // Bot cevabını ekle; sesli mod açıksa yüksek sesle oku
+  const botEkle=(metin)=>{
+    setMesajlar(p=>[...p,{rol:"bot",metin}]);
+    if(sesliModRef.current)tfKonus(metin);
+  };
+
   const cevapla=async(soru)=>{
     const s=soru.toLowerCase();
+    tfSus();
     setMesajlar(p=>[...p,{rol:"user",metin:soru}]);
     setGiris("");
     // 1) Önce buluttaki gerçek yapay zekâyı dene
@@ -2319,24 +2333,70 @@ function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitl
       const r=await fetch("/api/asistan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mesajlar:gecmis,ozet,dil:TR_Mi?"tr":"en"})});
       if(r.ok){
         const d=await r.json();
-        if(d.cevap){setYaziyor(false);setMesajlar(p=>[...p,{rol:"bot",metin:d.cevap}]);return;}
+        if(d.cevap){setYaziyor(false);botEkle(d.cevap);return;}
       }
     }catch(e){/* AI yok/erişilemedi → yerel motora düş */}
     setYaziyor(false);
     // 2) Yerel akıllı motor (kullanıcı verisiyle)
     const akilli=akilliCevap(s);
-    if(akilli){setMesajlar(p=>[...p,{rol:"bot",metin:akilli}]);return;}
+    if(akilli){botEkle(akilli);return;}
     // 3) SSS motoru
     const sss=kuralCevap(s);
-    if(sss){setMesajlar(p=>[...p,{rol:"bot",metin:sss}]);return;}
-    setMesajlar(p=>[...p,{rol:"bot",metin:TR_Mi
+    if(sss){botEkle(sss);return;}
+    botEkle(TR_Mi
       ?"🤔 Bunu tam anlayamadım. Şunları sorabilirsin:\n• \"Bu ay ne kazandım?\"\n• \"Kim borçlu?\"\n• \"[Müşteri adı] durumu ne?\"\n• \"Fatura nasıl kesilir?\""
-      :"🤔 I don't know that one yet. Try rephrasing or check Profile → Help Center."}]);
+      :"🤔 I don't know that one yet. Try rephrasing or check Profile → Help Center.");
   };
+
+  cevapRef.current=cevapla;
+
+  // ── Mikrofon: soruyu sesle sor ──
+  useEffect(()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){setMikDestek(false);return;}
+    const r=new SR();
+    r.lang=TR_Mi?"tr-TR":"en-US";r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
+    r.onresult=(e)=>{
+      const metin=(e.results[0][0].transcript||"").trim();
+      if(!metin)return;
+      setSesliMod(true);sesliModRef.current=true; // sesle sorduysa sesli cevap ver
+      if(cevapRef.current)cevapRef.current(metin);
+    };
+    r.onerror=()=>setDinliyor(false);
+    r.onend=()=>setDinliyor(false);
+    tanimaRef.current=r;
+    return ()=>{ try{r.abort();}catch{} };
+    // eslint-disable-next-line
+  },[]);
+
+  const dinle=()=>{
+    if(!tanimaRef.current)return;
+    if(dinliyor){try{tanimaRef.current.stop();}catch{} setDinliyor(false);return;}
+    tfSus();
+    try{tanimaRef.current.start();setDinliyor(true);}catch{}
+  };
+
+  // ── Sesli komuttan gelen soru varsa otomatik sor ──
+  useEffect(()=>{
+    if(ilkSoru&&cevapRef.current)cevapRef.current(ilkSoru);
+    // eslint-disable-next-line
+  },[ilkSoru]);
+
+  // Ekran kapanınca konuşmayı kes
+  useEffect(()=>()=>tfSus(),[]);
+
+  const kapat=()=>{ tfSus(); onKapat&&onKapat(); };
 
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:MASAUSTU?640:APP_W,display:"flex",flexDirection:"column",height:"100vh"}}>
-      <GeriBaslik baslik={"🤖 "+T.asistan} onKapat={onKapat}/>
+      <GeriBaslik baslik={"🤖 "+T.asistan} onKapat={kapat}/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"8px 16px",background:C.card,borderBottom:`1px solid ${C.border}`}}>
+        <span style={{fontSize:11,color:C.t3}}>{mikDestek?"🎙️ Mikrofona basıp konuşabilirsin":"⌨️ Klavyedeki dikte tuşunu kullanabilirsin"}</span>
+        <button onClick={()=>{const y=!sesliMod;setSesliMod(y);sesliModRef.current=y;if(!y)tfSus();}}
+          style={{background:sesliMod?P+"18":C.bg,border:`1px solid ${sesliMod?P+"55":C.border}`,borderRadius:20,padding:"6px 12px",fontSize:11.5,fontWeight:700,color:sesliMod?P:C.t3,cursor:"pointer",whiteSpace:"nowrap"}}>
+          {sesliMod?"🔊 Sesli yanıt açık":"🔇 Sesli yanıt kapalı"}
+        </button>
+      </div>
       <div style={{flex:1,overflowY:"auto",padding:"16px 14px",display:"flex",flexDirection:"column",gap:10}}>
         {mesajlar.map((m,i)=><div key={i} style={{alignSelf:m.rol==="bot"?"flex-start":"flex-end",maxWidth:"85%"}}>
           <div style={{background:m.rol==="bot"?C.card:P,color:m.rol==="bot"?C.t1:"#fff",borderRadius:m.rol==="bot"?"4px 16px 16px 16px":"16px 4px 16px 16px",padding:"12px 15px",fontSize:13.5,lineHeight:1.6,boxShadow:C.sh,whiteSpace:"pre-wrap"}}>{m.metin.split("**").map((par,ix)=>ix%2===1?<b key={ix}>{par}</b>:par)}</div>
@@ -2347,9 +2407,14 @@ function AsistanEkrani({onKapat,T,jobs=[],giderler=[],faturalar=[],musteriKayitl
         </div>}
       </div>
       <div style={{padding:"12px 14px 28px",background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
-        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim()&&!yaziyor)cevapla(giris.trim());}} placeholder={T.soruPh} disabled={yaziyor}
-          style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none",opacity:yaziyor?0.6:1}}/>
-        <button onClick={()=>giris.trim()&&!yaziyor&&cevapla(giris.trim())} style={{background:P,border:"none",borderRadius:14,padding:"0 20px",color:"#fff",fontSize:17,cursor:"pointer",opacity:yaziyor?0.6:1}}>➤</button>
+        {mikDestek&&<button onClick={dinle} aria-label="Sesle sor" title="Sesle sor"
+          style={{background:dinliyor?"#EF4444":C.bg,border:`1px solid ${dinliyor?"#EF4444":C.border}`,borderRadius:14,width:50,flexShrink:0,color:dinliyor?"#fff":C.t2,fontSize:19,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",animation:dinliyor?"tfDinle 1s infinite":"none"}}>
+          <i className="ti ti-microphone" aria-hidden="true"/>
+        </button>}
+        <input value={giris} onChange={e=>setGiris(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&giris.trim()&&!yaziyor)cevapla(giris.trim());}} placeholder={dinliyor?"🎙️ Dinliyorum…":T.soruPh} disabled={yaziyor}
+          style={{flex:1,minWidth:0,background:C.bg,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 16px",color:C.t1,fontSize:14,outline:"none",opacity:yaziyor?0.6:1}}/>
+        <button onClick={()=>giris.trim()&&!yaziyor&&cevapla(giris.trim())} style={{background:P,border:"none",borderRadius:14,padding:"0 18px",flexShrink:0,color:"#fff",fontSize:17,cursor:"pointer",opacity:yaziyor?0.6:1}}>➤</button>
+        <style>{"@keyframes tfDinle{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5)}50%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}"}</style>
       </div>
     </div>
   </div>;
@@ -4159,6 +4224,49 @@ const DesktopCharts=memo(function DesktopCharts({jobs,giderler,T,onDetayGelir,on
   </div>;
 })
 
+// ═══ 🔊 SESLİ YANIT — Türkçe konuşma (Web Speech Synthesis) ═══
+let TF_SESLER=[];
+function tfSesleriHazirla(){
+  try{
+    if(typeof window==="undefined"||!window.speechSynthesis)return;
+    const al=()=>{TF_SESLER=window.speechSynthesis.getVoices()||[];};
+    al();
+    window.speechSynthesis.onvoiceschanged=al;
+  }catch{}
+}
+tfSesleriHazirla();
+
+function tfTrSes(){
+  const s=TF_SESLER.length?TF_SESLER:(()=>{try{return window.speechSynthesis.getVoices()||[];}catch{return [];}})();
+  return s.find(v=>/^tr([-_]TR)?$/i.test(v.lang))||s.find(v=>/^tr/i.test(v.lang))||s.find(v=>/turkish|türk/i.test(v.name))||null;
+}
+
+// Metni okunabilir hale getir: markdown yıldızları, emoji ve madde işaretlerini temizle
+function tfSesMetni(metin){
+  return String(metin||"")
+    .replace(/\*\*/g,"")
+    .replace(/[#>_`|]/g," ")
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu,"")
+    .replace(/^[•\-*]\s*/gm,"")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function tfKonus(metin,acik=true){
+  try{
+    if(!acik||typeof window==="undefined"||!window.speechSynthesis)return false;
+    const temiz=tfSesMetni(metin).slice(0,700);
+    if(!temiz)return false;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(temiz);
+    u.lang="tr-TR"; u.rate=1.04; u.pitch=1; u.volume=1;
+    const ses=tfTrSes(); if(ses)u.voice=ses;
+    window.speechSynthesis.speak(u);
+    return true;
+  }catch{ return false; }
+}
+function tfSus(){ try{ if(window.speechSynthesis)window.speechSynthesis.cancel(); }catch{} }
+
 // ═══ 🎙️ SESLİ KOMUT — "tahsilat aç", "yeni müşteri ekle" gibi Türkçe sesli komutlarla gezinme ═══
 function sesliKomutYorumla(metin,eylemler){
   const m=metin.toLowerCase().trim()
@@ -4191,40 +4299,75 @@ function sesliKomutYorumla(metin,eylemler){
   if(iceren("is akis","islerim","aktif is","isler","gorev"))return eylemler.git("isler");
   return eylemler.bulunamadi(metin);
 }
-function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,acik=false}){
+// Sekme / ekran adlarının sesli okunuşu
+const SESLI_AD={
+  anasayfa:"Ana sayfa",isler:"İş akışları",musteriler:"Müşteriler",faturalar:"Faturalar",
+  tahsilatlar:"Tahsilatlar",teklifler:"Teklifler",giderler:"Giderler",raporlar:"Raporlar",
+  bildiri:"Bildirimler",profil:"Profil",takvim:"Takvim",kasa:"Kasa",ekip:"Ekip yönetimi",
+  nakit:"Nakit akışı tahmini",dunya:"Dünya saatleri",eglence:"Eğlence köşesi",
+  asistan:"Asistan",cop:"Çöp kutusu",yardim:"Yardım merkezi",
+};
+
+function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,onSor,acik=false}){
   const [dinliyor,setDinliyor]=useState(false);
   const [destekli,setDestekli]=useState(true);
   const [yaziModal,setYaziModal]=useState(false);
   const [yaziDeger,setYaziDeger]=useState("");
   const tanimaRef=useRef(null);
+  const propRef=useRef({});
+  propRef.current={setSekme,setYeniAc,setEkran,goster,yeniIsKilit,onSor};
+
+  // Hem mikrofondan hem yazıdan gelen metni aynı şekilde işle
+  const isle=(metin)=>{
+    if(!metin||!metin.trim())return;
+    const p=propRef.current;
+    const eylemler={
+      git:(sekme)=>{
+        p.setSekme(sekme);
+        const ad=SESLI_AD[sekme]||sekme;
+        p.goster("🎙️ "+ad+" açılıyor");
+        tfKonus(ad+" açılıyor");
+      },
+      yeniIs:()=>{
+        if(!p.yeniIsKilit())p.setYeniAc(true);
+        p.goster("🎙️ Yeni iş ekranı açılıyor");
+        tfKonus("Yeni iş ekranı açılıyor");
+      },
+      ekran:(e)=>{
+        p.setEkran(e);
+        const ad=SESLI_AD[e]||e;
+        p.goster("🎙️ "+ad+" açılıyor");
+        tfKonus(ad+" açılıyor");
+      },
+      // Komut değilse: soru kabul edip asistana devret (asistan sesli cevap verir)
+      bulunamadi:(m)=>{
+        if(p.onSor){
+          p.goster("🤖 Asistana soruluyor…");
+          p.onSor(m);
+        }else{
+          p.goster("🎙️ Anlaşılamadı: \""+m+"\"");
+          tfKonus("Bunu anlayamadım, tekrar söyler misin?");
+        }
+      },
+    };
+    sesliKomutYorumla(metin,eylemler);
+  };
+
   useEffect(()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR){setDestekli(false);return;}
     const r=new SR();
     r.lang="tr-TR";r.continuous=false;r.interimResults=false;r.maxAlternatives=1;
-    r.onresult=(e)=>{
-      const metin=e.results[0][0].transcript;
-      const eylemler={
-        git:(sekme)=>{setSekme(sekme);goster("🎙️ \""+metin+"\" → açılıyor");},
-        yeniIs:()=>{if(!yeniIsKilit())setYeniAc(true);goster("🎙️ Yeni iş ekranı açılıyor");},
-        ekran:(e)=>{setEkran(e);goster("🎙️ \""+metin+"\" → açılıyor");},
-        bulunamadi:(metin)=>{goster("🎙️ Anlaşılamadı: \""+metin+"\"");},
-      };
-      sesliKomutYorumla(metin,eylemler);
-    };
+    r.onresult=(e)=>{ isle(e.results[0][0].transcript); };
     r.onerror=()=>setDinliyor(false);
     r.onend=()=>setDinliyor(false);
     tanimaRef.current=r;
+    return ()=>{ try{r.abort();}catch{} };
+    // eslint-disable-next-line
   },[]);
+
   const komutCalistir=(metin)=>{
-    if(!metin||!metin.trim())return;
-    const eylemler={
-      git:(sekme)=>{setSekme(sekme);goster("🎙️ \""+metin+"\" → açılıyor");},
-      yeniIs:()=>{if(!yeniIsKilit())setYeniAc(true);goster("🎙️ Yeni iş ekranı açılıyor");},
-      ekran:(e)=>{setEkran(e);goster("🎙️ \""+metin+"\" → açılıyor");},
-      bulunamadi:(metin)=>{goster("🎙️ Anlaşılamadı: \""+metin+"\"");},
-    };
-    sesliKomutYorumla(metin,eylemler);
+    isle(metin);
     setYaziModal(false);setYaziDeger("");
   };
   const btnStil={width:acik?38:40,height:acik?38:40,borderRadius:acik?"50%":11,background:dinliyor?"#EF4444":(acik?"transparent":"rgba(255,255,255,0.14)"),border:acik?"none":"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"background .14s",flexShrink:0,animation:dinliyor?"tfPulse 1s infinite":"none"};
@@ -4247,7 +4390,9 @@ function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,acik=false})
     </>;
   }
   const baslat=()=>{
-    if(dinliyor||!tanimaRef.current)return;
+    if(!tanimaRef.current)return;
+    if(dinliyor){try{tanimaRef.current.stop();}catch{} setDinliyor(false); return;}
+    tfSus(); // konuşma sürüyorsa sustur, mikrofon kendi sesini duymasın
     try{tanimaRef.current.start();setDinliyor(true);}catch(e){}
   };
   return <button onClick={baslat} title="Sesli komut: 'tahsilat aç', 'yeni müşteri ekle' gibi söyle" style={btnStil}>
@@ -4256,7 +4401,7 @@ function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,acik=false})
   </button>;
 }
 
-function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya,onTema,setSekme,setYeniAc,setEkran,goster,yeniIsKilit}){
+function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,isKolu,setIsKolu,onDunya,onTema,setSekme,setYeniAc,setEkran,goster,yeniIsKilit,onSor}){
   const ad=(isletme.yetkili||"").split(" ")[0]||"";
   const ikonBtn={width:40,height:40,borderRadius:11,background:"rgba(255,255,255,0.14)",border:"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",position:"relative",transition:"background .14s"};
   const ikonGir=e=>{e.currentTarget.style.background="rgba(255,255,255,0.26)";};
@@ -4314,7 +4459,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
         <button onClick={onAra} title="Ara" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
           <Ik n="ara" s={18} c="#fff" w={1.8}/>
         </button>
-        <SesliKomut setSekme={setSekme} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit}/>
+        <SesliKomut setSekme={setSekme} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} onSor={onSor}/>
         <button onClick={onBildirim} title="Bildirimler" style={ikonBtn} onMouseEnter={ikonGir} onMouseLeave={ikonCik}>
           <Ik n="zil" s={18} c="#fff" w={1.8}/>
           {okunmamis>0&&<span style={{position:"absolute",top:-3,right:-3,minWidth:18,height:18,borderRadius:9,background:"#EF4444",color:"#fff",fontSize:9.5,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px",border:"2px solid #2E7490"}}>{okunmamis}</span>}
@@ -4629,6 +4774,7 @@ export default function TradeFlow(){
   const [teklifAc,setTeklifAc]=useState(false);
   const [giderAc,setGiderAc]=useState(false);
   const [ekran,setEkran]=useState(null);
+  const [asistanSoru,setAsistanSoru]=useState(null); // sesli komuttan gelen soru
   const [sahitliJob,setSahitliJob]=useState(null);
   const [sahitliMod,setSahitliMod]=useState(null); // "duzenle" | "goruntule"
   const [isKolu,setIsKolu]=useState("Mekanik Tesisat");
@@ -4875,6 +5021,7 @@ export default function TradeFlow(){
   const sekmeGecS=useCallback((s)=>{setIslerFiltre(null);setTahsilatFiltre(null);setSekme(s);},[]);
   const yeniIsAcS=useCallback(()=>{if(!_h.current.yeniIsKilit())setYeniAc(true);},[]);
   const statClickS=useCallback((g)=>_h.current.statClick(g),[]);
+  const sorS=useCallback((soru)=>{setAsistanSoru(soru);setEkran("asistan");},[]);
   const ozellestirAcS=useCallback(()=>setOzellestirAc(true),[]);
   const isKoluSecS=useCallback((k)=>{_h.current.setIsKolu(k);_h.current.goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");},[]);
   useEffect(()=>{
@@ -5152,7 +5299,7 @@ export default function TradeFlow(){
             <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.3em",display:"flex",alignItems:"center"}}><LedImza boyut={10} metin="ERAİ" inline={true}/></div></div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <SesliKomut setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} acik/>
+            <SesliKomut setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} onSor={sorS} acik/>
             <div onClick={()=>setSekme("bildiri")} style={{position:"relative",cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-bell" style={{fontSize:22,color:C.t1}} aria-hidden="true"/>{okunmamis>0&&<span style={{position:"absolute",top:5,right:5,width:9,height:9,borderRadius:"50%",background:"#2E7490",border:"2px solid "+C.bg}}/>}</div>
             <div onClick={()=>setSekme("profil")} style={{cursor:"pointer"}} title="Profil — fotoğraf eklemek için dokun">
               {isletme?.logo
@@ -5161,7 +5308,7 @@ export default function TradeFlow(){
             </div>
           </div>
         </div>}
-        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")} setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit}/>}
+        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")} setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} onSor={sorS}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
           {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true} T={T}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
@@ -5240,7 +5387,7 @@ export default function TradeFlow(){
         {teklifAc&&<TeklifModal T={T} kdv={kdv} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is",{tur:"sekme",sekme:"giderler"});}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
-        {ekran==="asistan"&&<AsistanEkrani onKapat={()=>setEkran(null)} T={T} jobs={jobs} giderler={giderler} faturalar={faturalar} musteriKayitlari={musteriKayitlari} isletme={isletme}/>}
+        {ekran==="asistan"&&<AsistanEkrani onKapat={()=>{setEkran(null);setAsistanSoru(null);}} ilkSoru={asistanSoru} sesliBasla={!!asistanSoru} T={T} jobs={jobs} giderler={giderler} faturalar={faturalar} musteriKayitlari={musteriKayitlari} isletme={isletme}/>}
         {ekran==="takvim"&&<TakvimEkrani onKapat={()=>setEkran(null)} jobs={jobs} onIsSec={(j)=>{setEkran(null);setSecili(j);}}/>}
         {ekran==="cop"&&<CopKutusuEkrani onKapat={()=>setEkran(null)} copKutusu={copKutusu}
           onGeriAl={(i)=>{const c=copKutusu[i];if(!c)return;
