@@ -54,6 +54,7 @@ const ETIKETLER=[
   {alan:"musteriTelefon",d:"(?:telefon(?:u|\\s+numaras[iı])?|tel|numaras[iı]|cep)"},
   {alan:"atanan",      d:"(?:atanan(?:\\s+kisi)?|gorevli|isi\\s+yapacak|usta\\s+olarak)"},
   {alan:"kisiSayisi",  d:"(?:kisi\\s+say[iı]s[iı])"},
+  {alan:"vadeGun",     d:"(?:odeme\\s+vadesi|vade(?:si)?|odeme\\s+suresi)"},
   {alan:"not",         d:"(?:not(?:u)?|aciklama(?:s[iı])?)"},
   {alan:"tarih",       d:"(?:is\\s+tarihi|tarih[iı]?)"},
   {alan:"saat",        d:"(?:saat[iı]?)"},
@@ -135,6 +136,11 @@ export function sesliIsAyristir(hamMetin,{musteriler=[],ekip=[]}={}){
     const x=al("maliyet").match(/[\d][\d.,\s]*(?:\s*bin\s*[\d.,\s]*)?/);
     const v=x?sayiCoz(x[0]):null;
     if(v!==null&&v>0)sonuc.maliyet=String(Math.round(v));
+  }
+  if(al("vadeGun")){
+    const v=al("vadeGun");
+    if(/pesin|peşin/i.test(NRM(v)))sonuc.vadeGun=0;
+    else{const x=v.match(/\d+/);if(x)sonuc.vadeGun=parseInt(x[0],10);}
   }
   if(al("kisiSayisi")){
     const x=al("kisiSayisi").match(/\d+/);
