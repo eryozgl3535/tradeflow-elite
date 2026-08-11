@@ -4187,6 +4187,8 @@ function sesliKomutYorumla(metin,eylemler){
 function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,acik=false}){
   const [dinliyor,setDinliyor]=useState(false);
   const [destekli,setDestekli]=useState(true);
+  const [yaziModal,setYaziModal]=useState(false);
+  const [yaziDeger,setYaziDeger]=useState("");
   const tanimaRef=useRef(null);
   useEffect(()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -4207,14 +4209,42 @@ function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,acik=false})
     r.onend=()=>setDinliyor(false);
     tanimaRef.current=r;
   },[]);
-  if(!destekli)return null;
+  const komutCalistir=(metin)=>{
+    if(!metin||!metin.trim())return;
+    const eylemler={
+      git:(sekme)=>{setSekme(sekme);goster("🎙️ \""+metin+"\" → açılıyor");},
+      yeniIs:()=>{if(!yeniIsKilit())setYeniAc(true);goster("🎙️ Yeni iş ekranı açılıyor");},
+      ekran:(e)=>{setEkran(e);goster("🎙️ \""+metin+"\" → açılıyor");},
+      bulunamadi:(metin)=>{goster("🎙️ Anlaşılamadı: \""+metin+"\"");},
+    };
+    sesliKomutYorumla(metin,eylemler);
+    setYaziModal(false);setYaziDeger("");
+  };
+  const btnStil={width:acik?38:40,height:acik?38:40,borderRadius:acik?"50%":11,background:dinliyor?"#EF4444":(acik?"transparent":"rgba(255,255,255,0.14)"),border:acik?"none":"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"background .14s",flexShrink:0,animation:dinliyor?"tfPulse 1s infinite":"none"};
+  const ikonRenk=dinliyor?"#fff":(acik?"#1F2937":"#fff");
+  if(!destekli){
+    // iOS Safari (Web Speech API yok): klavyedeki dikte tuşuyla yazıya çevrilen komutu bir metin kutusuna alıp yorumluyoruz
+    return <>
+      <button onClick={()=>setYaziModal(true)} title="Sesli komut (iOS: klavyedeki 🎤 dikte tuşunu kullan)" style={btnStil}>
+        <i className="ti ti-microphone" style={{fontSize:acik?21:18,color:ikonRenk}} aria-hidden="true"/>
+      </button>
+      {yaziModal&&<div onClick={()=>setYaziModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:9999,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:460,background:"#fff",borderRadius:"20px 20px 0 0",padding:"20px 20px 28px",boxShadow:"0 -8px 30px rgba(0,0,0,0.2)"}}>
+          <div style={{width:36,height:4,borderRadius:2,background:"#E5E7EB",margin:"0 auto 16px"}}/>
+          <div style={{fontSize:15,fontWeight:800,color:"#1F2937",marginBottom:4}}>🎙️ Sesli Komut</div>
+          <div style={{fontSize:12,color:"#6B7280",marginBottom:14,lineHeight:1.5}}>Klavye açılınca 🎤 dikte tuşuna basıp konuş, ya da yazarak dene: "tahsilat aç", "yeni müşteri ekle"...</div>
+          <input autoFocus value={yaziDeger} onChange={e=>setYaziDeger(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")komutCalistir(yaziDeger);}} placeholder="Komut söyle veya yaz…" style={{width:"100%",boxSizing:"border-box",padding:"13px 15px",border:"1.5px solid #E5E7EB",borderRadius:12,fontSize:15,outline:"none",marginBottom:14}}/>
+          <button onClick={()=>komutCalistir(yaziDeger)} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Çalıştır</button>
+        </div>
+      </div>}
+    </>;
+  }
   const baslat=()=>{
     if(dinliyor||!tanimaRef.current)return;
     try{tanimaRef.current.start();setDinliyor(true);}catch(e){}
   };
-  return <button onClick={baslat} title="Sesli komut: 'tahsilat aç', 'yeni müşteri ekle' gibi söyle"
-    style={{width:acik?38:40,height:acik?38:40,borderRadius:acik?"50%":11,background:dinliyor?"#EF4444":(acik?"transparent":"rgba(255,255,255,0.14)"),border:acik?"none":"1px solid rgba(255,255,255,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"background .14s",flexShrink:0,animation:dinliyor?"tfPulse 1s infinite":"none"}}>
-    <i className="ti ti-microphone" style={{fontSize:acik?21:18,color:dinliyor?"#fff":(acik?"#1F2937":"#fff")}} aria-hidden="true"/>
+  return <button onClick={baslat} title="Sesli komut: 'tahsilat aç', 'yeni müşteri ekle' gibi söyle" style={btnStil}>
+    <i className="ti ti-microphone" style={{fontSize:acik?21:18,color:ikonRenk}} aria-hidden="true"/>
     <style>{"@keyframes tfPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5);}50%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}"}</style>
   </button>;
 }
