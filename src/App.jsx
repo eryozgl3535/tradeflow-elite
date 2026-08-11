@@ -775,6 +775,12 @@ function KasaEkrani({onKapat,cekSenetler,setCekSenetler,jobs,giderler,goster}){
   </div>;
 }
 const P = "#2E7490";
+// ═══ Anlam renkleri — renk süs değil, durum bildirir ═══
+const TEAL    = "#1C4E60";   // koyu marka tonu — nötr/varsayılan ikon
+const KOR     = "#C2603A";   // dikkat gerekiyor (vade, bekleyen, gecikme)
+const KOR_BG  = "#FBEDE6";
+const YESIL   = "#0A7A55";   // olumlu / tamamlandı
+const YESIL_BG= "#E6F5EF";
 const GRAD = "linear-gradient(135deg,#3E8FA3,#1F4E60)";
 const GOLD = "#C9A24B";
 
@@ -1071,17 +1077,17 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
     {ic:"ti-clock",l:T.bekleyenTahsilat,v:fmt(beklT),sub:T.toplam,c:"#F59E0B"},
     {ic:"ti-file-text",l:T.faturalar,v:beklFatSay,sub:T.beklemede,c:"#7C5CFC"},
   ];
+  // Hızlı işlemler — tek tonlu. vurgu:true = dolu kutu (birincil eylem)
+  // nokta:true = bekleyen iş var uyarısı
   const hizli=[
-    {ic:"ti-circle-plus",c:"#2563EB",l:T.yeniIs,act:onYeniIs},
-    {ic:"ti-user",c:"#2563EB",l:T.musteriler,act:()=>setSekme("musteriler")},
-    {ic:"ti-file-text",c:"#6366F1",l:T.faturalar,act:()=>setSekme("faturalar")},
-    {ic:"ti-wallet",c:"#0E9F6E",l:T.tahsilatlar,act:()=>setSekme("tahsilatlar")},
-    {ic:"ti-sitemap",c:"#3B82F6",l:T.isAkislari,act:()=>setSekme("isler")},
-    {ic:"ti-file-pencil",c:"#7C3AED",l:T.teklifler,act:()=>setSekme("teklifler")},
-    {ic:"ti-chart-bar",c:"#F97316",l:T.raporlar,act:()=>setSekme("raporlar")},
-    {ic:"ti-folder",c:"#14B8A6",l:T.giderler,act:()=>setSekme("giderler")},
-    {ic:"ti-camera",c:"#F59E0B",l:"Çek · Senet",act:onKasa},
-    {ic:"ti-dots",c:"#6B7280",l:T.dahaFazla,act:()=>setSekme("daha")},
+    {ic:"ti-plus",l:T.yeniIs,act:onYeniIs,vurgu:true},
+    {ic:"ti-user",l:T.musteriler,act:()=>setSekme("musteriler")},
+    {ic:"ti-file-text",l:T.faturalar,act:()=>setSekme("faturalar"),nokta:beklFatSay>0},
+    {ic:"ti-wallet",l:T.tahsilatlar,act:()=>setSekme("tahsilatlar"),nokta:beklT>0},
+    {ic:"ti-sitemap",l:T.isAkislari,act:()=>setSekme("isler")},
+    {ic:"ti-file-pencil",l:T.teklifler,act:()=>setSekme("teklifler")},
+    {ic:"ti-chart-bar",l:T.raporlar,act:()=>setSekme("raporlar")},
+    {ic:"ti-folder",l:T.giderler,act:()=>setSekme("giderler")},
   ];
   const cevre=2*Math.PI*44;
   // 💡 İpucu carousel — özellik tanıtımları, otomatik döner + kaydırma
@@ -1109,129 +1115,182 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
         </div>
       </div>
     </div>
-    {/* Yeni İş Ekle + İpucu kartları — eşit genişlik, simetrik */}
-    <div style={{display:"flex",gap:12,marginBottom:16,alignItems:"stretch"}}>
-      <button onClick={onYeniIs} style={{flex:1,background:GRAD,border:"none",borderRadius:20,padding:"16px 14px",color:"#fff",cursor:"pointer",textAlign:"left",boxShadow:"0 10px 22px rgba(31,78,96,0.32)",display:"flex",flexDirection:"column",justifyContent:"center",gap:8,minWidth:0}}>
-        <div style={{width:30,height:30,borderRadius:"50%",border:"1.6px solid rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-plus" style={{fontSize:15}} aria-hidden="true"/></div>
-        <div style={{fontSize:14.5,fontWeight:800,letterSpacing:"-0.005em",lineHeight:1.2}}>{T.yeniIs} Ekle</div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.4,fontWeight:500}}>Gününü planla.</div>
-      </button>
-      <div onClick={ipucu.act} onTouchStart={ipDokunBas} onTouchEnd={ipDokunBit} style={{flex:1,background:C.card,borderRadius:20,padding:"14px 14px 10px",cursor:"pointer",boxShadow:C.sh,display:"flex",flexDirection:"column",touchAction:"pan-y",minWidth:0}}>
-        <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
-          <div style={{width:36,height:36,borderRadius:11,background:ipucu.renk+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ${ipucu.ic}`} style={{fontSize:17,color:ipucu.renk}} aria-hidden="true"/></div>
-          <div style={{minWidth:0}}>
-            <div style={{fontSize:12.5,fontWeight:800,color:ipucu.renk,marginBottom:3,lineHeight:1.2}}>{ipucu.baslik}</div>
-            <div style={{fontSize:10.5,color:C.t2,lineHeight:1.42}}>{ipucu.metin}</div>
-          </div>
-        </div>
-        <div style={{display:"flex",justifyContent:"center",gap:5,paddingTop:8,flexWrap:"wrap"}}>
-          {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIpucuIx(i);}} style={{width:i===ipucuIx?14:4.5,height:4.5,borderRadius:3,background:i===ipucuIx?ipucu.renk:"#C9D4E4",transition:"all 0.25s",cursor:"pointer",flexShrink:0}}/>)}
-        </div>
+    {/* ═══════════════════════════════════════════════════════════
+        Ana sayfa gövdesi — sakin hiyerarşi.
+        Kural: renk anlam taşır, süs değildir.
+        TEAL = normal · KOR = dikkat gerekiyor · YESIL = tamam
+       ═══════════════════════════════════════════════════════════ */}
+
+    {/* 1 — Ayın net rakamı. Ekrandaki en büyük sayı bu olmalı. */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"19px 18px 16px",marginBottom:11,boxShadow:C.sh}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+        <span style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.11em",textTransform:"uppercase",color:C.t3}}>{T.buAyNet||"Bu ay net"}</span>
+        {gelirD!==null&&<span style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,borderRadius:20,padding:"4px 9px",
+          color:gelirD>=0?YESIL:KOR,background:gelirD>=0?YESIL_BG:KOR_BG}}>
+          <i className={`ti ti-arrow-${gelirD>=0?"up":"down"}-right`} style={{fontSize:12}} aria-hidden="true"/>%{Math.abs(gelirD)}
+        </span>}
       </div>
-    </div>
-    {/* İstatistik kartları — 2x2 grid */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-      {kartlar.map((k,i)=><div key={i} onClick={()=>onStatClick(["stat-aktif","stat-tahsil","stat-btahsilat","stat-bekleyen"][i])} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 12px",cursor:"pointer",boxShadow:C.sh,position:"relative"}}>
-        <div style={{width:32,height:32,borderRadius:10,background:k.c+"18",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:9}}>
-          <i className={`ti ${k.ic}`} style={{fontSize:16,color:k.c}} aria-hidden="true"/>
+      <div style={{fontSize:36,fontWeight:800,letterSpacing:"-0.035em",lineHeight:1,color:C.t1,fontVariantNumeric:"tabular-nums",marginBottom:5}}>
+        {fmt(tahsil-gider)}
+      </div>
+      <div style={{fontSize:12,color:C.t2,lineHeight:1.5}}>
+        {T.gecenAyBugun||"Geçen ay bugün"} <b style={{color:C.t1,fontWeight:600}}>{fmt(tahsilOnceki-giderOnceki)}</b> {T.idiEk||"idi"}
+      </div>
+      {(tahsil+beklT)>0&&<>
+        <div style={{height:7,borderRadius:20,background:C.bg,overflow:"hidden",display:"flex",margin:"15px 0 9px"}}>
+          <i style={{display:"block",height:"100%",width:(tahsil/(tahsil+beklT)*100).toFixed(1)+"%",background:P}}/>
+          <i style={{display:"block",height:"100%",width:(beklT/(tahsil+beklT)*100).toFixed(1)+"%",background:KOR}}/>
         </div>
-        <i className="ti ti-chevron-right" style={{position:"absolute",top:14,right:12,fontSize:13,color:C.t3}} aria-hidden="true"/>
-        <div style={{fontSize:10.5,fontWeight:700,color:k.c,marginBottom:3}}>{k.l}</div>
-        <div style={{fontSize:16.5,fontWeight:800,color:C.t1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{k.v}</div>
-        <div style={{fontSize:9.5,color:C.t3,marginTop:1}}>{k.sub}</div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:600}}>
+          <span style={{color:TEAL}}>{T.tahsilEdildi} {fmt(tahsil)}</span>
+          <span style={{color:KOR}}>{T.bekleyen||"Bekleyen"} {fmt(beklT)}</span>
+        </div>
+      </>}
+    </div>
+
+    {/* 2 — İki destekleyici sayı */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+      {[
+        {ic:"ti-briefcase",l:T.aktifIs,v:aktif,n:T.devamEden,vurgu:false,act:"stat-aktif"},
+        {ic:"ti-file-text",l:T.faturalar,v:beklFatSay,n:T.beklemede,vurgu:beklFatSay>0,act:"stat-bekleyen"},
+      ].map((k,i)=><div key={i} onClick={()=>onStatClick(k.act)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 12px",cursor:"pointer",boxShadow:C.sh,position:"relative"}}>
+        <i className="ti ti-chevron-right" style={{position:"absolute",top:14,right:12,fontSize:13,color:C.t3,opacity:.6}} aria-hidden="true"/>
+        <div style={{display:"flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,color:C.t2,marginBottom:8}}>
+          <i className={`ti ${k.ic}`} style={{fontSize:13}} aria-hidden="true"/>{k.l}
+        </div>
+        <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.025em",lineHeight:1,fontVariantNumeric:"tabular-nums",color:k.vurgu?KOR:C.t1}}>{k.v}</div>
+        <div style={{fontSize:10.5,color:C.t3,marginTop:5}}>{k.n}</div>
       </div>)}
     </div>
-    {/* 🔔 VADE HATIRLATMALARI */}
+
+    {/* 3 — Vade hatırlatmaları */}
     {(()=>{
       const hatirlatmalar=vadeHatirlatmalari(jobs,cekSenetler);
       if(hatirlatmalar.length===0)return null;
       const gorunen=hatirlatmalar.slice(0,3);
       const acil=hatirlatmalar.filter(h=>h.fark<=0).length;
-      return <div style={{marginBottom:16}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",margin:"0 2px 9px"}}>
+      return <div style={{marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",margin:"0 2px 11px"}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
-            <i className="ti ti-bell-ringing" style={{fontSize:15,color:acil>0?"#DC2626":"#D97706"}} aria-hidden="true"/>
-            <span style={{fontSize:12.5,fontWeight:800,color:C.t1}}>Vade Hatırlatmaları</span>
-            {acil>0&&<span style={{fontSize:9.5,fontWeight:800,color:"#fff",background:"#DC2626",borderRadius:9,padding:"2px 7px"}}>{acil} ACİL</span>}
+            <span style={{fontSize:14.5,fontWeight:700,letterSpacing:"-0.015em",color:C.t1}}>{T.vadeHatirlatma||"Vade hatırlatmaları"}</span>
+            {acil>0&&<span style={{fontSize:9.5,fontWeight:800,color:"#fff",background:KOR,borderRadius:20,padding:"2px 8px"}}>{acil} {T.acilEk||"ACİL"}</span>}
           </div>
-          {hatirlatmalar.length>3&&<span onClick={onKasa} style={{fontSize:11.5,fontWeight:700,color:P,cursor:"pointer"}}>Tümü ({hatirlatmalar.length}) ›</span>}
+          {hatirlatmalar.length>3&&<span onClick={onKasa} style={{fontSize:11.5,fontWeight:600,color:P,cursor:"pointer"}}>{T.tumu||"Tümü"} ({hatirlatmalar.length}) →</span>}
         </div>
-        {gorunen.map(h=>{const et=vadeEtiket(h.fark);
-          return <div key={h.id} onClick={h.tip==="cek"?onKasa:()=>onIsSec&&onIsSec(h.ref)} style={{background:C.card,borderRadius:16,padding:"13px 15px",marginBottom:9,display:"flex",alignItems:"center",gap:11,boxShadow:C.sh,borderLeft:`3px solid ${et.renk}`,cursor:"pointer"}}>
+        {gorunen.map(h=>{const et=vadeEtiket(h.fark);const kritik=h.fark<=0;
+          return <div key={h.id} onClick={h.tip==="cek"?onKasa:()=>onIsSec&&onIsSec(h.ref)}
+            style={{display:"flex",alignItems:"center",gap:12,background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"13px 15px",marginBottom:8,position:"relative",overflow:"hidden",boxShadow:C.sh,cursor:"pointer"}}>
+            <span style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:kritik?KOR:P}}/>
+            <div style={{width:38,height:38,borderRadius:12,background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:kritik?KOR:TEAL}}>
+              <i className={`ti ${h.tip==="cek"?"ti-file-invoice":"ti-briefcase"}`} style={{fontSize:18}} aria-hidden="true"/>
+            </div>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.baslik}</div>
-              <div style={{fontSize:11,color:C.t3,marginTop:1}}>{h.alt}{h.saat?" · "+h.saat:""}</div>
+              <div style={{fontSize:13.5,fontWeight:600,letterSpacing:"-0.01em",color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.baslik}</div>
+              <div style={{fontSize:11,color:C.t3,marginTop:3}}>{h.alt}{h.saat?" · "+h.saat:""}</div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
-              {h.tutar>0&&<div style={{fontSize:13,fontWeight:800,color:h.yon==="borc"?"#DC2626":C.t1}}>{fmt(h.tutar)}</div>}
-              <span style={{fontSize:9.5,fontWeight:800,color:et.renk,background:et.bg,borderRadius:8,padding:"2px 7px",display:"inline-block",marginTop:2}}>{et.metin}</span>
+              {h.tutar>0&&<div style={{fontSize:13.5,fontWeight:700,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.015em",color:h.yon==="borc"?KOR:C.t1}}>{fmt(h.tutar)}</div>}
+              <span style={{fontSize:9.5,fontWeight:700,color:et.renk,background:et.bg,borderRadius:20,padding:"2px 8px",display:"inline-block",marginTop:4}}>{et.metin}</span>
             </div>
           </div>;
         })}
       </div>;
     })()}
-    {/* Hızlı İşlemler — sade ikon + etiket, kart/rozet yok */}
-    <Sh s={{padding:"18px 12px 20px",marginBottom:16,borderRadius:20}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"0 4px 18px"}}>
-        <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Hızlı İşlemler</div>
-        <div onClick={onOzellestir} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>{T.duzenle} <i className="ti ti-pencil" style={{fontSize:13}} aria-hidden="true"/></div>
+
+    {/* 4 — Hızlı işlemler. Renkli daireler yerine tek tonlu sakin ızgara. */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"16px 12px 10px",marginBottom:20,boxShadow:C.sh}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 5px",marginBottom:15}}>
+        <span style={{fontSize:14,fontWeight:700,letterSpacing:"-0.015em",color:C.t1}}>{T.hizliIslemler||"Hızlı işlemler"}</span>
+        <span onClick={onOzellestir} style={{fontSize:11.5,fontWeight:600,color:C.t3,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
+          {T.duzenle} <i className="ti ti-pencil" style={{fontSize:12}} aria-hidden="true"/>
+        </span>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",columnGap:6,rowGap:20}}>
-        {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,cursor:"pointer"}}>
-          <div style={{position:"relative"}}>
-            <div style={{width:50,height:50,borderRadius:"50%",background:m.c,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 10px ${m.c}40`}}>
-              <i className={`ti ${m.ic}`} style={{fontSize:22,color:"#fff"}} aria-hidden="true"/>
-            </div>
-            {m.nokta&&<span style={{position:"absolute",top:-1,right:-1,width:11,height:11,borderRadius:"50%",background:"#E74694",border:`2px solid ${C.card}`}}/>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",rowGap:16,columnGap:4}}>
+        {hizli.map(m=><div key={m.l} onClick={m.act} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7,cursor:"pointer",position:"relative"}}>
+          <div style={{width:46,height:46,borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",
+            background:m.vurgu?TEAL:C.bg,border:`1px solid ${m.vurgu?TEAL:C.border}`,color:m.vurgu?"#fff":TEAL}}>
+            <i className={`ti ${m.ic}`} style={{fontSize:21}} aria-hidden="true"/>
           </div>
-          <div style={{fontSize:10,fontWeight:700,color:C.t1,textAlign:"center",lineHeight:1.15}}>{m.l}</div>
+          {m.nokta&&<span style={{position:"absolute",top:-2,right:"18%",width:8,height:8,borderRadius:"50%",background:KOR,border:`2px solid ${C.card}`}}/>}
+          <span style={{fontSize:10,fontWeight:600,color:C.t2,textAlign:"center",lineHeight:1.2}}>{m.l}</span>
         </div>)}
       </div>
-    </Sh>
-    {/* Sektör mini seçici */}
-    <div style={{display:"flex",alignItems:"center",gap:7,margin:"0 2px 8px"}}>
-      <i className="ti ti-tool" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
-      <span style={{fontSize:11.5,color:C.t3,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.14em"}}>İş Kolunuz</span>
     </div>
-    <div style={{display:"flex",gap:10,marginBottom:16}}>
-      <div style={{flex:1,position:"relative",background:C.card,borderRadius:16,padding:"11px 14px",display:"flex",alignItems:"center",gap:11,boxShadow:C.sh}}>
-        <div style={{width:36,height:36,borderRadius:11,background:"#EAF0FA",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-briefcase" style={{fontSize:17,color:"#2563EB"}} aria-hidden="true"/></div>
-        <span style={{flex:1,fontSize:15,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</span>
-        <i className="ti ti-chevron-down" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
-        <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>{IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}</select>
+
+    {/* 5 — İpucu şeridi: tek satır, sessiz. Kaydırılabilir. */}
+    <div onClick={ipucu.act} onTouchStart={ipDokunBas} onTouchEnd={ipDokunBit}
+      style={{display:"flex",alignItems:"center",gap:12,background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"13px 15px",marginBottom:20,cursor:"pointer",boxShadow:C.sh,touchAction:"pan-y"}}>
+      <div style={{width:36,height:36,borderRadius:12,background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:TEAL}}>
+        <i className={`ti ${ipucu.ic}`} style={{fontSize:17}} aria-hidden="true"/>
       </div>
-      <button onClick={onOzellestir} style={{width:68,background:C.card,border:"none",borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,boxShadow:C.sh}}>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:12.5,fontWeight:700,color:C.t1,letterSpacing:"-0.01em"}}>{ipucu.baslik}</div>
+        <div style={{fontSize:11,color:C.t3,marginTop:2,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{ipucu.metin}</div>
+      </div>
+      <div style={{display:"flex",gap:4,flexShrink:0}}>
+        {ipuclari.map((_,i)=><span key={i} onClick={e=>{e.stopPropagation();setIpucuIx(i);}}
+          style={{width:i===ipucuIx?12:4,height:4,borderRadius:3,background:i===ipucuIx?P:C.border,transition:"all 0.25s",cursor:"pointer"}}/>)}
+      </div>
+    </div>
+
+    {/* 6 — Gelir / gider dökümü */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"17px 18px 18px",marginBottom:20,boxShadow:C.sh}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <span style={{fontSize:14,fontWeight:700,letterSpacing:"-0.015em",color:C.t1}}>{T.gelirGiderOzet||"Gelir · Gider"}</span>
+        <span onClick={()=>setSekme("raporlar")} style={{fontSize:11.5,fontWeight:600,color:C.t3,cursor:"pointer"}}>{T.buAy} ▾</span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:C.t3,marginBottom:4}}>{T.toplamGelir}</div>
+            <div style={{fontSize:18,fontWeight:800,letterSpacing:"-0.025em",color:C.t1,fontVariantNumeric:"tabular-nums"}}>{fmt(tahsil)}</div>
+            {gelirD!==null&&<div style={{fontSize:10.5,fontWeight:600,color:gelirD>=0?YESIL:KOR,marginTop:3}}>{gelirD>=0?"↑":"↓"} %{Math.abs(gelirD)}</div>}
+          </div>
+          <div>
+            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:C.t3,marginBottom:4}}>{T.toplamGider}</div>
+            <div style={{fontSize:18,fontWeight:800,letterSpacing:"-0.025em",color:C.t1,fontVariantNumeric:"tabular-nums"}}>{fmt(gider)}</div>
+            {giderD!==null&&<div style={{fontSize:10.5,fontWeight:600,color:giderD<=0?YESIL:KOR,marginTop:3}}>{giderD>=0?"↑":"↓"} %{Math.abs(giderD)}</div>}
+          </div>
+        </div>
+        <div style={{position:"relative",width:112,height:112,flexShrink:0}}>
+          <svg width="112" height="112" viewBox="0 0 112 112" aria-hidden="true">
+            <circle cx="56" cy="56" r="44" fill="none" stroke={C.bg} strokeWidth="11"/>
+            <circle cx="56" cy="56" r="44" fill="none" stroke={karOran>=0?P:KOR} strokeWidth="11" strokeLinecap="round"
+              strokeDasharray={cevre} strokeDashoffset={cevre*(1-Math.max(Math.min(karOran,100),0)/100)} transform="rotate(-90 56 56)"/>
+          </svg>
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <span style={{fontSize:21,fontWeight:800,letterSpacing:"-0.03em",color:C.t1,fontVariantNumeric:"tabular-nums"}}>%{karOran}</span>
+            <span style={{fontSize:10,color:C.t3,marginTop:1}}>{T.karOrani||"Kâr oranı"}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* 7 — İş kolu */}
+    <div style={{display:"flex",gap:10,marginBottom:20}}>
+      <div style={{flex:1,position:"relative",background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"12px 15px",display:"flex",alignItems:"center",gap:12,boxShadow:C.sh}}>
+        <div style={{width:36,height:36,borderRadius:12,background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:TEAL}}>
+          <i className="ti ti-tool" style={{fontSize:17}} aria-hidden="true"/>
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:C.t3,marginBottom:2}}>{T.isKolunuz||"İş kolunuz"}</div>
+          <div style={{fontSize:14,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isKolu}</div>
+        </div>
+        <i className="ti ti-chevron-down" style={{fontSize:14,color:C.t3}} aria-hidden="true"/>
+        <select value={isKolu} onChange={e=>setIsKolu(e.target.value)} aria-label={T.isKolunuz||"İş kolunuz"} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer"}}>
+          {IS_KOLLARI.map(k=><option key={k.label} value={k.label}>{k.icon} {k.label}</option>)}
+        </select>
+      </div>
+      <button onClick={onOzellestir} aria-label={T.ayarlar||"Ayarlar"} style={{width:64,background:C.card,border:`1px solid ${C.border}`,borderRadius:16,cursor:"pointer",color:C.t2,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,boxShadow:C.sh}}>
         <i className="ti ti-settings" style={{fontSize:19}} aria-hidden="true"/>
-        <span style={{fontSize:9.5,fontWeight:700}}>Ayarlar</span>
+        <span style={{fontSize:9.5,fontWeight:600}}>{T.ayarlar||"Ayarlar"}</span>
       </button>
     </div>
-    {/* ⏰ Yaklaşan çek/senet */}
-    {/* Gelir - Gider Özeti */}
-    <Sh s={{padding:"18px",marginBottom:16,borderRadius:18}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:15.5,fontWeight:800,color:C.t1}}>Gelir - Gider Özeti</div>
-        <div onClick={()=>setSekme("raporlar")} style={{fontSize:12,fontWeight:700,color:C.t2,cursor:"pointer"}}>{T.buAy} ▾</div>
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{flex:1,background:"#EAF0FA",borderRadius:14,padding:"12px 12px"}}>
-          <div style={{fontSize:11,color:C.t3}}>{T.toplamGelir}</div>
-          <div style={{fontSize:17,fontWeight:800,color:C.t1,margin:"2px 0 4px"}}>{fmt(tahsil)}</div>
-          {gelirD!==null&&<div><span style={{fontSize:10.5,fontWeight:800,color:"#0E9F6E"}}>↑ %{Math.abs(gelirD)}</span><div style={{fontSize:9,color:C.t3,marginTop:2}}>Geçen aya göre</div></div>}
-        </div>
-        <div style={{position:"relative",width:106,height:106,flexShrink:0}}>
-          <svg width="106" height="106" viewBox="0 0 106 106"><circle cx="53" cy="53" r="44" fill="none" stroke="#E8ECF1" strokeWidth="10"/><circle cx="53" cy="53" r="44" fill="none" stroke={P} strokeWidth="10" strokeLinecap="round" strokeDasharray={cevre} strokeDashoffset={cevre*(1-Math.max(Math.min(karOran,100),0)/100)} transform="rotate(-90 53 53)"/></svg>
-          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:19,fontWeight:800,color:C.t1}}>%{karOran}</span><span style={{fontSize:10,color:C.t3}}>Kâr Oranı</span></div>
-        </div>
-        <div style={{flex:1,background:"#FDF2E9",borderRadius:14,padding:"12px 12px",textAlign:"right"}}>
-          <div style={{fontSize:11,color:C.t3}}>{T.toplamGider}</div>
-          <div style={{fontSize:17,fontWeight:800,color:C.t1,margin:"2px 0 4px"}}>{fmt(gider)}</div>
-          {giderD!==null&&<div><span style={{fontSize:10.5,fontWeight:800,color:"#E02424"}}>↓ %{Math.abs(giderD)}</span><div style={{fontSize:9,color:C.t3,marginTop:2}}>Geçen aya göre</div></div>}
-        </div>
-      </div>
-    </Sh>
-    <Sh s={{padding:"2px 10px",marginBottom:16}}>
+
+    {/* 8 — Canlı piyasa */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"2px 12px 12px",marginBottom:16,boxShadow:C.sh}}>
       <PiyasaSeridi C={C} P={P} T={T}/>
-    </Sh>
+    </div>
 {/* LED imza — mobil */}
   </div>;
 });
@@ -4673,10 +4732,10 @@ const DesktopStats=memo(function DesktopStats({jobs,faturalar,T,onStatClick}){
   const beklT=jobs.filter(j=>j.durum==="bekliyor").reduce((s,j)=>s+j.tutar,0);
   const beklFat=(faturalar||[]).filter(f=>!f.odendi).length;
   const kartlar=[
-    {ik:"canta", l:T.aktifIs,          sub:T.devamEden,    v:aktif,        c:"#2E7490",go:"stat-aktif"},
-    {ik:"kalkan",l:T.tahsilEdildi,     sub:T.buAyTahsilat, v:fmt(tahsil),  c:"#0E9F6E",go:"stat-tahsil"},
-    {ik:"saat",  l:T.bekleyenTahsilat, sub:T.toplam,       v:fmt(beklT),   c:"#D97706",go:"stat-btahsilat"},
-    {ik:"fatura",l:T.faturalar,        sub:T.beklemede,    v:beklFat,      c:"#7C3AED",go:"stat-bekleyen"},
+    {ik:"canta", l:T.aktifIs,          sub:T.devamEden,    v:aktif,        c:TEAL, go:"stat-aktif"},
+    {ik:"kalkan",l:T.tahsilEdildi,     sub:T.buAyTahsilat, v:fmt(tahsil),  c:YESIL,go:"stat-tahsil"},
+    {ik:"saat",  l:T.bekleyenTahsilat, sub:T.toplam,       v:fmt(beklT),   c:KOR,  go:"stat-btahsilat"},
+    {ik:"fatura",l:T.faturalar,        sub:T.beklemede,    v:beklFat,      c:TEAL, go:"stat-bekleyen"},
   ];
   return <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,padding:"0 28px 16px"}}>
     {kartlar.map(k=><div key={k.l} onClick={()=>onStatClick(k.go)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:"18px 20px 16px",cursor:"pointer",transition:"all 0.14s"}}
@@ -4686,9 +4745,9 @@ const DesktopStats=memo(function DesktopStats({jobs,faturalar,T,onStatClick}){
         <Ik n={k.ik} s={17} c={k.c} w={1.8}/>
         <span style={{fontSize:12,fontWeight:600,color:C.t2,flex:1}}>{k.l}</span>
       </div>
-      <div style={{fontSize:String(k.v).length>10?21:25,fontWeight:800,color:k.c,letterSpacing:"-0.025em",fontVariantNumeric:"tabular-nums"}}>{k.v}</div>
+      <div style={{fontSize:String(k.v).length>10?21:25,fontWeight:800,color:C.t1,letterSpacing:"-0.025em",fontVariantNumeric:"tabular-nums"}}>{k.v}</div>
       <div style={{fontSize:11,color:C.t3,margin:"2px 0 11px"}}>{k.sub}</div>
-      <div style={{height:4,borderRadius:3,background:k.c}}/>
+      <div style={{height:3,borderRadius:3,background:k.c,opacity:.85}}/>
     </div>)}
   </div>;
 })

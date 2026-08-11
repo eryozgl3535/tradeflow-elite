@@ -7,14 +7,17 @@ export const kurKaynakAd = () => KUR_KAYNAK==="tcmb" ? "🏛️ TCMB Resmî Kur"
 let AKTIF_PARA = "TL";
 export const SEMBOL = {TL:" TL",USD:" $",EUR:" €"};
 export const fmt = (n) => {
-  const v = n / (KURLAR[AKTIF_PARA]||1);
+  const v = Number(n)/(KURLAR[AKTIF_PARA]||1);
+  const gecerli = isFinite(v) ? v : 0;
   const dec = AKTIF_PARA==="TL"?0:2;
-  return v.toLocaleString("tr-TR",{minimumFractionDigits:dec,maximumFractionDigits:dec})+SEMBOL[AKTIF_PARA];
+  // SEMBOL'de olmayan bir para birimi gelirse (bozuk yedek dosyası vb.)
+  // tutarın yanına "undefined" yazılmasın — TL'ye düş.
+  return gecerli.toLocaleString("tr-TR",{minimumFractionDigits:dec,maximumFractionDigits:dec})+(SEMBOL[AKTIF_PARA]||SEMBOL.TL);
 };
 
 // Modül dışından güvenli güncelleme (canlı kur / para birimi)
 export function kurGuncelle(yeni,kaynak){KURLAR=yeni;KUR_KAYNAK=kaynak;}
-export function paraAyarla(p){AKTIF_PARA=p;}
+export function paraAyarla(p){AKTIF_PARA=SEMBOL[p]?p:"TL";} // tanınmayan değer TL sayılır
 export {KURLAR,KUR_KAYNAK,AKTIF_PARA};
 
 // ─── FATURA PDF ─────────────────────────────────────────────────
