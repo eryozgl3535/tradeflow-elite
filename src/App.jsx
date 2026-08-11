@@ -2150,7 +2150,10 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     {seslAcik&&!edit&&<div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 13px",marginBottom:16}}>
       <div style={{fontSize:12,color:C.t2,lineHeight:1.55,marginBottom:11}}>
         Tek cümlede anlat, alanları ben dolduracağım. Örnek:<br/>
-        <span style={{color:C.t3,fontStyle:"italic"}}>"Ahmet Yılmaz'a havuz pompa değişimi 18500 lira, malzeme 2 PPR boru ve 1 conta, yarın saat 9"</span>
+        <span style={{color:C.t3,fontStyle:"italic"}}>"Müşteri adı Cevdet Yılmaz, iş adı kombi bakımı, iş değeri 22.000, iş yeri adresi Alaçatı, kullanılacak malzeme 60 üçlük boru 9 metre, yarın saat 9"</span>
+        <div style={{marginTop:7,fontSize:11,color:C.t3,lineHeight:1.5}}>
+          Tanıdığı başlıklar: müşteri adı · iş adı · iş değeri · maliyeti · iş yeri adresi · kullanılacak malzeme · telefonu · notu · tarih · saat
+        </div>
       </div>
       <textarea value={seslMetin} onChange={e=>setSeslMetin(e.target.value)} rows={3}
         placeholder={seslDinliyor?"🎙️ Dinliyorum…":(seslDesteklı?"Mikrofona bas ya da buraya yaz…":"Buraya dokun, klavyedeki 🎤 tuşuna basıp konuş")}
