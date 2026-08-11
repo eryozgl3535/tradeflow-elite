@@ -11,6 +11,7 @@ import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } 
 import { PiyasaSeridi } from "./piyasa.jsx";
 import { NakitDetayEkrani, SahitliIsEkrani, SahitliIsGoruntule } from "./ozellikler.jsx";
 import { IS_KOLLARI, sektorBilgi, SEKTOR_VERI } from "./sektorler.js";
+import { sesliIsAyristir } from "./sesliform.js";
 import { fmt, kurKaynakAd, SEMBOL, KURLAR, KUR_KAYNAK, AKTIF_PARA, kurGuncelle, paraAyarla, csvIndir, excelIsler, excelGiderler, excelFaturalar, excelMuhasebe, pdfMuhasebeRaporu, musteriPdf, teklifPdf, faturaPdf, ustaIsRaporuPdf } from "./utils.js";
 
 
@@ -2019,7 +2020,7 @@ function TeklifMarjRozeti({tutar,maliyet}){
   }catch(e){return null;}
 }
 
-function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMusteri,ekip,onIsKolu}){
+function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMusteri,ekip,onIsKolu,sesliMetin}){
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   // Sektöre özel iş türü ikonları + birkaç genel ikon
   const icons=[...sektor.isTurleri.map(t=>({e:t.e,bg:t.bg,ad:t.ad,isler:t.isler})),
@@ -2071,8 +2072,113 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     onKapat();
   };
   const TEKRAR_SECENEK=[["yok",T.tekSefer],["haftalik","🔁 "+T.haftalikL],["aylik","🔁 "+T.aylikL],["yillik","🔁 "+T.yillikL]];
+
+  // ═══ 🎙️ SESLE DOLDUR ═══
+  // Tek cümle söyle → alanlar dolsun. Her telefonda çalışır:
+  //  · Android/Chrome/masaüstü → mikrofon tuşuyla canlı dinleme
+  //  · iPhone/Safari → Apple Web Speech API'yi vermediği için klavyedeki
+  //    🎤 dikte tuşu kullanılır; metin aynı ayrıştırıcıdan geçer.
+  const [seslAcik,setSeslAcik]=useState(false);
+  const [seslMetin,setSeslMetin]=useState("");
+  const [seslDinliyor,setSeslDinliyor]=useState(false);
+  const [seslDolan,setSeslDolan]=useState(null);
+  const seslRef=useRef(null);
+  const seslDesteklı=typeof window!=="undefined"&&!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+
+  const seslUygula=(metin)=>{
+    const ham=(metin||"").trim();
+    if(!ham)return;
+    const musteriListesi=[...new Set((jobs||[]).map(j=>j.musteri).filter(Boolean))];
+    const cikan=sesliIsAyristir(ham,{musteriler:musteriListesi,ekip:ekip||[]});
+    const anahtarlar=Object.keys(cikan);
+    if(anahtarlar.length===0){setSeslDolan([]);return;}
+    setForm(f=>({...f,...cikan}));
+    setSeslDolan(anahtarlar);
+    // Başlığa göre ikon da otomatik seçilsin
+    if(cikan.baslik){
+      const bn=cikan.baslik.toLocaleLowerCase("tr");
+      const uygun=icons.find(ic=>(ic.isler||[]).some(x=>{
+        const p=x.toLocaleLowerCase("tr").split(" ")[0];
+        return p.length>3&&bn.includes(p);
+      }));
+      if(uygun)setIcon(uygun);
+    }
+  };
+
+  const seslDinle=()=>{
+    if(!seslDesteklı)return;
+    if(seslDinliyor){try{seslRef.current&&seslRef.current.stop();}catch{} setSeslDinliyor(false); return;}
+    try{
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      const r=new SR();
+      r.lang="tr-TR";r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
+      let son="";
+      r.onresult=(e)=>{
+        son=Array.from(e.results).map(x=>x[0].transcript).join(" ");
+        setSeslMetin(son);
+      };
+      r.onerror=()=>setSeslDinliyor(false);
+      r.onend=()=>{setSeslDinliyor(false); if(son.trim())seslUygula(son);};
+      seslRef.current=r;
+      r.start();setSeslDinliyor(true);
+    }catch{setSeslDinliyor(false);}
+  };
+  useEffect(()=>()=>{try{seslRef.current&&seslRef.current.abort();}catch{}},[]);
+  // Sesli komutla ("Ahmet'e kombi bakımı 3200 lira") açıldıysa alanları hemen doldur
+  useEffect(()=>{
+    if(!sesliMetin)return;
+    setSeslAcik(true);
+    setSeslMetin(sesliMetin);
+    seslUygula(sesliMetin);
+    // eslint-disable-next-line
+  },[sesliMetin]);
+
+  const ALAN_AD={baslik:"İş adı",musteri:"Müşteri",tutar:"Tutar",maliyet:"Maliyet",
+    malzemeler:"Malzemeler",tarih:"Tarih",hatirlatma:"Hatırlatma",isAdresi:"Adres",
+    musteriTelefon:"Telefon",not:"Not",atanan:"Atanan",kisiSayisi:"Kişi sayısı"};
+
   return <BottomSheet onKapat={onKapat} maxH="90vh">
-    <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:4}}>{edit?"✏️ "+T.isDuzenle:T.yeniIs}</div>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+      <div style={{flex:1,fontSize:18,fontWeight:800,color:C.t1}}>{edit?"✏️ "+T.isDuzenle:T.yeniIs}</div>
+      {!edit&&<button onClick={()=>setSeslAcik(v=>!v)}
+        style={{display:"flex",alignItems:"center",gap:6,background:seslAcik?P:C.bg,border:`1px solid ${seslAcik?P:C.border}`,
+          borderRadius:20,padding:"7px 13px",color:seslAcik?"#fff":C.t2,fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0,fontFamily:"inherit"}}>
+        <i className="ti ti-microphone" style={{fontSize:15}} aria-hidden="true"/>{T.sesleDoldur||"Sesle doldur"}
+      </button>}
+    </div>
+
+    {seslAcik&&!edit&&<div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:16,padding:"14px 14px 13px",marginBottom:16}}>
+      <div style={{fontSize:12,color:C.t2,lineHeight:1.55,marginBottom:11}}>
+        Tek cümlede anlat, alanları ben dolduracağım. Örnek:<br/>
+        <span style={{color:C.t3,fontStyle:"italic"}}>"Ahmet Yılmaz'a havuz pompa değişimi 18500 lira, malzeme 2 PPR boru ve 1 conta, yarın saat 9"</span>
+      </div>
+      <textarea value={seslMetin} onChange={e=>setSeslMetin(e.target.value)} rows={3}
+        placeholder={seslDinliyor?"🎙️ Dinliyorum…":(seslDesteklı?"Mikrofona bas ya da buraya yaz…":"Buraya dokun, klavyedeki 🎤 tuşuna basıp konuş")}
+        style={{width:"100%",boxSizing:"border-box",background:C.card,border:`1.5px solid ${seslDinliyor?"#EF4444":C.border}`,borderRadius:12,padding:"12px 14px",fontSize:14,color:C.t1,outline:"none",resize:"vertical",fontFamily:"inherit",lineHeight:1.5}}/>
+      <div style={{display:"flex",gap:8,marginTop:10}}>
+        {seslDesteklı&&<button onClick={seslDinle} aria-label={seslDinliyor?"Durdur":"Konuş"}
+          style={{width:48,flexShrink:0,background:seslDinliyor?"#EF4444":C.card,border:`1px solid ${seslDinliyor?"#EF4444":C.border}`,borderRadius:12,color:seslDinliyor?"#fff":C.t2,fontSize:19,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",animation:seslDinliyor?"tfPulse 1s infinite":"none"}}>
+          <i className="ti ti-microphone" aria-hidden="true"/>
+        </button>}
+        <button onClick={()=>seslUygula(seslMetin)} disabled={!seslMetin.trim()}
+          style={{flex:1,background:seslMetin.trim()?P:C.border,border:"none",borderRadius:12,padding:"12px 0",color:"#fff",fontSize:13.5,fontWeight:700,cursor:seslMetin.trim()?"pointer":"default",fontFamily:"inherit"}}>
+          {T.alanlariDoldur||"Alanları doldur"}
+        </button>
+      </div>
+      {!seslDesteklı&&<div style={{fontSize:10.5,color:C.t3,marginTop:9,lineHeight:1.5}}>
+        iPhone'da tarayıcı sürekli dinlemeye izin vermiyor. Kutuya dokun, klavyenin altındaki 🎤 tuşuna bas ve konuş — sonuç aynı.
+      </div>}
+      {seslDolan&&<div style={{marginTop:11,paddingTop:11,borderTop:`1px solid ${C.border}`}}>
+        {seslDolan.length===0
+          ? <div style={{fontSize:12,color:"#C2603A",fontWeight:600}}>Bunu ayıramadım. Müşteri adı, iş adı ve tutarı söylemeyi dene.</div>
+          : <>
+            <div style={{fontSize:11,fontWeight:700,color:"#0A7A55",marginBottom:7}}>✓ {seslDolan.length} alan dolduruldu — kontrol et</div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {seslDolan.map(k=><span key={k} style={{fontSize:10.5,fontWeight:600,color:C.t2,background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"3px 9px"}}>{ALAN_AD[k]||k}</span>)}
+            </div>
+          </>}
+      </div>}
+    </div>}
     {!edit&&<div style={{marginBottom:16}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>🔧 Mesleğiniz / İş Kolu</div>
       <div style={{position:"relative",background:C.bg,border:`1.5px solid ${P}33`,borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
@@ -4453,7 +4559,7 @@ function sesliKomutYorumla(metin,eylemler){
     .replace(/ı/g,"i").replace(/ş/g,"s").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ö/g,"o").replace(/ç/g,"c");
   const iceren=(...kelimeler)=>kelimeler.some(k=>m.includes(k));
   // Sıra önemli: daha spesifik komutlar önce kontrol edilir
-  if(iceren("yeni is","is ekle","is olustur","is ac","yeni kayit"))return eylemler.yeniIs();
+  if(iceren("yeni is","is ekle","is olustur","is ac","yeni kayit"))return eylemler.yeniIs(metin);
   if(iceren("yeni musteri","musteri ekle"))return eylemler.git("musteriler");
   if(iceren("yeni gider","gider ekle","masraf ekle"))return eylemler.git("giderler");
   if(iceren("yeni teklif","teklif ekle","teklif olustur"))return eylemler.git("teklifler");
@@ -4509,8 +4615,11 @@ function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,onSor,acik=f
         p.goster("🎙️ "+ad+" açılıyor");
         tfKonus(ad+" açılıyor");
       },
-      yeniIs:()=>{
-        if(!p.yeniIsKilit())p.setYeniAc(true);
+      // Sadece "yeni iş" denmişse boş form açılır.
+      // "Ahmet'e kombi bakımı 3200 lira" gibi devamı varsa alanlar da dolar.
+      yeniIs:(hamMetin)=>{
+        if(p.yeniIsKilit())return;
+        p.setYeniAc(hamMetin&&hamMetin.trim()?{sesli:hamMetin}:true);
         p.goster("🎙️ Yeni iş ekranı açılıyor");
         tfKonus("Yeni iş ekranı açılıyor");
       },
@@ -5612,7 +5721,7 @@ export default function TradeFlow(){
         }}/>}
         {secili&&<DetayModal job={jobs.find(j=>j.id===secili.id)||secili} onKapat={()=>setSecili(null)} onDurum={durumDegis} onFatura={()=>{setFatJob(secili);setSecili(null);}} onSil={jobSil} onDuzenle={()=>{setDuzenlenecekJob(jobs.find(j=>j.id===secili.id)||secili);setSecili(null);}} onOdeme={odemeEkleJob} T={T} giderler={giderler} onPatch={jobPatch} onSahitli={(j)=>{const g=jobs.find(x=>x.id===j.id)||j;setSahitliJob(g);setSahitliMod(g.sahitli?"goruntule":"duzenle");setSecili(null);}}/>}
         {fatJob&&<FaturaModal job={fatJob} isletme={isletme} kdv={kdv} T={T} onKapat={()=>setFatJob(null)} onKesildi={faturaKesildi} gibAyar={gibAyar} onGibAc={(sekme)=>{setFatJob(null);setSekme("profil");setTimeout(()=>setGibAcSekme(sekme),100);}}/>}
-        {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} onIsKolu={isKoluSecS} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip}/>}
+        {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} onIsKolu={isKoluSecS} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip} sesliMetin={yeniAc&&yeniAc.sesli}/>}
         {duzenlenecekJob&&<YeniIsModal onKapat={()=>setDuzenlenecekJob(null)} onEkle={jobGuncelle} T={T} duzenlenecek={duzenlenecekJob} isKolu={isKolu} jobs={jobs} ekip={ekip}/>}
         {sonSilinen&&<div style={{position:"fixed",bottom:160,left:"50%",transform:"translateX(-50%)",background:"#1F2937",color:"#fff",padding:"12px 18px",borderRadius:14,fontSize:13,fontWeight:600,zIndex:3000,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",display:"flex",alignItems:"center",gap:12,whiteSpace:"nowrap"}}>
           🗑️ İş silindi
