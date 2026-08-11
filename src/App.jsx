@@ -139,7 +139,7 @@ function PlanModal({onKapat,sebep,plan,denemeKalan,onPromo,omurBoyu}){
 
 
 // ═══ 👷 USTA PANELİ — çalışan görünümü (yalnız atanan işler) ═══
-function UstaPanel({kullanici}){
+function UstaPanel({kullanici,T={}}){
   const [veri,setVeri]=useState(null);
   const [hata,setHata]=useState(null);
   const [sekme,setSekme]=useState("isler"); // isler | biten | profil
@@ -4165,23 +4165,30 @@ function sesliKomutYorumla(metin,eylemler){
     .replace(/ı/g,"i").replace(/ş/g,"s").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ö/g,"o").replace(/ç/g,"c");
   const iceren=(...kelimeler)=>kelimeler.some(k=>m.includes(k));
   // Sıra önemli: daha spesifik komutlar önce kontrol edilir
-  if(iceren("yeni is","is ekle","is olustur"))return eylemler.yeniIs();
+  if(iceren("yeni is","is ekle","is olustur","is ac","yeni kayit"))return eylemler.yeniIs();
   if(iceren("yeni musteri","musteri ekle"))return eylemler.git("musteriler");
-  if(iceren("yeni gider","gider ekle"))return eylemler.git("giderler");
+  if(iceren("yeni gider","gider ekle","masraf ekle"))return eylemler.git("giderler");
   if(iceren("yeni teklif","teklif ekle","teklif olustur"))return eylemler.git("teklifler");
-  if(iceren("tahsilat","tahsilatlar"))return eylemler.git("tahsilatlar");
-  if(iceren("fatura"))return eylemler.git("faturalar");
-  if(iceren("musteri"))return eylemler.git("musteriler");
-  if(iceren("gider"))return eylemler.git("giderler");
-  if(iceren("teklif"))return eylemler.git("teklifler");
-  if(iceren("rapor"))return eylemler.git("raporlar");
-  if(iceren("bildirim"))return eylemler.git("bildiri");
-  if(iceren("profil","ayarlar","hesab"))return eylemler.git("profil");
-  if(iceren("takvim"))return eylemler.ekran("takvim");
-  if(iceren("cek senet","kasa","pin"))return eylemler.ekran("kasa");
-  if(iceren("dunya saat"))return eylemler.ekran("dunya");
-  if(iceren("ana sayfa","anasayfa","eve don"))return eylemler.git("anasayfa");
-  if(iceren("is akis","islerim","aktif is"))return eylemler.git("isler");
+  if(iceren("nakit akis","nakit tahmin","nakit"))return eylemler.ekran("nakit");
+  if(iceren("dunya saat","dunya"))return eylemler.ekran("dunya");
+  if(iceren("cop kutusu","cop"))return eylemler.ekran("cop");
+  if(iceren("tahsilat","alacak","borclu"))return eylemler.git("tahsilatlar");
+  if(iceren("fatura","irsaliye"))return eylemler.git("faturalar");
+  if(iceren("musteri","cari"))return eylemler.git("musteriler");
+  if(iceren("gider","masraf","harcama"))return eylemler.git("giderler");
+  if(iceren("teklif","proforma"))return eylemler.git("teklifler");
+  if(iceren("rapor","istatistik","grafik","ciro","kazanc"))return eylemler.git("raporlar");
+  if(iceren("bildirim","hatirlatma"))return eylemler.git("bildiri");
+  if(iceren("profil","ayar","hesab","tema","dil"))return eylemler.git("profil");
+  if(iceren("takvim","ajanda"))return eylemler.ekran("takvim");
+  if(iceren("cek senet","kasa","pin","cek","senet"))return eylemler.ekran("kasa");
+  if(iceren("ekip","personel","calisan","usta"))return eylemler.ekran("ekip");
+  if(iceren("asistan","yapay zeka","sor"))return eylemler.ekran("asistan");
+  if(iceren("eglence","oyun","mola"))return eylemler.ekran("eglence");
+  if(iceren("yardim","destek","nasil"))return eylemler.ekran("yardim");
+  if(iceren("piyasa","kur","dolar","euro","altin","borsa"))return eylemler.git("anasayfa");
+  if(iceren("ana sayfa","anasayfa","eve don","basa don","ana ekran"))return eylemler.git("anasayfa");
+  if(iceren("is akis","islerim","aktif is","isler","gorev"))return eylemler.git("isler");
   return eylemler.bulunamadi(metin);
 }
 function SesliKomut({setSekme,setYeniAc,setEkran,goster,yeniIsKilit,acik=false}){
