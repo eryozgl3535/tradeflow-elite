@@ -98,7 +98,8 @@ export function PiyasaSeridi({C,P,masaustu=false,T={}}){
         ? <span style={{fontSize:11.5,color:C.t3,padding:"8px 0"}}>{T.piyasaYukleniyor||"Piyasa yükleniyor…"}</span>
         : kalemler.map(k=>{
           const y=yon(k);
-          return <div key={k.kod} style={{flex:"1 0 auto",minWidth:82,background:k.renk+"12",border:`1px solid ${k.renk}28`,borderRadius:13,padding:"9px 11px"}}>
+          const yonRenk=y==="yukari"?"#0E9F6E":y==="asagi"?"#DC2626":C.t1;
+          return <div key={k.kod} style={{flex:"1 0 auto",minWidth:82,background:y?(y==="yukari"?"#0E9F6E14":"#DC262614"):k.renk+"12",border:`1px solid ${y?(y==="yukari"?"#0E9F6E30":"#DC262630"):k.renk+"28"}`,borderRadius:13,padding:"9px 11px",transition:"background 0.5s, border-color 0.5s"}}>
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
               <div style={{width:19,height:19,borderRadius:"50%",background:k.renk,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <span style={{fontSize:10,fontWeight:800,color:"#fff"}}>{k.sembol}</span>
@@ -106,8 +107,8 @@ export function PiyasaSeridi({C,P,masaustu=false,T={}}){
               <span style={{fontSize:10,fontWeight:700,color:k.renk}}>{k.ad}</span>
             </div>
             <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-              <span style={{fontSize:14,fontWeight:800,color:C.t1,fontVariantNumeric:"tabular-nums",whiteSpace:"nowrap"}}>{bicim(k.deger)}</span>
-              {y && <span style={{fontSize:9.5,fontWeight:800,color:y==="yukari"?"#0E9F6E":"#DC2626"}}>{y==="yukari"?"▲":"▼"}</span>}
+              <span style={{fontSize:14,fontWeight:800,color:yonRenk,fontVariantNumeric:"tabular-nums",whiteSpace:"nowrap",transition:"color 0.5s"}}>{bicim(k.deger)}</span>
+              {y && <span style={{fontSize:9.5,fontWeight:800,color:yonRenk}}>{y==="yukari"?"▲":"▼"}</span>}
             </div>
           </div>;
         })}
