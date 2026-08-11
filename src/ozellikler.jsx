@@ -441,9 +441,11 @@ function ImzaPad({C,P,onKapat,onKaydet}){
 
 // ─── Şahitli iş PDF/özet görüntüleyici ───
 export function SahitliIsGoruntule({job,C,P,APP_W,GeriBaslik,Sh,onKapat,onDuzenle}){
+  // ⚠️ Hook'lar her zaman aynı sırada çağrılmalı — erken return hook'lardan SONRA olmalı,
+  // aksi halde React #310 (Rendered more hooks than previous render) → beyaz ekran.
+  const [buyukFoto,setBuyukFoto]=useState(null);
   const s=job?.sahitli;
   if(!s)return null;
-  const [buyukFoto,setBuyukFoto]=useState(null);
   return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:APP_W,display:"flex",flexDirection:"column",height:"100dvh"}}>
       <GeriBaslik baslik="🛡️ Şahitli İş Kaydı" onKapat={onKapat}/>

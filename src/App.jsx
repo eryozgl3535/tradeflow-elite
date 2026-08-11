@@ -1880,7 +1880,31 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     :{baslik:"",musteri:varsayilanMusteri||"",tarih:new Date().toISOString().slice(0,10),tutar:"",durum:"bekliyor",hatirlatma:"",isAdresi:"",musteriTelefon:"",musteriEmail:"",tekrar:"yok",atanan:"",maliyet:"",not:"",malzemeler:"",kisiSayisi:1});
   const [fotolar,setFotolar]=useState(edit?(duzenlenecek.fotolar||[]):[]);
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const fotoEkle=(e)=>{const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=(ev)=>setFotolar(p=>[...p,ev.target.result]);r.readAsDataURL(file);};
+  // 📷 İş fotoğrafı: sıkıştırılmadan saklanırsa 1 fotoğraf ~5 MB base64 olur ve
+  // her otomatik kayıtta buluta gider — kayıt sessizce başarısız olabilir.
+  // Bu yüzden max 1100px / jpeg 0.65'e indiriyoruz (~150-300 KB).
+  const fotoEkle=(e)=>{
+    const file=e.target.files&&e.target.files[0];
+    e.target.value="";
+    if(!file)return;
+    if(fotolar.length>=6){alert("En fazla 6 fotoğraf ekleyebilirsin.");return;}
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          const c=document.createElement("canvas");
+          const oran=Math.min(1,1100/img.width);
+          c.width=Math.round(img.width*oran);c.height=Math.round(img.height*oran);
+          c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+          setFotolar(p=>[...p,c.toDataURL("image/jpeg",0.65)]);
+        }catch{ setFotolar(p=>[...p,fr.result]); }
+      };
+      img.onerror=()=>setFotolar(p=>[...p,fr.result]);
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  };
   const kaydet=()=>{
     if(edit){
       onEkle({...duzenlenecek,...form,tutar:Number(form.tutar)*(KURLAR[AKTIF_PARA]||1),maliyet:Number(form.maliyet||0)*(KURLAR[AKTIF_PARA]||1),icon:icon.e,iconBg:icon.bg,hatirlatma:form.hatirlatma||null,fotolar});
@@ -1967,7 +1991,7 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
     {/* 🧰 Kullanılan malzemeler */}
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,color:C.t2,fontWeight:600,marginBottom:6,textTransform:"uppercase",letterSpacing:"0.08em"}}>{(T.malzemelerL||"🧰 Kullanılan Malzemeler")+" "+(T.opsiyonelEk||"(opsiyonel)")}</div>
-      <textarea value={form.malzemeler} onChange={e=>set("malzemeler",e.target.value)} placeholder={T.malzemePh||"Örn:\n2x PPR boru 25mm\n1x Kombi contası\n3m kablo"} rows={3}
+      <textarea value={form.malzemeler} onChange={e=>set("malzemeler",e.target.value)} placeholder={T.malzemeListePh||"Örn:\n2x PPR boru 25mm\n1x Kombi contası\n3m kablo"} rows={3}
         style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",color:C.t1,fontSize:13,outline:"none",resize:"vertical",fontFamily:"inherit"}}/>
     </div>
     {/* 📝 Not */}
@@ -4775,6 +4799,8 @@ export default function TradeFlow(){
   const [giderAc,setGiderAc]=useState(false);
   const [ekran,setEkran]=useState(null);
   const [asistanSoru,setAsistanSoru]=useState(null); // sesli komuttan gelen soru
+  const sonKayitRef=useRef("");      // buluta en son yazılan paketin imzası
+  const boyutUyariRef=useRef(false); // boyut uyarısı bir kez gösterilsin
   const [sahitliJob,setSahitliJob]=useState(null);
   const [sahitliMod,setSahitliMod]=useState(null); // "duzenle" | "goruntule"
   const [isKolu,setIsKolu]=useState("Mekanik Tesisat");
@@ -4941,13 +4967,39 @@ export default function TradeFlow(){
     const zaman=setTimeout(async()=>{
       if(USTA_MI)return;
       const paket={jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,ustaHarcamalar,copKutusu,ozetSaat,karanlik,tema,sesEfekt,raporDonem,modulAktif:moduller.map(m=>({id:m.id,aktif:m.aktif}))};
+
+      // ── Gereksiz yüklemeyi engelle ──
+      // Veri gerçekten değişmediyse buluta tekrar yazma. Fotoğraflı kayıtlarda
+      // paket birkaç MB olabiliyor; her küçük değişiklikte yeniden yüklemek
+      // hem yavaş hem de mobil veriyi tüketiyordu.
+      let imza="";
+      try{ imza=JSON.stringify(paket); }catch{ imza=""; }
+      const boyutMB=imza?imza.length/1048576:0;
+
       await yerelKaydet(kullanici.id,paket); // 1) cihaza — her zaman
+
+      if(imza&&imza===sonKayitRef.current){ return; } // değişiklik yok → bulut atlanır
+
+      // ── Boyut uyarısı ──
+      // Supabase satırı çok büyürse kayıt sessizce başarısız olur ve veri kaybı riski doğar.
+      if(boyutMB>4 && !boyutUyariRef.current){
+        boyutUyariRef.current=true;
+        goster("⚠️ Kayıt boyutu "+boyutMB.toFixed(1)+" MB — eski iş fotoğraflarını silmen önerilir");
+      }
+      if(boyutMB<=4) boyutUyariRef.current=false;
+
       if(!navigator.onLine){setSenkronBekliyor(true);return;} // internet yok: kuyrukta
       try{
         await supabase.from("tradeflow_veri").upsert({kullanici_id:kullanici.id,veri:paket,guncelleme:new Date().toISOString()},{onConflict:"kullanici_id"});
+        sonKayitRef.current=imza;
         if(senkronBekliyor)goster(T.senkronOk);
         setSenkronBekliyor(false); // 2) buluta yazıldı
-      }catch(e){console.error("Kaydetme:",e);setSenkronBekliyor(true);}
+      }catch(e){
+        console.error("Kaydetme:",e);
+        setSenkronBekliyor(true);
+        // Boyut kaynaklı hatayı kullanıcıya açıkça söyle — sessiz veri kaybı olmasın
+        if(boyutMB>3)goster("⚠️ Kayıt buluta yazılamadı ("+boyutMB.toFixed(1)+" MB). Fotoğrafları azaltmayı dene.");
+      }
     },800);
     return ()=>clearTimeout(zaman);
   },[jobs,teklifler,giderler,faturalar,musteriKayitlari,ekip,isletme,gibAyar,dil,kdv,para,cekSenetler,ustaHarcamalar,copKutusu,ozetSaat,karanlik,tema,sesEfekt,raporDonem,moduller,kullanici,veriYuklendi,senkronTik]);
