@@ -5236,7 +5236,17 @@ export default function TradeFlow(){
           const yeniTarih=new Date(Date.now()+gun*864e5).toISOString().slice(0,10);
           const cid=nId;nId++;
           const yeniRef="IS-"+String(cid).padStart(4,"0");
-          setJobs(p=>[{...j,id:cid,ref:yeniRef,tarih:yeniTarih,durum:"bekliyor",hatirlatildi:false,odemeler:[],hatirlatma:null},...p]);
+          // ⚠️ Yeni dönem işi TEMİZ başlamalı. Eski işin fotoğrafları, sesli notu,
+          // şahitli kaydı (imza + hash + GPS) ve fatura durumu kopyalanırsa
+          // yeni iş, yapılmamış bir işin kanıtını taşımış olur.
+          const {sahitli,fotolar,sesliNot,...taban}=j;
+          setJobs(p=>[{
+            ...taban,
+            id:cid,ref:yeniRef,tarih:yeniTarih,
+            durum:"bekliyor",asama:0,
+            odemeler:[],faturalandi:false,
+            hatirlatma:null,hatirlatildi:false,
+          },...p]);
           bildirimEkle("🔁 Periyodik iş oluşturuldu",j.baslik+" → "+yeniTarih,"is",{tur:"is",id:cid,ref:yeniRef});
           goster("🔁 Sonraki dönem işi oluşturuldu: "+yeniTarih);
         }
