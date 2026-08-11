@@ -1,9 +1,10 @@
 if(typeof window!=="undefined")console.log("%c🚀 TradeFlow build: v20260711-faz1","background:#1C4E60;color:#fff;padding:4px 10px;border-radius:6px;font-weight:bold;");
-import { useState, useEffect, memo, useRef, useCallback } from "react";
+import { useState, useEffect, memo, useRef, useCallback, lazy, Suspense } from "react";
 import { PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.js";
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
-import { EglenceKosesi } from "./eglence.jsx";
+// 🎮 Eğlence köşesi ~60 KB — sadece açıldığında yüklenir
+const EglenceKosesi = lazy(()=>import("./eglence.jsx").then(m=>({default:m.EglenceKosesi})));
 import { Ik, MODUL_IKON, LedImza } from "./ikonlar.jsx";
 import { TFLogo, koyuMu } from "./logo.jsx";
 import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } from "./saat.jsx";
@@ -812,6 +813,102 @@ function son7GunGelir(jobs=[]){
 }
 
 // ─── Boş durum: veri yokken yönlendirici mesaj ───
+// ── Tembel yüklenen ekranlar için ara perde ──
+function YukleniyorPerde({metin}){
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1002,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14}}>
+    <div style={{width:30,height:30,border:`3px solid ${C.border}`,borderTopColor:P,borderRadius:"50%",animation:"tfDon 0.8s linear infinite"}}/>
+    <div style={{fontSize:13,fontWeight:700,color:C.t2}}>{metin||"Yükleniyor…"}</div>
+    <style>{"@keyframes tfDon{to{transform:rotate(360deg)}}"}</style>
+  </div>;
+}
+
+// ═══ 🔍 GENEL ARAMA — işler, müşteriler, faturalar, teklifler, giderler tek kutudan ═══
+function AramaEkrani({onKapat,jobs=[],musteriKayitlari=[],faturalar=[],teklifler=[],giderler=[],onIsSec,onSekme,T}){
+  const [q,setQ]=useState("");
+  const kutuRef=useRef(null);
+  useEffect(()=>{const t=setTimeout(()=>{try{kutuRef.current&&kutuRef.current.focus();}catch{}},80);return ()=>clearTimeout(t);},[]);
+
+  // Türkçe karakterleri normalize et — "sahin" yazınca "Şahin" bulunsun
+  const nrm=(x)=>String(x||"").toLocaleLowerCase("tr")
+    .replace(/ı/g,"i").replace(/ş/g,"s").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ö/g,"o").replace(/ç/g,"c");
+  const ara=nrm(q).trim();
+  const esles=(...alanlar)=>!ara||alanlar.some(a=>nrm(a).includes(ara));
+
+  const sonuc={
+    isler:!ara?[]:jobs.filter(j=>esles(j.baslik,j.musteri,j.ref,j.not,j.malzemeler,j.isAdresi,j.musteriTelefon)).slice(0,20),
+    musteriler:!ara?[]:[...new Set([...jobs.map(j=>j.musteri),...musteriKayitlari.map(m=>m.ad)])]
+      .filter(Boolean).filter(ad=>esles(ad)).slice(0,10)
+      .map(ad=>{
+        const isler=jobs.filter(j=>j.musteri===ad);
+        const kayit=musteriKayitlari.find(m=>m.ad===ad);
+        return {ad,adet:isler.length,ciro:isler.reduce((s,j)=>s+(j.tutar||0),0),tel:kayit&&kayit.tel};
+      }),
+    faturalar:!ara?[]:faturalar.filter(f=>esles(f.no,f.musteri)).slice(0,10),
+    teklifler:!ara?[]:teklifler.filter(t=>esles(t.no,t.musteri,t.baslik)).slice(0,10),
+    giderler:!ara?[]:giderler.filter(g=>esles(g.ad,g.kategori)).slice(0,10),
+  };
+  const toplam=Object.values(sonuc).reduce((s,a)=>s+a.length,0);
+
+  const Baslik=({ikon,ad,adet})=><div style={{display:"flex",alignItems:"center",gap:7,margin:"18px 2px 8px"}}>
+    <span style={{fontSize:13}}>{ikon}</span>
+    <span style={{fontSize:11,fontWeight:800,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase"}}>{ad}</span>
+    <span style={{fontSize:10,fontWeight:700,color:C.t3,background:C.bg,borderRadius:8,padding:"1px 7px"}}>{adet}</span>
+  </div>;
+  const Satir=({ana,alt,sag,onClick})=><div onClick={onClick} style={{display:"flex",alignItems:"center",gap:10,background:C.card,border:`1px solid ${C.border}`,borderRadius:13,padding:"11px 13px",marginBottom:7,cursor:"pointer"}}>
+    <div style={{flex:1,minWidth:0}}>
+      <div style={{fontSize:13.5,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ana}</div>
+      {alt&&<div style={{fontSize:11,color:C.t3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{alt}</div>}
+    </div>
+    {sag&&<div style={{fontSize:12.5,fontWeight:800,color:C.t2,whiteSpace:"nowrap"}}>{sag}</div>}
+  </div>;
+
+  const git=(fn)=>{onKapat();setTimeout(fn,60);};
+
+  return <div style={{position:"fixed",inset:0,background:C.bg,zIndex:1400,display:"flex",justifyContent:"center"}}>
+    <div style={{width:"100%",maxWidth:MASAUSTU?680:APP_W,display:"flex",flexDirection:"column",height:"100dvh"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:MASAUSTU?"22px 18px 14px":"52px 16px 14px",background:C.card,borderBottom:`1px solid ${C.border}`}}>
+        <span style={{fontSize:18}}>🔍</span>
+        <input ref={kutuRef} value={q} onChange={e=>setQ(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Escape")onKapat();}}
+          placeholder="İş, müşteri, fatura, teklif, gider ara…"
+          style={{flex:1,minWidth:0,background:C.bg,border:`1px solid ${C.border}`,borderRadius:13,padding:"12px 15px",color:C.t1,fontSize:15,outline:"none"}}/>
+        <button onClick={onKapat} aria-label="Kapat" style={{width:38,height:38,flexShrink:0,borderRadius:11,background:C.bg,border:`1px solid ${C.border}`,fontSize:17,cursor:"pointer",color:C.t2}}>✕</button>
+      </div>
+
+      <div style={{flex:1,overflowY:"auto",padding:"6px 14px 40px"}}>
+        {!ara&&<div style={{textAlign:"center",color:C.t3,fontSize:12.5,padding:"48px 20px",lineHeight:1.7}}>
+          Aramak istediğini yaz.<br/>Müşteri adı, iş başlığı, IS-0012 gibi referans,<br/>fatura numarası ya da malzeme adı çalışır.
+        </div>}
+        {ara&&toplam===0&&<div style={{textAlign:"center",color:C.t3,fontSize:13,padding:"48px 20px"}}>
+          "{q}" için sonuç bulunamadı.
+        </div>}
+
+        {sonuc.isler.length>0&&<><Baslik ikon="💼" ad="İşler" adet={sonuc.isler.length}/>
+          {sonuc.isler.map(j=><Satir key={j.id} ana={j.baslik}
+            alt={j.musteri+" · "+j.ref+" · "+(j.durum==="tamamlandi"?"Tamamlandı":j.durum==="aktif"?"Aktif":"Beklemede")}
+            sag={fmt(j.tutar)} onClick={()=>git(()=>onIsSec&&onIsSec(j))}/>)}</>}
+
+        {sonuc.musteriler.length>0&&<><Baslik ikon="👤" ad="Müşteriler" adet={sonuc.musteriler.length}/>
+          {sonuc.musteriler.map(m=><Satir key={m.ad} ana={m.ad}
+            alt={m.adet+" iş"+(m.tel?" · "+m.tel:"")} sag={fmt(m.ciro)}
+            onClick={()=>git(()=>onSekme&&onSekme("musteriler"))}/>)}</>}
+
+        {sonuc.faturalar.length>0&&<><Baslik ikon="🧾" ad="Faturalar" adet={sonuc.faturalar.length}/>
+          {sonuc.faturalar.map(f=><Satir key={f.no} ana={f.no} alt={f.musteri+" · "+(f.tarih||"")}
+            sag={fmt(f.genelToplam||f.tutar||0)} onClick={()=>git(()=>onSekme&&onSekme("faturalar"))}/>)}</>}
+
+        {sonuc.teklifler.length>0&&<><Baslik ikon="📋" ad="Teklifler" adet={sonuc.teklifler.length}/>
+          {sonuc.teklifler.map(t=><Satir key={t.id||t.no} ana={t.baslik||t.no} alt={t.musteri+" · "+(t.tarih||"")}
+            sag={fmt(t.tutar||0)} onClick={()=>git(()=>onSekme&&onSekme("teklifler"))}/>)}</>}
+
+        {sonuc.giderler.length>0&&<><Baslik ikon="💸" ad="Giderler" adet={sonuc.giderler.length}/>
+          {sonuc.giderler.map(g=><Satir key={g.id} ana={g.ad} alt={(g.kategori||"")+" · "+(g.tarih||"")}
+            sag={fmt(g.tutar||0)} onClick={()=>git(()=>onSekme&&onSekme("giderler"))}/>)}</>}
+      </div>
+    </div>
+  </div>;
+}
+
 function BosDurum({ikon="grafik",baslik,mesaj,btn,onBtn,yuk=170}){
   return <div style={{height:yuk,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,textAlign:"center",padding:"0 14px"}}>
     <div style={{width:46,height:46,borderRadius:14,background:P+"12",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -4318,6 +4415,7 @@ function sesliKomutYorumla(metin,eylemler){
   if(iceren("asistan","yapay zeka","sor"))return eylemler.ekran("asistan");
   if(iceren("eglence","oyun","mola"))return eylemler.ekran("eglence");
   if(iceren("yardim","destek","nasil"))return eylemler.ekran("yardim");
+  if(iceren("ara ","arama","bul "))return eylemler.ekran("arama");
   if(iceren("piyasa","kur","dolar","euro","altin","borsa"))return eylemler.git("anasayfa");
   if(iceren("ana sayfa","anasayfa","eve don","basa don","ana ekran"))return eylemler.git("anasayfa");
   if(iceren("is akis","islerim","aktif is","isler","gorev"))return eylemler.git("isler");
@@ -4328,7 +4426,7 @@ const SESLI_AD={
   anasayfa:"Ana sayfa",isler:"İş akışları",musteriler:"Müşteriler",faturalar:"Faturalar",
   tahsilatlar:"Tahsilatlar",teklifler:"Teklifler",giderler:"Giderler",raporlar:"Raporlar",
   bildiri:"Bildirimler",profil:"Profil",takvim:"Takvim",kasa:"Kasa",ekip:"Ekip yönetimi",
-  nakit:"Nakit akışı tahmini",dunya:"Dünya saatleri",eglence:"Eğlence köşesi",
+  nakit:"Nakit akışı tahmini",dunya:"Dünya saatleri",eglence:"Eğlence köşesi",arama:"Arama",
   asistan:"Asistan",cop:"Çöp kutusu",yardim:"Yardım merkezi",
 };
 
@@ -4799,6 +4897,7 @@ export default function TradeFlow(){
   const [giderAc,setGiderAc]=useState(false);
   const [ekran,setEkran]=useState(null);
   const [asistanSoru,setAsistanSoru]=useState(null); // sesli komuttan gelen soru
+  const [aramaAcik,setAramaAcik]=useState(false);   // genel arama ekranı
   const sonKayitRef=useRef("");      // buluta en son yazılan paketin imzası
   const boyutUyariRef=useRef(false); // boyut uyarısı bir kez gösterilsin
   const [sahitliJob,setSahitliJob]=useState(null);
@@ -4860,6 +4959,19 @@ export default function TradeFlow(){
   KURUCU_MU=((kullanici&&kullanici.email)||"").toLowerCase()===KURUCU_EMAIL;
   const [oturumKontrol,setOturumKontrol]=useState(true); // ilk açılışta oturum kontrol ediliyor
   useEffect(()=>{const s=document.getElementById("tfsplash");if(s)s.remove();},[]);
+  // Ctrl+K / ⌘K ile genel aramayı aç
+  useEffect(()=>{
+    const f=(e)=>{
+      if((e.ctrlKey||e.metaKey)&&(e.key==="k"||e.key==="K")){e.preventDefault();setAramaAcik(true);}
+    };
+    window.addEventListener("keydown",f);
+    return ()=>window.removeEventListener("keydown",f);
+  },[]);
+  // Açılış bittikten sonra PDF modülünü arka planda önden indir (ilk rapor tıklaması beklemesin)
+  useEffect(()=>{
+    const t=setTimeout(()=>{ import("./pdf.js").catch(()=>{}); },5000);
+    return ()=>clearTimeout(t);
+  },[]);
   const [sifreKurtarma,setSifreKurtarma]=useState(false);
   const USTA_MI=((kullanici&&kullanici.email)||"").endsWith(USTA_EK);
 
@@ -5361,6 +5473,7 @@ export default function TradeFlow(){
             <div><div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div><div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.3em",display:"flex",alignItems:"center"}}><LedImza boyut={10} metin="ERAİ" inline={true}/></div></div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div onClick={()=>setAramaAcik(true)} title="Ara" style={{cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-search" style={{fontSize:21,color:C.t1}} aria-hidden="true"/></div>
             <SesliKomut setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} onSor={sorS} acik/>
             <div onClick={()=>setSekme("bildiri")} style={{position:"relative",cursor:"pointer",width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-bell" style={{fontSize:22,color:C.t1}} aria-hidden="true"/>{okunmamis>0&&<span style={{position:"absolute",top:5,right:5,width:9,height:9,borderRadius:"50%",background:"#2E7490",border:"2px solid "+C.bg}}/>}</div>
             <div onClick={()=>setSekme("profil")} style={{cursor:"pointer"}} title="Profil — fotoğraf eklemek için dokun">
@@ -5370,7 +5483,7 @@ export default function TradeFlow(){
             </div>
           </div>
         </div>}
-        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setSekme("isler")} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")} setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} onSor={sorS}/>}
+        {MASAUSTU&&<DesktopHeader T={T} isletme={isletme} okunmamis={okunmamis} onBildirim={()=>setSekme("bildiri")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onAra={()=>setAramaAcik(true)} onAsistan={()=>setEkran("asistan")} isKolu={isKolu} setIsKolu={(k)=>{setIsKolu(k);goster(sektorBilgi(k).icon+" "+k+" akışına geçildi");}} onDunya={()=>setEkran("dunya")} onTema={()=>setSekme("profil")} setSekme={sekmeGecS} setYeniAc={setYeniAc} setEkran={setEkran} goster={goster} yeniIsKilit={yeniIsKilit} onSor={sorS}/>}
 
         <div style={{flex:1,overflowY:"auto",paddingBottom:MASAUSTU?30:90}}>
           {sekme==="anasayfa"&&<>{MASAUSTU?<><DesktopHero T={T} jobs={jobs} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}} onTakvim={()=>setEkran("takvim")} onKasa={()=>setEkran("kasa")} setSekme={sekmeGecS} onAc={setEkran}/><DesktopStats jobs={jobs} faturalar={faturalar} T={T} onStatClick={statClickS}/><DesktopVade jobs={jobs} cekSenetler={cekSenetler} onKasa={()=>setEkran("kasa")} onIsSec={setSecili}/><QuickActions setSekme={sekmeGecS} T={T} moduller={moduller} onDuzenle={ozellestirAcS}/><DesktopCharts jobs={jobs} giderler={giderler} T={T} onDetayGelir={()=>setSekme("raporlar")} onDetayTahsilat={()=>setSekme("tahsilatlar")} onYeniIs={()=>{if(!yeniIsKilit())setYeniAc(true);}}/><PiyasaSeridi C={C} P={P} masaustu={true} T={T}/></>:<MobilAnaSayfa jobs={jobs} faturalar={faturalar} giderler={giderler} T={T} yetkili={isletme.yetkili} onYeniIs={yeniIsAcS} isKolu={isKolu} setIsKolu={isKoluSecS} onOzellestir={ozellestirAcS} onStatClick={statClickS} setSekme={sekmeGecS} onIsSec={setSecili} okunmamis={okunmamis} onKasa={()=>setEkran("kasa")} onTakvim={()=>setEkran("takvim")} cekSenetler={cekSenetler} onNakit={()=>setEkran("nakit")} onAc={setEkran}/>}<JobList jobs={jobs} onSelect={setSecili} T={T} onTum={()=>sekmeGecS("isler")}/>{!MASAUSTU&&<div style={{padding:"2px 0 14px"}}><LedImza boyut={13}/></div>}</>}
@@ -5459,8 +5572,11 @@ export default function TradeFlow(){
             setCopKutusu(p=>p.filter((_,x)=>x!==i));goster("↩️ Geri alındı");}}
           onKaliciSil={(i)=>{if(window.confirm("Bu kayıt KALICI olarak silinecek — geri dönüşü yok. Emin misin?"))setCopKutusu(p=>p.filter((_,x)=>x!==i));}}/>}
         {ekran==="kurucu"&&<KurucuPanel onKapat={()=>setEkran(null)}/>}
+        {(aramaAcik||ekran==="arama")&&<AramaEkrani onKapat={()=>{setAramaAcik(false);if(ekran==="arama")setEkran(null);}} jobs={jobs} musteriKayitlari={musteriKayitlari}
+          faturalar={faturalar} teklifler={teklifler} giderler={giderler} T={T}
+          onIsSec={(j)=>setSecili(j)} onSekme={(sk)=>sekmeGecS(sk)}/>}
         {ekran==="dunya"&&<DunyaSaatleriEkrani C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
-        {ekran==="eglence"&&<EglenceKosesi onKapat={()=>setEkran(null)} C={C} P={P} GRAD={GRAD} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/>}
+        {ekran==="eglence"&&<Suspense fallback={<YukleniyorPerde metin="🎮 Oyunlar yükleniyor…"/>}><EglenceKosesi onKapat={()=>setEkran(null)} C={C} P={P} GRAD={GRAD} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/></Suspense>}
         {ekran==="nakit"&&<NakitDetayEkrani jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
         {sahitliJob&&sahitliMod==="duzenle"&&<SahitliIsEkrani job={sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} goster={goster} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onKaydet={(kayit)=>{jobPatch(sahitliJob.id,{sahitli:kayit});}}/>}
         {sahitliJob&&sahitliMod==="goruntule"&&<SahitliIsGoruntule job={jobs.find(j=>j.id===sahitliJob.id)||sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onDuzenle={()=>setSahitliMod("duzenle")}/>}
