@@ -216,6 +216,7 @@ function ManzaraKare({dilim,mobil}){
   const sira=siraRef.current;
   const [adim,setAdim]=useState(0);
   const [url,setUrl]=useState(null);
+  const [hata,setHata]=useState(null);
   const [bozuk,setBozuk]=useState({});
   const bozukRef=useRef(bozuk); bozukRef.current=bozuk;
   const azHareket=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -237,7 +238,8 @@ function ManzaraKare({dilim,mobil}){
     setUrl(null);
     manzaraGetir(m.w)
       .then(u=>{ if(!iptal) setUrl(u); })
-      .catch(()=>{ if(!iptal){ setBozuk(b=>({...b,[ix]:true})); ilerle(); } });
+      .catch(e=>{ if(!iptal){ console.warn("[TradeFlow] manzara hatası:",m.w,e&&e.message);
+        setHata(h=>h||((e&&e.message)||"bilinmeyen")); setBozuk(b=>({...b,[ix]:true})); ilerle(); } });
     return ()=>{ iptal=true; };
   },[ix,m.w,ilerle]);
 
@@ -261,18 +263,18 @@ function ManzaraKare({dilim,mobil}){
   return <>
     {goster
       ? <img key={url} src={url} alt={m.y+", "+m.k}
-          onError={()=>{ setBozuk(b=>({...b,[ix]:true})); ilerle(); }}
+          onError={()=>{ setHata(h=>h||"görsel yüklenmedi"); setBozuk(b=>({...b,[ix]:true})); ilerle(); }}
           style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
             animation:azHareket?"none":"tfManzaraAc 1.1s ease both"}}/>
       : <img src={HERO_YEDEK[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>}
     <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
-    {goster&&<div onClick={ilerle} title="Sonraki manzara"
+    {(goster||hata)&&<div onClick={ilerle} title="Sonraki manzara"
       style={{position:"absolute",top:mobil?12:10,right:mobil?12:12,zIndex:2,display:"inline-flex",alignItems:"center",gap:5,
         padding:mobil?"6px 11px":"5px 10px",borderRadius:100,background:"rgba(12,22,36,0.46)",backdropFilter:"blur(10px)",
         WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.20)",color:"#fff",
         fontSize:mobil?11.5:11,fontWeight:600,maxWidth:"72%",cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>
-      <i className="ti ti-map-pin" style={{fontSize:mobil?12:11.5,opacity:.9}} aria-hidden="true"/>
-      <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.y}, {m.k}</span>
+      <i className={"ti "+(goster?"ti-map-pin":"ti-alert-triangle")} style={{fontSize:mobil?12:11.5,opacity:.9}} aria-hidden="true"/>
+      <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{goster?(m.y+", "+m.k):("foto yok — "+hata)}</span>
     </div>}
     <style>{"@keyframes tfManzaraAc{from{opacity:0}to{opacity:1}}"}</style>
   </>;
