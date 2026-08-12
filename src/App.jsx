@@ -213,10 +213,10 @@ function ManzaraKare({dilim,mobil}){
   }
   const sira=siraRef.current;
   const [adim,setAdim]=useState(0);
-  const [url,setUrl]=useState(null);
+  // kare: {alt,ust,yer} — alt = ekrandaki eski foto, ust = üstüne açılan yeni foto
+  const [kare,setKare]=useState({alt:null,ust:null,yer:null});
   const [hata,setHata]=useState(null);
-  const [bozuk,setBozuk]=useState({});
-  const bozukRef=useRef(bozuk); bozukRef.current=bozuk;
+  const bozukRef=useRef({});
   const azHareket=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const ilerle=useCallback(()=>{
@@ -228,18 +228,31 @@ function ManzaraKare({dilim,mobil}){
 
   const ix=sira[adim%sira.length];
   const m=MANZARALAR[ix];
-  const hepsiBozuk=Object.keys(bozuk).length>=MANZARALAR.length;
 
+  // Yeni kareyi tamamen indirip çözdükten SONRA ekrana al — böylece geçiş takılmaz
   useEffect(()=>{
     let iptal=false;
-    setUrl(null);
     manzaraGetir(m.w)
-      .then(u=>{ if(!iptal){ setUrl(u); setHata(null); } })
+      .then(u=>{
+        const im=new Image();
+        im.src=u;
+        const hazir=im.decode?im.decode().catch(()=>new Promise(r=>{im.onload=r;im.onerror=r;})):new Promise(r=>{im.onload=r;im.onerror=r;});
+        return hazir.then(()=>u);
+      })
+      .then(u=>{ if(!iptal){ setHata(null); setKare(k=>({alt:k.ust||k.alt,ust:u,yer:m.y+", "+m.k})); } })
       .catch(e=>{ if(!iptal){ console.warn("[TradeFlow] manzara:",m.w,e&&e.message);
-        setHata(h=>h||((e&&e.message)||"bilinmeyen")); setBozuk(b=>({...b,[ix]:true})); ilerle(); } });
+        setHata(h=>h||((e&&e.message)||"bilinmeyen")); bozukRef.current[ix]=true; ilerle(); } });
     return ()=>{ iptal=true; };
-  },[ix,m.w,ilerle]);
+  },[ix,m.w,m.y,m.k,ilerle]);
 
+  // geçiş bitince alttaki eski kareyi düşür (bellekte iki resim tutmayalım)
+  useEffect(()=>{
+    if(!kare.alt||!kare.ust)return;
+    const t=setTimeout(()=>setKare(k=>({...k,alt:null})),1000);
+    return ()=>clearTimeout(t);
+  },[kare.alt,kare.ust]);
+
+  // sıradakini şimdiden indir
   useEffect(()=>{
     const n=MANZARALAR[sira[(adim+1)%sira.length]];
     if(n) manzaraGetir(n.w).then(u=>{ const im=new Image(); im.src=u; }).catch(()=>{});
@@ -255,22 +268,25 @@ function ManzaraKare({dilim,mobil}){
     return ()=>{ dur(); document.removeEventListener("visibilitychange",gorunur); };
   },[ilerle]);
 
-  const goster=!!url&&!hepsiBozuk;
+  const dolgu={position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"};
+  const goster=!!kare.ust;
   return <>
-    {goster
-      ? <img key={url} src={url} alt={m.y+", "+m.k}
-          onError={()=>{ setHata(h=>h||"görsel yüklenmedi"); setBozuk(b=>({...b,[ix]:true})); ilerle(); }}
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
-            animation:azHareket?"none":"tfManzaraAc 1.1s ease both"}}/>
-      : <img src={HERO_YEDEK[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>}
+    {/* en altta yedek — ilk fotoğraf gelene kadar ekran hiç boş kalmaz */}
+    {!goster&&<img src={HERO_YEDEK[dilim]} alt="" style={dolgu}/>}
+    {/* eski kare: yeni kare üstünde açılırken altta bekler */}
+    {kare.alt&&kare.alt!==kare.ust&&<img src={kare.alt} alt="" style={dolgu}/>}
+    {/* yeni kare: yumuşakça açılır */}
+    {goster&&<img key={kare.ust} src={kare.ust} alt={kare.yer||""}
+      onError={()=>{ bozukRef.current[ix]=true; ilerle(); }}
+      style={{...dolgu,willChange:"opacity",animation:azHareket?"none":"tfManzaraAc 900ms ease-out both"}}/>}
     <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
     {(goster||hata)&&<div onClick={ilerle} title="Sonraki manzara"
       style={{position:"absolute",top:mobil?12:10,right:mobil?12:12,zIndex:2,display:"inline-flex",alignItems:"center",gap:5,
-        padding:mobil?"6px 11px":"5px 10px",borderRadius:100,background:"rgba(12,22,36,0.46)",backdropFilter:"blur(10px)",
-        WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.20)",color:"#fff",
+        padding:mobil?"6px 11px":"5px 10px",borderRadius:100,background:"rgba(12,22,36,0.55)",
+        border:"1px solid rgba(255,255,255,0.20)",color:"#fff",
         fontSize:mobil?11.5:11,fontWeight:600,maxWidth:"72%",cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>
       <i className={"ti "+(goster?"ti-map-pin":"ti-alert-triangle")} style={{fontSize:mobil?12:11.5,opacity:.9}} aria-hidden="true"/>
-      <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{goster?(m.y+", "+m.k):("foto yok — "+hata)}</span>
+      <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{goster?kare.yer:("foto yok — "+hata)}</span>
     </div>}
     <style>{"@keyframes tfManzaraAc{from{opacity:0}to{opacity:1}}"}</style>
   </>;
