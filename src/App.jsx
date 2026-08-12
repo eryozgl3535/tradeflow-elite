@@ -107,19 +107,139 @@ const TEMA_ESKI={mercan:"gunbatimi",nane:"zumrut",gokyuzu:"okyanus",kum:"bal",
 function temaCoz(t){ return TEMALAR[t]?t:(TEMA_ESKI[t]||"acik"); }
 
 
-// ═══ Karşılama hero fotoğrafları — gün dilimine göre değişir (mobil + masaüstü ortak) ═══
-const HERO_FOTO={
+// ═══ Karşılama hero — dünyadan manzaralar, 12 saniyede bir değişir ═══
+const MZ=(id)=>`https://images.unsplash.com/photo-${id}?fm=jpg&q=70&w=1400&auto=format&fit=crop`;
+const MANZARALAR=[
+  // Avrupa
+  {u:MZ("1439066615861-d1af74d74000"),y:"Lago di Braies",k:"İtalya"},
+  {u:MZ("1533105079780-92b9be482077"),y:"Amalfi Sahilleri",k:"İtalya"},
+  {u:MZ("1516483638261-f4dbaf036963"),y:"Toskana",k:"İtalya"},
+  {u:MZ("1552832230-c0197dd311b5"),y:"Roma",k:"İtalya"},
+  {u:MZ("1514890547357-a9ee288728e0"),y:"Venedik",k:"İtalya"},
+  {u:MZ("1506905925346-21bda4d32df4"),y:"Lofoten Adaları",k:"Norveç"},
+  {u:MZ("1601439678777-b2b3c56fa627"),y:"Geirangerfjord",k:"Norveç"},
+  {u:MZ("1502602898657-3e91760cbb34"),y:"Paris",k:"Fransa"},
+  {u:MZ("1491166617655-0723a0999cfc"),y:"Provence",k:"Fransa"},
+  {u:MZ("1520250497591-112f2f40a3f4"),y:"Santorini",k:"Yunanistan"},
+  {u:MZ("1601581875309-fafbf2d3ed3a"),y:"Meteora",k:"Yunanistan"},
+  {u:MZ("1531572753322-ad063cecc140"),y:"İsviçre Alpleri",k:"İsviçre"},
+  {u:MZ("1527668752968-14dc70a27c95"),y:"Lauterbrunnen",k:"İsviçre"},
+  {u:MZ("1467269204594-9661b134dd2b"),y:"Barselona",k:"İspanya"},
+  {u:MZ("1504019853082-9a4cb128c1ef"),y:"Endülüs",k:"İspanya"},
+  {u:MZ("1513622470522-26c3c8a854bc"),y:"Hallstatt",k:"Avusturya"},
+  {u:MZ("1541849546-216549ae216d"),y:"Prag",k:"Çekya"},
+  {u:MZ("1520769945061-0a448c463865"),y:"İzlanda Yaylaları",k:"İzlanda"},
+  {u:MZ("1504893524553-b855bce32c67"),y:"Kirkjufell",k:"İzlanda"},
+  {u:MZ("1513635269975-59663e0ac1ad"),y:"Londra",k:"Birleşik Krallık"},
+  {u:MZ("1512470876302-972faa2aa9a4"),y:"Amsterdam",k:"Hollanda"},
+  // Türkiye
+  {u:MZ("1570077188670-e3a8d69ac5ff"),y:"Kapadokya",k:"Türkiye"},
+  {u:MZ("1541432901042-2d8bd64b4a9b"),y:"Pamukkale",k:"Türkiye"},
+  {u:MZ("1524231757912-21f4fe3a7200"),y:"İstanbul",k:"Türkiye"},
+  {u:MZ("1589561454226-796a8aa89b05"),y:"Ölüdeniz",k:"Türkiye"},
+  {u:MZ("1596394516093-501ba68a0ba6"),y:"Çeşme",k:"Türkiye"},
+  // Asya
+  {u:MZ("1526772662000-3f88f10405ff"),y:"Fuji Dağı",k:"Japonya"},
+  {u:MZ("1493976040374-85c8e12f0c0e"),y:"Kyoto",k:"Japonya"},
+  {u:MZ("1540959733332-eab4deabeeaf"),y:"Tokyo",k:"Japonya"},
+  {u:MZ("1544735716-392fe2489ffa"),y:"Bali",k:"Endonezya"},
+  {u:MZ("1548013146-72479768bada"),y:"Tac Mahal",k:"Hindistan"},
+  {u:MZ("1514282401047-d79a71a590e8"),y:"Maldivler",k:"Maldivler"},
+  {u:MZ("1528181304800-259b08848526"),y:"Ha Long Koyu",k:"Vietnam"},
+  {u:MZ("1552465011-b4e21bf6e79a"),y:"Bangkok",k:"Tayland"},
+  {u:MZ("1537996194471-e657df975ab4"),y:"Phi Phi Adaları",k:"Tayland"},
+  {u:MZ("1518684079-3c830dcef090"),y:"Dubai",k:"BAE"},
+  {u:MZ("1508804185872-d7badad00f7d"),y:"Çin Seddi",k:"Çin"},
+  // Amerika
+  {u:MZ("1469474968028-56623f02e42e"),y:"Yellowstone",k:"ABD"},
+  {u:MZ("1508739773434-c26b3d09e071"),y:"Yosemite",k:"ABD"},
+  {u:MZ("1547036967-23d11aacaee0"),y:"Büyük Kanyon",k:"ABD"},
+  {u:MZ("1496588152823-86ff7695e68f"),y:"New York",k:"ABD"},
+  {u:MZ("1493246507139-91e8fad9978e"),y:"Torres del Paine",k:"Şili"},
+  {u:MZ("1526392060635-9d6019884377"),y:"Machu Picchu",k:"Peru"},
+  {u:MZ("1483729558449-99ef09a8c325"),y:"Banff",k:"Kanada"},
+  // Afrika & Okyanusya
+  {u:MZ("1516026672322-bc52d61a55d5"),y:"Serengeti",k:"Tanzanya"},
+  {u:MZ("1580060839134-75a5edca2e99"),y:"Cape Town",k:"Güney Afrika"},
+  {u:MZ("1489493887464-892be6d1daae"),y:"Sahra Çölü",k:"Fas"},
+  {u:MZ("1507699622108-4be3abd695ad"),y:"Milford Sound",k:"Yeni Zelanda"},
+  {u:MZ("1506973035872-a4ec16b8e8d9"),y:"Sydney",k:"Avustralya"},
+];
+// Hiçbiri yüklenemezse gösterilecek yedek (gün dilimine göre)
+const HERO_YEDEK={
   sabah:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=1400&auto=format&fit=crop",
   ogle:"https://images.unsplash.com/photo-1770341989953-f3efb336f7eb?fm=jpg&q=70&w=1400&auto=format&fit=crop",
   aksam:"https://images.unsplash.com/photo-1600672196900-c98c011a0977?fm=jpg&q=70&w=1400&auto=format&fit=crop",
   gece:"https://images.unsplash.com/photo-1756151224665-eba765e8c3b5?fm=jpg&q=70&w=1400&auto=format&fit=crop",
 };
+const MANZARA_SURE=12000;
 const HERO_OVERLAY={
   sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",
   ogle:"linear-gradient(180deg,rgba(10,20,35,0.08) 0%,rgba(10,20,35,0.04) 38%,rgba(8,16,28,0.55) 100%)",
   aksam:"linear-gradient(180deg,rgba(60,25,15,0.18) 0%,rgba(50,20,15,0.08) 38%,rgba(35,14,12,0.68) 100%)",
   gece:"linear-gradient(180deg,rgba(6,10,24,0.30) 0%,rgba(6,10,24,0.20) 38%,rgba(4,7,20,0.78) 100%)",
 };
+
+// ═══ Dönen manzara karesi — hero'nun arka planı + konum rozeti ═══
+function ManzaraKare({dilim,mobil}){
+  const siraRef=useRef(null);
+  if(siraRef.current===null){
+    const d=MANZARALAR.map((_,i)=>i);
+    for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+    siraRef.current=d;
+  }
+  const sira=siraRef.current;
+  const [adim,setAdim]=useState(0);
+  const [bozuk,setBozuk]=useState({});
+  const bozukRef=useRef(bozuk); bozukRef.current=bozuk;
+  const azHareket=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const ilerle=useCallback(()=>{
+    setAdim(a=>{
+      for(let i=1;i<=sira.length;i++){ if(!bozukRef.current[sira[(a+i)%sira.length]]) return a+i; }
+      return a+1;
+    });
+  },[sira]);
+
+  useEffect(()=>{
+    let t=null;
+    const basla=()=>{ if(!t) t=setInterval(ilerle,MANZARA_SURE); };
+    const dur=()=>{ if(t){clearInterval(t); t=null;} };
+    const gorunur=()=>{ document.hidden?dur():basla(); };
+    basla();
+    document.addEventListener("visibilitychange",gorunur);
+    return ()=>{ dur(); document.removeEventListener("visibilitychange",gorunur); };
+  },[ilerle]);
+
+  // sıradaki kareyi önceden indir — geçişte takılma olmasın
+  useEffect(()=>{
+    const s=MANZARALAR[sira[(adim+1)%sira.length]];
+    if(s){ const im=new Image(); im.src=s.u; }
+  },[adim,sira]);
+
+  const hepsiBozuk=Object.keys(bozuk).length>=MANZARALAR.length;
+  const ix=sira[adim%sira.length];
+  const m=MANZARALAR[ix];
+
+  return <>
+    {hepsiBozuk
+      ? <img src={HERO_YEDEK[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+      : <img key={ix} src={m.u} alt={m.y+", "+m.k} loading="eager"
+          onError={()=>{ setBozuk(b=>({...b,[ix]:true})); ilerle(); }}
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",
+            animation:azHareket?"none":"tfManzaraAc 1.1s ease both"}}/>}
+    <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
+    {!hepsiBozuk&&<div onClick={ilerle} title="Sonraki manzara"
+      style={{position:"absolute",top:mobil?12:10,right:mobil?12:12,zIndex:2,display:"inline-flex",alignItems:"center",gap:5,
+        padding:mobil?"6px 11px":"5px 10px",borderRadius:100,background:"rgba(12,22,36,0.46)",backdropFilter:"blur(10px)",
+        WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.20)",color:"#fff",
+        fontSize:mobil?11.5:11,fontWeight:600,maxWidth:"72%",cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>
+      <i className="ti ti-map-pin" style={{fontSize:mobil?12:11.5,opacity:.9}} aria-hidden="true"/>
+      <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.y}, {m.k}</span>
+    </div>}
+    <style>{"@keyframes tfManzaraAc{from{opacity:0}to{opacity:1}}"}</style>
+  </>;
+}
 
 // ═══ ABONELİK PLANLARI ═══
 let PLAN_AKTIF = "starter";
@@ -1197,8 +1317,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   return <div style={{padding:"14px 16px 0"}}>
     {/* Karşılama — fotoğraflı hero, gün dilimine göre değişen fotoğraf */}
     <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:18,minHeight:224,boxShadow:"0 10px 28px rgba(16,24,40,0.16)"}}>
-      <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-      <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
+      <ManzaraKare dilim={dilim} mobil={true}/>
       <div style={{position:"relative",padding:"18px 20px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:224}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.2,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
         <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
@@ -4863,8 +4982,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
 
     {/* Karşılama — fotoğraflı hero, %70 */}
     <div style={{position:"relative",flex:"7 1 460px",minHeight:150,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
-      <img src={HERO_FOTO[dilim]} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-      <div style={{position:"absolute",inset:0,background:HERO_OVERLAY[dilim]}}/>
+      <ManzaraKare dilim={dilim} mobil={false}/>
       <div style={{position:"relative",height:"100%",padding:"16px 22px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.15,textShadow:"0 2px 10px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
         <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",marginTop:3,fontWeight:500,textShadow:"0 1px 6px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
