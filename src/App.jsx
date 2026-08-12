@@ -162,6 +162,78 @@ const MANZARALAR=[
   {w:"Sahara",y:"Sahra Çölü",k:"Afrika"},
   {w:"Milford Sound",y:"Milford Sound",k:"Yeni Zelanda"},
   {w:"Sydney Opera House",y:"Sydney",k:"Avustralya"},
+  {w:"Cinque Terre",y:"Cinque Terre",k:"İtalya"},
+  {w:"Dolomites",y:"Dolomitler",k:"İtalya"},
+  {w:"Lake Como",y:"Como Gölü",k:"İtalya"},
+  {w:"Mont Saint-Michel",y:"Mont Saint-Michel",k:"Fransa"},
+  {w:"Verdon Gorge",y:"Verdon Kanyonu",k:"Fransa"},
+  {w:"Mont Blanc",y:"Mont Blanc",k:"Fransa"},
+  {w:"Trolltunga",y:"Trolltunga",k:"Norveç"},
+  {w:"Preikestolen",y:"Preikestolen",k:"Norveç"},
+  {w:"Faroe Islands",y:"Faroe Adaları",k:"Danimarka"},
+  {w:"Skógafoss",y:"Skógafoss",k:"İzlanda"},
+  {w:"Jökulsárlón",y:"Jökulsárlón",k:"İzlanda"},
+  {w:"Isle of Skye",y:"Skye Adası",k:"İskoçya"},
+  {w:"Cliffs of Moher",y:"Moher Yarları",k:"İrlanda"},
+  {w:"Giant's Causeway",y:"Dev Yolu",k:"Kuzey İrlanda"},
+  {w:"Lake Bled",y:"Bled Gölü",k:"Slovenya"},
+  {w:"Dubrovnik",y:"Dubrovnik",k:"Hırvatistan"},
+  {w:"Bran Castle",y:"Bran Kalesi",k:"Romanya"},
+  {w:"Tatra Mountains",y:"Tatra Dağları",k:"Polonya"},
+  {w:"Bruges",y:"Brugge",k:"Belçika"},
+  {w:"Keukenhof",y:"Keukenhof",k:"Hollanda"},
+  {w:"Zaanse Schans",y:"Zaanse Schans",k:"Hollanda"},
+  {w:"Pena Palace",y:"Sintra",k:"Portekiz"},
+  {w:"Douro",y:"Douro Vadisi",k:"Portekiz"},
+  {w:"Azores",y:"Azor Adaları",k:"Portekiz"},
+  {w:"Ronda",y:"Ronda",k:"İspanya"},
+  {w:"Český Krumlov",y:"Český Krumlov",k:"Çekya"},
+  {w:"Ephesus",y:"Efes",k:"Türkiye"},
+  {w:"Sumela Monastery",y:"Sümela Manastırı",k:"Türkiye"},
+  {w:"Mount Ararat",y:"Ağrı Dağı",k:"Türkiye"},
+  {w:"Lake Salda",y:"Salda Gölü",k:"Türkiye"},
+  {w:"Bosphorus",y:"İstanbul Boğazı",k:"Türkiye"},
+  {w:"Bagan",y:"Bagan",k:"Myanmar"},
+  {w:"Angkor Wat",y:"Angkor Wat",k:"Kamboçya"},
+  {w:"Borobudur",y:"Borobudur",k:"Endonezya"},
+  {w:"Mount Bromo",y:"Bromo Yanardağı",k:"Endonezya"},
+  {w:"Jiuzhaigou",y:"Jiuzhaigou",k:"Çin"},
+  {w:"Zhangjiajie National Forest Park",y:"Zhangjiajie",k:"Çin"},
+  {w:"Li River",y:"Guilin",k:"Çin"},
+  {w:"Gyeongbokgung",y:"Seul",k:"Güney Kore"},
+  {w:"Jeju Island",y:"Jeju Adası",k:"Güney Kore"},
+  {w:"Arashiyama",y:"Arashiyama",k:"Japonya"},
+  {w:"Itsukushima Shrine",y:"Miyajima",k:"Japonya"},
+  {w:"Shirakawa-gō",y:"Shirakawa-gō",k:"Japonya"},
+  {w:"Registan",y:"Semerkant",k:"Özbekistan"},
+  {w:"Sheikh Zayed Grand Mosque",y:"Abu Dabi",k:"BAE"},
+  {w:"Wadi Rum",y:"Vadi Rum",k:"Ürdün"},
+  {w:"Socotra",y:"Sokotra",k:"Yemen"},
+  {w:"Antelope Canyon",y:"Antelope Kanyonu",k:"ABD"},
+  {w:"Monument Valley",y:"Monument Valley",k:"ABD"},
+  {w:"Zion National Park",y:"Zion",k:"ABD"},
+  {w:"Denali",y:"Denali",k:"ABD"},
+  {w:"Niagara Falls",y:"Niagara Şelalesi",k:"Kanada"},
+  {w:"Lake Louise",y:"Louise Gölü",k:"Kanada"},
+  {w:"Iguazu Falls",y:"Iguazu Şelaleleri",k:"Arjantin"},
+  {w:"Perito Moreno Glacier",y:"Perito Moreno",k:"Arjantin"},
+  {w:"Atacama Desert",y:"Atacama Çölü",k:"Şili"},
+  {w:"Salar de Uyuni",y:"Uyuni Tuz Gölü",k:"Bolivya"},
+  {w:"Galápagos Islands",y:"Galápagos",k:"Ekvador"},
+  {w:"Chichen Itza",y:"Chichén Itzá",k:"Meksika"},
+  {w:"Tulum",y:"Tulum",k:"Meksika"},
+  {w:"Havana",y:"Havana",k:"Küba"},
+  {w:"Victoria Falls",y:"Victoria Şelalesi",k:"Zimbabve"},
+  {w:"Mount Kilimanjaro",y:"Kilimanjaro",k:"Tanzanya"},
+  {w:"Chefchaouen",y:"Chefchaouen",k:"Fas"},
+  {w:"Jemaa el-Fnaa",y:"Marakeş",k:"Fas"},
+  {w:"Namib Desert",y:"Namib Çölü",k:"Namibya"},
+  {w:"Okavango Delta",y:"Okavango Deltası",k:"Botsvana"},
+  {w:"Great Barrier Reef",y:"Büyük Set Resifi",k:"Avustralya"},
+  {w:"Uluru",y:"Uluru",k:"Avustralya"},
+  {w:"Bora Bora",y:"Bora Bora",k:"Fransız Polinezyası"},
+  {w:"Queenstown, New Zealand",y:"Queenstown",k:"Yeni Zelanda"},
+  {w:"Aoraki / Mount Cook",y:"Aoraki",k:"Yeni Zelanda"},
 ];
 // Fotoğraf çekilemezse gösterilecek yedek (gün dilimine göre)
 const HERO_YEDEK={
@@ -171,7 +243,7 @@ const HERO_YEDEK={
   gece:"https://images.unsplash.com/photo-1756151224665-eba765e8c3b5?fm=jpg&q=70&w=1400&auto=format&fit=crop",
 };
 const MANZARA_SURE=12000;
-const MANZARA_ANAHTAR="tf_manzara_v2";
+const MANZARA_ANAHTAR="tf_manzara_v1";
 let MANZARA_BELLEK=null;
 function manzaraBellek(){
   if(MANZARA_BELLEK)return MANZARA_BELLEK;
@@ -184,45 +256,17 @@ function manzaraBellek(){
 function manzaraBellekYaz(){
   try{localStorage.setItem(MANZARA_ANAHTAR,JSON.stringify({t:Date.now(),d:MANZARA_BELLEK}));}catch(e){}
 }
-// Harita, bayrak, logo, arma, afiş, çizim vb. görselleri ele — sadece gerçek fotoğraf kalsın
-const MANZARA_ELE=/(map|karte|mapa|flag|bayrak|logo|coat[_ ]of|seal|emblem|arms|locator|location|orthographic|poster|affiche|plan|diagram|chart|drawing|painting|lithograph|engraving|icon|symbol|banner|montage|collage)/i;
-function manzaraUygun(url,en,boy){
-  const ad=decodeURIComponent((url.split("/").pop()||"")).replace(/^\d+px-/,"");
-  if(!/\.(jpe?g)$/i.test(ad))return false;       // .svg.png / .png → grafik demektir
-  if(MANZARA_ELE.test(ad))return false;
-  if(en&&boy&&en<boy)return false;               // dikey görsel banner'a uymaz
-  return true;
-}
-function manzaraBuyut(u){ return u.replace(/\/\d+px-/,"/1280px-"); }
 async function manzaraGetir(baslik){
   const b=manzaraBellek();
   if(b[baslik])return b[baslik];
-  const yol=encodeURIComponent(baslik.replace(/ /g,"_"));
-  // 1) makalenin kapak görseli — fotoğrafsa doğrudan kullan
-  const r=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+yol);
+  const r=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(baslik.replace(/ /g,"_")));
   if(!r.ok)throw new Error("wiki "+r.status);
   const d=await r.json();
-  const t=d&&d.thumbnail;
-  if(t&&t.source&&manzaraUygun(t.source,t.width,t.height)){
-    const u=manzaraBuyut(t.source);
-    b[baslik]=u; manzaraBellekYaz();
-    return u;
-  }
-  // 2) kapak uygun değilse (harita/bayrak/afiş) → makaledeki ilk gerçek fotoğrafı bul
-  const r2=await fetch("https://en.wikipedia.org/api/rest_v1/page/media-list/"+yol);
-  if(!r2.ok)throw new Error("media "+r2.status);
-  const d2=await r2.json();
-  for(const it of (d2&&d2.items)||[]){
-    if(it.type!=="image")continue;
-    const s0=it.srcset&&it.srcset[0]&&it.srcset[0].src;
-    if(!s0)continue;
-    const tam=s0.indexOf("//")===0?("https:"+s0):s0;
-    if(!manzaraUygun(tam,it.width,it.height))continue;
-    const u=manzaraBuyut(tam);
-    b[baslik]=u; manzaraBellekYaz();
-    return u;
-  }
-  throw new Error("foto bulunamadi");
+  const t=d&&d.thumbnail&&d.thumbnail.source;
+  if(!t)throw new Error("gorsel yok");
+  const u=t.replace(/\/\d+px-/,"/1280px-");
+  b[baslik]=u; manzaraBellekYaz();
+  return u;
 }
 const HERO_OVERLAY={
   sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",
