@@ -5105,12 +5105,12 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   return <div style={{display:"flex",alignItems:"stretch",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
 
     {/* Karşılama — fotoğraflı hero, %70 */}
-    <div style={{position:"relative",flex:"7 1 460px",minHeight:150,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
+    <div style={{position:"relative",flex:"7 1 460px",minHeight:176,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
       <ManzaraKare dilim={dilim} mobil={false}/>
-      <div style={{position:"relative",height:"100%",padding:"16px 22px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
+      <div style={{position:"relative",minHeight:"100%",padding:"18px 22px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.15,textShadow:"0 2px 10px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
         <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",marginTop:3,fontWeight:500,textShadow:"0 1px 6px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"5px 12px",alignSelf:"flex-start"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"6px 13px",alignSelf:"flex-start",flexWrap:"wrap",maxWidth:"100%"}}>
           <i className="ti ti-clock" style={{fontSize:12,color:"#1C4E60"}} aria-hidden="true"/>
           <span style={{fontSize:11.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
           <span style={{width:2.5,height:2.5,borderRadius:"50%",background:"#9CA3AF"}}/>
