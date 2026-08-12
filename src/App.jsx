@@ -36,51 +36,76 @@ const DARK = {
   sh2:"0 8px 24px rgba(0,0,0,0.6)",
 };
 let C = LIGHT;
-// 🎨 Renk temaları — LIGHT tabanlı, zemin/kart tonları değişir
+// ═══════════════════════════════════════════════════════════════
+// 🎨 RENK TEMALARI — 10 belirgin tema
+// Her tema SADECE zemini değil ANA RENGİ de değiştirir (vurgu).
+// Butonlar, aktif sekme, grafikler, seçili durumlar hep bu renkten
+// beslendiği için temalar birbirinden gerçekten ayrılır.
+//   bg      zemin
+//   card    kart (hafif tonlu — saf beyaz değil, karakter verir)
+//   vurgu   ana renk
+//   vurguBg ana rengin açık tonu (seçili/pasif alanlar)
+//   sekme   tema listesindeki damla için koyu ton
+// ═══════════════════════════════════════════════════════════════
 const TEMALAR = {
-  acik: LIGHT,
-  okyanus: {...LIGHT, bg:"#E8F1F7", card:"#FFFFFF", border:"#D3E2EC", purpleBg:"#D9EAF5", blueBg:"#CFE5F5", inputBg:"#FBFDFF"},
-  orman: {...LIGHT, bg:"#EBF2EA", card:"#FFFFFF", border:"#D6E3D3", purpleBg:"#DDEBD9", greenBg:"#D3EFDF", inputBg:"#FBFDFA"},
-  gunbatimi: {...LIGHT, bg:"#F7EFE5", card:"#FFFFFF", border:"#EBDCC8", purpleBg:"#F5E5CE", amberBg:"#FBEBC8", inputBg:"#FFFDF9"},
-  lavanta: {...LIGHT, bg:"#F0EEF8", card:"#FFFFFF", border:"#DFDAEE", purpleBg:"#E6E0F5", blueBg:"#E0DEF5", inputBg:"#FCFBFF"},
-  gul: {...LIGHT, bg:"#F7EDF0", card:"#FFFFFF", border:"#ECDAE0", purpleBg:"#F5DEE6", redBg:"#FADCE3", inputBg:"#FFFBFC"},
-  mercan: {...LIGHT, bg:"#FBEAE6", card:"#FFFFFF", border:"#F2D2C7", purpleBg:"#F8DFD6", redBg:"#F8D8CB", inputBg:"#FFFBFA"},
-  nane: {...LIGHT, bg:"#E7F6EF", card:"#FFFFFF", border:"#CBE9DA", purpleBg:"#DCF0E4", greenBg:"#CDF0DE", inputBg:"#FAFEFC"},
-  gokyuzu: {...LIGHT, bg:"#E7F3FC", card:"#FFFFFF", border:"#CEE5F6", purpleBg:"#DDECF8", blueBg:"#CFE6F8", inputBg:"#FAFDFF"},
-  kum: {...LIGHT, bg:"#F7F2E8", card:"#FFFFFF", border:"#EBE0C9", purpleBg:"#F2EAD7", amberBg:"#F4E5C1", inputBg:"#FFFEFA"},
-  seftali: {...LIGHT, bg:"#FDF1EA", card:"#FFFFFF", border:"#F6DFC9", purpleBg:"#FBE8D9", amberBg:"#F9E1C3", inputBg:"#FFFCF9"},
-  zumrut: {...LIGHT, bg:"#E5F3EC", card:"#FFFFFF", border:"#C7E4D5", purpleBg:"#D9EEE2", greenBg:"#C9EDDA", inputBg:"#F9FEFB"},
-  safir: {...LIGHT, bg:"#E7EEFC", card:"#FFFFFF", border:"#CFDCF6", purpleBg:"#DDE6F8", blueBg:"#CFDFF8", inputBg:"#FAFBFF"},
-  ametist: {...LIGHT, bg:"#F3EAFA", card:"#FFFFFF", border:"#E2CEF2", purpleBg:"#ECDCF7", blueBg:"#EAD9F5", inputBg:"#FDFAFF"},
-  bal: {...LIGHT, bg:"#FCF3E3", card:"#FFFFFF", border:"#F4E3BE", purpleBg:"#FAEDD3", amberBg:"#F8E7BC", inputBg:"#FFFDF8"},
-  nar: {...LIGHT, bg:"#FBEAEC", card:"#FFFFFF", border:"#F4D2D6", purpleBg:"#F9DEE1", redBg:"#F7D3D8", inputBg:"#FFFAFB"},
-  zeytin: {...LIGHT, bg:"#F2F3E4", card:"#FFFFFF", border:"#E4E5C4", purpleBg:"#ECEDD5", greenBg:"#E7E9C4", inputBg:"#FDFEF8"},
-  turkuaz: {...LIGHT, bg:"#E6F6F5", card:"#FFFFFF", border:"#C9E9E7", purpleBg:"#DBF1EF", blueBg:"#CDEEEB", inputBg:"#FAFFFE"},
-  gece: {...LIGHT, bg:"#EAEDF6", card:"#FFFFFF", border:"#D3D9EC", purpleBg:"#E1E5F5", blueBg:"#DCE1F4", inputBg:"#FBFCFF"},
-  toprak: {...LIGHT, bg:"#F5EDE7", card:"#FFFFFF", border:"#E7D6C9", purpleBg:"#F0E3D8", amberBg:"#EEDDC7", inputBg:"#FEFBF9"},
+  acik: {...LIGHT, vurgu:"#2E7490", vurguBg:"#DFEDF3"},
+
+  okyanus: {...LIGHT, bg:"#E9F1F7", card:"#FCFEFF", border:"#CFE0EC", inputBg:"#FFFFFF",
+    vurgu:"#0F6E93", vurguBg:"#D5E8F2", purpleBg:"#D5E8F2", blueBg:"#CFE5F5",
+    t1:"#0D2231", t2:"#4C6577", t3:"#8AA0AF"},
+
+  orman: {...LIGHT, bg:"#ECF2EA", card:"#FDFEFC", border:"#D2E0CC", inputBg:"#FFFFFF",
+    vurgu:"#2F6B4F", vurguBg:"#D9E9DC", purpleBg:"#D9E9DC", greenBg:"#D0EBD6",
+    t1:"#132218", t2:"#4E6355", t3:"#8AA091"},
+
+  gunbatimi: {...LIGHT, bg:"#FAF0E7", card:"#FFFDFA", border:"#EEDCC8", inputBg:"#FFFFFF",
+    vurgu:"#C2603A", vurguBg:"#F8E2D5", purpleBg:"#F8E2D5", amberBg:"#FBE7C9",
+    t1:"#2B1A11", t2:"#6B5449", t3:"#A89284"},
+
+  lavanta: {...LIGHT, bg:"#F1EEF9", card:"#FDFCFF", border:"#DED7F0", inputBg:"#FFFFFF",
+    vurgu:"#6656A8", vurguBg:"#E5DEF7", purpleBg:"#E5DEF7", blueBg:"#DFD9F6",
+    t1:"#1E1830", t2:"#5B5273", t3:"#958DAC"},
+
+  gul: {...LIGHT, bg:"#FAEEF1", card:"#FFFCFD", border:"#F0D8DF", inputBg:"#FFFFFF",
+    vurgu:"#AF4A6B", vurguBg:"#F7DEE6", purpleBg:"#F7DEE6", redBg:"#FBDCE3",
+    t1:"#2C1620", t2:"#6E5059", t3:"#AC8D96"},
+
+  bal: {...LIGHT, bg:"#FBF3E2", card:"#FFFEFA", border:"#EFE0BE", inputBg:"#FFFFFF",
+    vurgu:"#9E6C15", vurguBg:"#F7E9C8", purpleBg:"#F7E9C8", amberBg:"#F8E4B8",
+    t1:"#2A2109", t2:"#6A5C3B", t3:"#A79878"},
+
+  zumrut: {...LIGHT, bg:"#E7F4EE", card:"#FBFEFC", border:"#C8E5D6", inputBg:"#FFFFFF",
+    vurgu:"#0A7A55", vurguBg:"#D3EDE0", purpleBg:"#D3EDE0", greenBg:"#CBEEDB",
+    t1:"#0A231A", t2:"#456156", t3:"#83A093"},
+
+  gece: {...LIGHT, bg:"#ECEEF7", card:"#FCFDFF", border:"#D4DAEE", inputBg:"#FFFFFF",
+    vurgu:"#3B4E8F", vurguBg:"#DDE3F5", purpleBg:"#DDE3F5", blueBg:"#D8E0F5",
+    t1:"#141A2E", t2:"#4E5670", t3:"#8A92AB"},
+
+  toprak: {...LIGHT, bg:"#F6EFE9", card:"#FFFDFB", border:"#E6D6C8", inputBg:"#FFFFFF",
+    vurgu:"#96593C", vurguBg:"#F0E1D5", purpleBg:"#F0E1D5", amberBg:"#EFDFCB",
+    t1:"#271A12", t2:"#68554A", t3:"#A39084"},
 };
+
+// [id, ikon, ad, zemin, vurgu]
 const TEMA_LISTE = [
-  ["acik","☀️","Açık","#F2F2F7"],
-  ["okyanus","🌊","Okyanus","#BBD9EE"],
-  ["orman","🌿","Orman","#BFDDB9"],
-  ["gunbatimi","🌅","Günbatımı","#F2D9AE"],
-  ["lavanta","💜","Lavanta","#CFC5EC"],
-  ["gul","🌸","Gül","#EDC3D1"],
-  ["mercan","🪸","Mercan","#F0AC93"],
-  ["nane","🌱","Nane","#95DDB8"],
-  ["gokyuzu","☁️","Gökyüzü","#A6D0F0"],
-  ["kum","🏖️","Kum","#E4D3A9"],
-  ["seftali","🍑","Şeftali","#F3C39A"],
-  ["zumrut","💚","Zümrüt","#6FCB9B"],
-  ["safir","💎","Safir","#8FB0EE"],
-  ["ametist","🔮","Ametist","#C79EEA"],
-  ["bal","🍯","Bal","#EFC873"],
-  ["nar","🍎","Nar","#E88A94"],
-  ["zeytin","🫒","Zeytin","#B9BE7E"],
-  ["turkuaz","🌊","Turkuaz","#7FD4CC"],
-  ["gece","🌌","Gece Mavisi","#9CA8DD"],
-  ["toprak","🏺","Toprak","#D3A986"],
+  ["acik",      "☀️","Açık",      "#F2F2F7","#2E7490"],
+  ["okyanus",   "🌊","Okyanus",   "#E9F1F7","#0F6E93"],
+  ["orman",     "🌿","Orman",     "#ECF2EA","#2F6B4F"],
+  ["gunbatimi", "🌅","Günbatımı", "#FAF0E7","#C2603A"],
+  ["lavanta",   "💜","Lavanta",   "#F1EEF9","#6656A8"],
+  ["gul",       "🌸","Gül",       "#FAEEF1","#AF4A6B"],
+  ["bal",       "🍯","Bal",       "#FBF3E2","#9E6C15"],
+  ["zumrut",    "💎","Zümrüt",    "#E7F4EE","#0A7A55"],
+  ["gece",      "🌌","Gece",      "#ECEEF7","#3B4E8F"],
+  ["toprak",    "🏺","Toprak",    "#F6EFE9","#96593C"],
 ];
+
+// Kaldırılan temalar → en yakın yeni temaya taşınır (eski kayıtlar bozulmasın)
+const TEMA_ESKI={mercan:"gunbatimi",nane:"zumrut",gokyuzu:"okyanus",kum:"bal",
+  seftali:"gunbatimi",safir:"gece",ametist:"lavanta",nar:"gul",zeytin:"orman",turkuaz:"okyanus"};
+function temaCoz(t){ return TEMALAR[t]?t:(TEMA_ESKI[t]||"acik"); }
+
 
 // ═══ Karşılama hero fotoğrafları — gün dilimine göre değişir (mobil + masaüstü ortak) ═══
 const HERO_FOTO={
@@ -775,14 +800,33 @@ function KasaEkrani({onKapat,cekSenetler,setCekSenetler,jobs,giderler,goster}){
     </div>
   </div>;
 }
-const P = "#2E7490";
-// ═══ Anlam renkleri — renk süs değil, durum bildirir ═══
-const TEAL    = "#1C4E60";   // koyu marka tonu — nötr/varsayılan ikon
+// ═══ P — uygulamanın ANA RENGİ. Seçilen temaya göre değişir. ═══
+// C gibi tema değişince yeniden atanır; butonlar, aktif sekme, grafikler
+// ve seçili durumlar buradan beslenir.
+let P = "#2E7490";
+let TEAL = "#1C4E60";               // ana rengin koyu tonu — nötr ikonlar
+let GRAD = "linear-gradient(135deg,#3E8FA3,#1F4E60)";
+// ═══ Anlam renkleri — tema değişse de sabit kalır ═══
+// Durum bildirdikleri için tema ile oynamazlar: kırmızı hep uyarıdır.
 const KOR     = "#C2603A";   // dikkat gerekiyor (vade, bekleyen, gecikme)
 const KOR_BG  = "#FBEDE6";
 const YESIL   = "#0A7A55";   // olumlu / tamamlandı
 const YESIL_BG= "#E6F5EF";
-const GRAD = "linear-gradient(135deg,#3E8FA3,#1F4E60)";
+
+// #RRGGBB rengi verilen oranda koyultur (0.25 = %25 koyu)
+function renkKoyult(hex,oran){
+  const n=parseInt(String(hex).slice(1),16);
+  const r=Math.round(((n>>16)&255)*(1-oran));
+  const g=Math.round(((n>>8)&255)*(1-oran));
+  const b=Math.round((n&255)*(1-oran));
+  return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+// Tema değişince ana renk ailesini yeniden kur
+function anaRenkAyarla(vurgu){
+  P=vurgu||"#2E7490";
+  TEAL=renkKoyult(P,0.28);
+  GRAD="linear-gradient(135deg,"+P+","+renkKoyult(P,0.34)+")";
+}
 const GOLD = "#C9A24B";
 
 
@@ -4423,10 +4467,24 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
         <div style={{fontSize:13,fontWeight:600,color:C.t1,marginBottom:2}}>{T.temaRengi||"🎨 Tema Rengi"}</div>
         <div style={{fontSize:11,color:C.t3,marginBottom:10}}>{T.temaSub||"Uygulamanın zemin rengini seç"}{plan==="starter"&&<span style={{color:GOLD,fontWeight:700}}>{T.temaProNotu||" · 👑 Pro özelliği"}</span>}</div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {TEMA_LISTE.map(([id,ikon,ad,renk])=>{const adC=({acik:T.temaAcik,okyanus:T.temaOkyanus,orman:T.temaOrman,gunbatimi:T.temaGunbatimi,lavanta:T.temaLavanta,gul:T.temaGul})[id]||ad;return <button key={id} onClick={()=>{if(plan==="starter"){onPlanAc();return;}setTema(id);goster(ikon+" "+adC+" "+(T.temasiEk||"teması"))}} title={adC}
-            style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"transparent",border:"none",cursor:"pointer",padding:0}}>
-            <span style={{width:38,height:38,borderRadius:"50%",background:renk,border:`3px solid ${tema===id?P:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,boxShadow:tema===id?`0 0 0 2px ${C.card}, 0 0 0 4px ${P}33`:"none"}}>{ikon}</span>
-            <span style={{fontSize:9,fontWeight:tema===id?700:500,color:tema===id?P:C.t3}}>{adC}</span>
+          {TEMA_LISTE.map(([id,ikon,ad,zemin,vurgu])=>{
+            const adC=({acik:T.temaAcik,okyanus:T.temaOkyanus,orman:T.temaOrman,gunbatimi:T.temaGunbatimi,lavanta:T.temaLavanta,gul:T.temaGul})[id]||ad;
+            const sec=temaCoz(tema)===id;
+            return <button key={id} onClick={()=>{if(plan==="starter"){onPlanAc();return;}setTema(id);goster(ikon+" "+adC+" "+(T.temasiEk||"teması"))}} title={adC}
+            style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,background:"transparent",border:"none",cursor:"pointer",padding:0}}>
+            {/* Damla: üst yarı zemin rengi, alt yarı ana renk — tema tek bakışta anlaşılsın */}
+            <span style={{width:46,height:46,borderRadius:"50%",overflow:"hidden",display:"block",position:"relative",
+              border:sec?`2.5px solid ${vurgu}`:`1px solid ${C.border}`,
+              boxShadow:sec?`0 0 0 3px ${vurgu}26, 0 3px 10px ${vurgu}33`:"0 1px 3px rgba(16,24,40,.10)",
+              transform:sec?"scale(1.06)":"none",transition:"transform .16s"}}>
+              <span style={{position:"absolute",inset:0,background:zemin}}/>
+              <span style={{position:"absolute",left:0,right:0,bottom:0,height:"44%",background:vurgu}}/>
+              <span style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,paddingBottom:6}}>{ikon}</span>
+              {sec&&<span style={{position:"absolute",right:3,bottom:3,width:15,height:15,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 1px 3px rgba(0,0,0,.25)"}}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={vurgu} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4 13 5 5L20 7"/></svg>
+              </span>}
+            </span>
+            <span style={{fontSize:10,fontWeight:sec?800:600,color:sec?vurgu:C.t3,letterSpacing:"-0.01em"}}>{adC}</span>
           </button>;})}
         </div>
       </div>}
@@ -5317,7 +5375,7 @@ export default function TradeFlow(){
           if(v.para)setPara(v.para);
           if(v.vadeGun!=null)setVadeGun(Number(v.vadeGun));
           if(typeof v.karanlik==="boolean")setKaranlik(v.karanlik);
-          if(typeof v.tema==="string"&&TEMALAR[v.tema])setTema(v.tema);
+          if(typeof v.tema==="string")setTema(temaCoz(v.tema));
           if(typeof v.sesEfekt==="boolean")setSesEfekt(v.sesEfekt);
           if(typeof v.raporDonem==="string")setRaporDonem(v.raporDonem);
           if(Array.isArray(v.cekSenetler))setCekSenetler(v.cekSenetler);
@@ -5441,7 +5499,12 @@ export default function TradeFlow(){
     fr.readAsText(dosya);
   };
 
-  C=karanlik?DARK:(TEMALAR[tema]||LIGHT);
+  C=karanlik?DARK:(TEMALAR[temaCoz(tema)]||LIGHT);
+  // Ana rengi temadan al (karanlık modda tema vurgusu korunur, biraz açılır)
+  {
+    const tv=(TEMALAR[temaCoz(tema)]||LIGHT).vurgu||"#2E7490";
+    anaRenkAyarla(karanlik?"#4A9EC0":tv);
+  }
   const T=getT(dil);
   TT=T;
   paraAyarla(para);
