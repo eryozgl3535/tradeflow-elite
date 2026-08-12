@@ -5105,9 +5105,9 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
   return <div style={{display:"flex",alignItems:"stretch",padding:"24px 28px 18px",gap:16,flexWrap:"wrap"}}>
 
     {/* Karşılama — fotoğraflı hero, %70 */}
-    <div style={{position:"relative",flex:"7 1 460px",minHeight:176,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
+    <div style={{position:"relative",flex:"7 1 460px",minHeight:216,borderRadius:18,overflow:"hidden",boxShadow:"0 10px 24px -12px rgba(16,24,40,0.35)"}}>
       <ManzaraKare dilim={dilim} mobil={false}/>
-      <div style={{position:"relative",minHeight:"100%",padding:"18px 22px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
+      <div style={{position:"relative",minHeight:172,padding:"20px 22px 22px",display:"flex",flexDirection:"column",justifyContent:"flex-end",boxSizing:"border-box"}}>
         <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.15,textShadow:"0 2px 10px rgba(0,0,0,0.4)"}}>{selam}{ad?", "+ad:""}</div>
         <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",marginTop:3,fontWeight:500,textShadow:"0 1px 6px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"6px 13px",alignSelf:"flex-start",flexWrap:"wrap",maxWidth:"100%"}}>
@@ -5121,7 +5121,7 @@ function DesktopHeader({T,isletme,okunmamis,onBildirim,onYeniIs,onAra,onAsistan,
     </div>
 
     {/* Sağ panel — İş Sektörünüz + ikon butonları, %30 */}
-    <div style={{flex:"3 1 300px",minHeight:150,background:GRAD,borderRadius:18,padding:"14px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:10,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
+    <div style={{flex:"3 1 300px",minHeight:216,background:GRAD,borderRadius:18,padding:"14px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:10,boxShadow:"0 10px 24px -12px rgba(31,78,96,.55)"}}>
 
       {/* Sektör seçici */}
       <div style={{position:"relative",display:"flex",alignItems:"center",gap:10,cursor:"pointer",padding:"8px 10px",borderRadius:12,transition:"background .14s"}}
