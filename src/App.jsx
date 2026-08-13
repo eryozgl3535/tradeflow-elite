@@ -2780,6 +2780,68 @@ function TeklifModal({onKapat,onEkle,T,kdv,jobs,teklifler}){
 }
 
 
+// ═══ FİŞ OKUYUCU — fotoğraftan tutar/tarih/satıcı çıkarır ═══
+function FisOku({onSonuc,katlar}){
+  const dosyaRef=useRef(null);
+  const [durum,setDurum]=useState("bos");      // bos | okunuyor | hata | kapali
+  const [mesaj,setMesaj]=useState("");
+
+  const kucult=(dosya)=>new Promise((coz,red)=>{
+    const fr=new FileReader();
+    fr.onerror=()=>red(new Error("okunamadi"));
+    fr.onload=()=>{
+      const im=new Image();
+      im.onerror=()=>red(new Error("gorsel"));
+      im.onload=()=>{
+        const enBuyuk=1600;
+        const o=Math.min(1,enBuyuk/Math.max(im.width,im.height));
+        const c=document.createElement("canvas");
+        c.width=Math.round(im.width*o); c.height=Math.round(im.height*o);
+        c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+        coz(c.toDataURL("image/jpeg",0.82).split(",")[1]);
+      };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(dosya);
+  });
+
+  const sec=async(ev)=>{
+    const dosya=ev.target.files&&ev.target.files[0];
+    ev.target.value="";
+    if(!dosya)return;
+    setDurum("okunuyor"); setMesaj("");
+    try{
+      const b64=await kucult(dosya);
+      const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({gorsel:b64,tur:"image/jpeg"})});
+      if(r.status===501){ setDurum("kapali"); return; }
+      if(!r.ok) throw new Error("kod "+r.status);
+      const d=await r.json();
+      if(!d.tutar&&!d.tarih){ setDurum("hata"); setMesaj("Fiş okunamadı, elle girebilirsin"); return; }
+      onSonuc(d);
+      setDurum("bos");
+      setMesaj(d.guven==="dusuk"?"Fotoğraf net değil — rakamları bir kontrol et":"");
+    }catch(e){
+      console.warn("[TradeFlow] fiş:",e&&e.message);
+      setDurum("hata"); setMesaj("Bağlantı kurulamadı, elle girebilirsin");
+    }
+  };
+
+  if(durum==="kapali")return null;               // anahtar tanımlı değilse hiç görünme
+  const okunuyor=durum==="okunuyor";
+  return <div style={{marginBottom:14}}>
+    <input ref={dosyaRef} type="file" accept="image/*" capture="environment" onChange={sec} style={{display:"none"}}/>
+    <button onClick={()=>dosyaRef.current&&dosyaRef.current.click()} disabled={okunuyor}
+      style={{width:"100%",background:okunuyor?C.bg:C.purpleBg,border:`1.5px dashed ${okunuyor?C.border:P}`,
+        borderRadius:12,padding:"13px 14px",color:okunuyor?C.t3:P,fontSize:13,fontWeight:700,
+        cursor:okunuyor?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+      <i className={okunuyor?"ti ti-loader-2":"ti ti-camera"} style={{fontSize:16,animation:okunuyor?"tfDon 1s linear infinite":"none"}} aria-hidden="true"/>
+      {okunuyor?"Fiş okunuyor…":"Fişi çek, kendisi doldursun"}
+    </button>
+    {mesaj&&<div style={{fontSize:11,color:durum==="hata"?C.t3:C.amber,marginTop:6,textAlign:"center"}}>{mesaj}</div>}
+    <style>{"@keyframes tfDon{to{transform:rotate(360deg)}}"}</style>
+  </div>;
+}
 function GiderModal({onKapat,onEkle,T,isKolu,jobs,musteriFiltre}){
   const sektor=sektorBilgi(isKolu||"Mekanik Tesisat");
   const katlar=sektor.giderKat;
@@ -2790,6 +2852,11 @@ function GiderModal({onKapat,onEkle,T,isKolu,jobs,musteriFiltre}){
 
   return <BottomSheet onKapat={onKapat}>
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:16}}>{T.yeniGider}</div>
+    <FisOku katlar={katlar} onSonuc={(d)=>setF(x=>({...x,
+      ad:d.satici?(d.satici+(d.kalemler&&d.kalemler.length?" — "+d.kalemler[0]:"")):x.ad,
+      tutar:d.tutar!=null?String(d.tutar):x.tutar,
+      tarih:d.tarih||x.tarih,
+      kategori:(d.kategori&&katlar.includes(d.kategori))?d.kategori:x.kategori}))}/>
     <Inp label={T.giderL} value={f.ad} onChange={e=>setF(x=>({...x,ad:e.target.value}))} placeholder={T.malzemePh}/>
     <div style={{display:"flex",gap:10}}>
       <div style={{flex:1}}><Inp label={T.tutarL+" ("+AKTIF_PARA+")"} type="number" value={f.tutar} onChange={e=>setF(x=>({...x,tutar:e.target.value}))}/></div>
