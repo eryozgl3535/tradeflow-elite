@@ -2347,6 +2347,85 @@ function FaturaModal({job,isletme,kdv,onKapat,onKesildi,gibAyar,onGibAc,T}){
   </BottomSheet>;
 }
 
+// ═══ FİYAT HAFIZASI — geçmiş benzer işi bulup bugünün parasına çevirir ═══
+const FH_ANAHTAR="tf_kur_gecmis_v1";
+function fhSadelestir(x){
+  return String(x||"").toLocaleLowerCase("tr")
+    .replace(/[çğıöşü]/g,c=>({"ç":"c","ğ":"g","ı":"i","ö":"o","ş":"s","ü":"u"}[c]))
+    .replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+}
+const FH_DOLGU=new Set(["ve","ile","icin","bir","adet","montaj","islem","is","tamir","bakim","degisim"]);
+function fhKelimeler(x){ return fhSadelestir(x).split(" ").filter(k=>k.length>2&&!FH_DOLGU.has(k)); }
+// iki başlık ne kadar benziyor (0-1)
+function fhBenzerlik(a,b){
+  const A=fhKelimeler(a),B=new Set(fhKelimeler(b));
+  if(!A.length||!B.size)return 0;
+  const ortak=A.filter(k=>B.has(k)).length;
+  return ortak/Math.max(A.length,B.size);
+}
+// geçmiş iş/tekliflerden en iyi eşleşmeyi bul
+function fhEslesme(baslik,jobs,teklifler){
+  if(fhKelimeler(baslik).length===0)return null;
+  const bugun=new Date().toISOString().slice(0,10);
+  const havuz=[]
+    .concat((jobs||[]).map(j=>({baslik:j.baslik,tutar:Number(j.tutar||0),tarih:j.tarih,tur:"iş"})))
+    .concat((teklifler||[]).map(t=>({baslik:t.baslik,tutar:Number(t.tutar||0),tarih:(t.gecerlilik||"").slice(0,10),tur:"teklif"})))
+    .filter(x=>x.baslik&&x.tutar>0&&x.tarih&&x.tarih<bugun);
+  let en=null;
+  for(const k of havuz){
+    const p=fhBenzerlik(baslik,k.baslik);
+    if(p<0.5)continue;                                  // zayıf eşleşmeyi gösterme
+    if(!en||p>en.puan||(p===en.puan&&k.tarih>en.tarih)) en={...k,puan:p};
+  }
+  return en;
+}
+// belirli bir tarihteki USD/TRY (cihazda saklanır, aynı tarih ikinci kez sorulmaz)
+async function fhKur(tarih){
+  let bellek={};
+  try{ bellek=JSON.parse(localStorage.getItem(FH_ANAHTAR)||"{}"); }catch(e){}
+  if(bellek[tarih])return bellek[tarih];
+  const r=await fetch("https://api.frankfurter.app/"+tarih+"?from=USD&to=TRY");
+  if(!r.ok)throw new Error("kur "+r.status);
+  const d=await r.json();
+  const v=d&&d.rates&&d.rates.TRY;
+  if(!v)throw new Error("kur yok");
+  bellek[tarih]=v;
+  try{ localStorage.setItem(FH_ANAHTAR,JSON.stringify(bellek)); }catch(e){}
+  return v;
+}
+function FiyatHafizasi({baslik,jobs,teklifler,T}){
+  const [sonuc,setSonuc]=useState(null);
+  useEffect(()=>{
+    let iptal=false; setSonuc(null);
+    const e=fhEslesme(baslik,jobs,teklifler);
+    if(!e)return;
+    const bugun=new Date().toISOString().slice(0,10);
+    Promise.all([fhKur(e.tarih),fhKur(bugun)])
+      .then(([eski,yeni])=>{
+        if(iptal||!eski||!yeni)return;
+        const kat=yeni/eski;
+        if(kat<1.05)return;                              // kayda değer fark yoksa sessiz kal
+        setSonuc({...e,bugunku:Math.round(e.tutar*kat/50)*50,artis:Math.round((kat-1)*100)});
+      })
+      .catch(()=>{});                                    // kur gelmezse hiç gösterme
+    return ()=>{iptal=true;};
+  },[baslik,jobs,teklifler]);
+  if(!sonuc)return null;
+  const ay=new Date(sonuc.tarih).toLocaleDateString("tr-TR",{month:"long",year:"numeric"});
+  return <div style={{background:"#FFF7ED",border:"1px solid #FDBA74",borderRadius:12,padding:"11px 13px",marginBottom:14}}>
+    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+      <i className="ti ti-history" style={{fontSize:14,color:"#C2410C"}} aria-hidden="true"/>
+      <span style={{fontSize:11,fontWeight:800,color:"#C2410C",textTransform:"uppercase",letterSpacing:.3}}>Fiyat hafızası</span>
+    </div>
+    <div style={{fontSize:12.5,color:C.t1,lineHeight:1.5}}>
+      Bu {sonuc.tur} <b>{ay}</b> tarihinde <b>{fmt(sonuc.tutar)}</b> idi.
+      Bugünün parasıyla yaklaşık <b style={{color:"#C2410C"}}>{fmt(sonuc.bugunku)}</b> eder.
+    </div>
+    <div style={{fontSize:10.5,color:C.t3,marginTop:5}}>
+      O tarihten bugüne %{sonuc.artis} · döviz kuru üzerinden hesaplandı
+    </div>
+  </div>;
+}
 function TeklifMarjRozeti({tutar,maliyet}){
   try{
     const kar=tutar-maliyet;const marj=Math.round(kar/tutar*100);
@@ -2644,7 +2723,7 @@ function YeniIsModal({onKapat,onEkle,T,duzenlenecek,isKolu,jobs,varsayilanMuster
   </BottomSheet>;
 }
 
-function TeklifModal({onKapat,onEkle,T,kdv}){
+function TeklifModal({onKapat,onEkle,T,kdv,jobs,teklifler}){
   const [f,setF]=useState({musteri:"",telefon:"",baslik:"",tutar:"",maliyet:"",gecerlilik:new Date(Date.now()+14*864e5).toISOString().slice(0,10)});
   const [kalemler,setKalemler]=useState([{ad:"",adet:1,birimFiyat:""}]);
   const kalemSet=(i,alan,deger)=>setKalemler(p=>p.map((k,j)=>j===i?{...k,[alan]:deger}:k));
@@ -2660,6 +2739,7 @@ function TeklifModal({onKapat,onEkle,T,kdv}){
     <Inp label={T.musteri} value={f.musteri} onChange={e=>setF(x=>({...x,musteri:e.target.value}))} placeholder={T.musteriAdiPh}/>
     <Inp label={"📱 "+T.telefonL+" (WhatsApp)"} value={f.telefon} onChange={e=>setF(x=>({...x,telefon:e.target.value}))} placeholder="05xx xxx xx xx"/>
     <Inp label={T.isBasligi} value={f.baslik} onChange={e=>setF(x=>({...x,baslik:e.target.value}))} placeholder={T.klimaPh}/>
+    <FiyatHafizasi baslik={f.baslik} jobs={jobs} teklifler={teklifler} T={T}/>
 
     {/* 🧾 MALZEME KALEMLERİ */}
     <div style={{marginBottom:14}}>
@@ -6136,7 +6216,7 @@ export default function TradeFlow(){
           🗑️ İş silindi
           <button onClick={geriAl} style={{background:P,border:"none",borderRadius:8,padding:"6px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>↩️ Geri Al</button>
         </div>}
-        {teklifAc&&<TeklifModal T={T} kdv={kdv} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
+        {teklifAc&&<TeklifModal T={T} kdv={kdv} jobs={jobs} teklifler={teklifler} onKapat={()=>setTeklifAc(false)} onEkle={(t)=>{setTeklifler(p=>[t,...p]);goster("Teklif oluşturuldu ✓");}}/>}
         {giderAc&&<GiderModal T={T} isKolu={isKolu} jobs={jobs} musteriFiltre={giderMusteri} onKapat={()=>{setGiderAc(false);setGiderMusteri(null);}} onEkle={(g)=>{setGiderler(p=>[g,...p]);goster("💸 Gider eklendi ✓");bildirimEkle("💸 Gider eklendi",g.ad+(g.isAdi?" → "+g.isAdi:""),"is",{tur:"sekme",sekme:"giderler"});}}/>}
         {ekran==="yardim"&&<YardimMerkezi onKapat={()=>setEkran(null)}/>}
         {ekran==="asistan"&&<AsistanEkrani onKapat={()=>{setEkran(null);setAsistanSoru(null);}} ilkSoru={asistanSoru} sesliBasla={!!asistanSoru} T={T} jobs={jobs} giderler={giderler} faturalar={faturalar} musteriKayitlari={musteriKayitlari} isletme={isletme}/>}
