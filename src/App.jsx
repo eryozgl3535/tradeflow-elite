@@ -602,7 +602,7 @@ function UstaPanel({kullanici,T={}}){
       </>}
 
       {/* Alt menü */}
-      <div style={{position:"fixed",bottom:10,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 24px)",maxWidth:496,background:C.card,display:"flex",alignItems:"center",padding:"9px 8px",borderRadius:24,boxShadow:"0 10px 30px rgba(80,60,140,0.16)",border:`1px solid ${C.border}`,zIndex:100}}>
+      <div style={{position:"fixed",bottom:"calc(10px + env(safe-area-inset-bottom, 0px))",left:0,right:0,margin:"0 auto",width:"calc(100% - 24px)",maxWidth:496,background:C.card,display:"flex",alignItems:"center",padding:"9px 8px",borderRadius:24,boxShadow:"0 10px 30px rgba(80,60,140,0.16)",border:`1px solid ${C.border}`,zIndex:100}}>
         {[["isler","📋",T.ustaIslerim||"İşlerim"],["harcama","🧾",T.ustaHarcama||"Harcama"],["biten","✅",T.ustaBitenler||"Bitenler"],["profil","👤",T.ustaHesabim||"Hesabım"]].map(([id,ik,l])=>{
           const aktif=sekme===id&&id!=="harcama";
           return <div key={id} onClick={()=>id==="harcama"?setHarcamaAc(true):setSekme(id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"7px 0 5px",background:aktif?"#DCE7F8":"transparent",borderRadius:15,margin:"0 3px"}}>
@@ -6185,7 +6185,7 @@ export default function TradeFlow(){
       {MASAUSTU&&<Sidebar sekme={sekme} setSekme={sekmeGecS} T={T} isletme={isletme}/>}
       <div style={{width:"100%",maxWidth:MASAUSTU?1180:APP_W,display:"flex",flexDirection:"column",minHeight:"100vh",margin:MASAUSTU?"0 auto":undefined}}>
 
-        {banner&&<div onClick={()=>{setBanner(null);bildirimGit(banner.hedef);}} style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 28px)",maxWidth:452,background:C.card,borderRadius:16,boxShadow:C.sh2,padding:"14px 16px",zIndex:3000,display:"flex",gap:12,alignItems:"center",cursor:"pointer",border:`1px solid ${C.border}`}}>
+        {banner&&<div onClick={()=>{setBanner(null);bildirimGit(banner.hedef);}} style={{position:"fixed",top:12,left:0,right:0,margin:"0 auto",width:"calc(100% - 28px)",maxWidth:452,background:C.card,borderRadius:16,boxShadow:C.sh2,padding:"14px 16px",zIndex:3000,display:"flex",gap:12,alignItems:"center",cursor:"pointer",border:`1px solid ${C.border}`}}>
           <div style={{width:40,height:40,borderRadius:11,background:C.amberBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⏰</div>
           <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{banner.baslik}</div><div style={{fontSize:12,color:C.t2}}>{banner.mesaj}</div></div>
           <span style={{color:C.t3,fontSize:12}}>›</span>
@@ -6257,7 +6257,7 @@ export default function TradeFlow(){
         {(!cevrimici||senkronBekliyor)&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2000,background:!cevrimici?"#B45309":"#1C4E60",color:"#fff",fontSize:11.5,fontWeight:700,padding:"7px 16px",borderRadius:"0 0 12px 12px",boxShadow:"0 4px 14px rgba(0,0,0,0.25)",maxWidth:"92%",textAlign:"center"}}>
           {!cevrimici?T.cevrimdisiB:T.senkronB}
         </div>}
-        {!MASAUSTU&&<div style={{position:"fixed",bottom:10,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 24px)",maxWidth:APP_W-24,background:C.card,display:"flex",alignItems:"center",padding:"10px 8px",borderRadius:26,boxShadow:"0 10px 30px rgba(80,60,140,0.18)",zIndex:100,border:`1px solid ${C.border}`}}>
+        {!MASAUSTU&&<div style={{position:"fixed",bottom:"calc(10px + env(safe-area-inset-bottom, 0px))",left:0,right:0,margin:"0 auto",width:"calc(100% - 24px)",maxWidth:APP_W-24,background:C.card,display:"flex",alignItems:"center",padding:"10px 8px",borderRadius:26,boxShadow:"0 10px 30px rgba(80,60,140,0.18)",zIndex:100,border:`1px solid ${C.border}`}}>
           {NAV.map(n=>{
             if(n.id==="fab") return <div key="fab" style={{flex:1,display:"flex",justifyContent:"center"}}><button onClick={()=>{if(!yeniIsKilit())setYeniAc(true);}} style={{width:58,height:58,borderRadius:"50%",background:GRAD,border:"none",color:"#fff",fontSize:30,cursor:"pointer",boxShadow:"0 0 0 6px rgba(46,116,144,0.16), 0 8px 20px rgba(31,78,96,0.4)",marginTop:-26,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-plus" style={{fontSize:26}} aria-hidden="true"/></button></div>;
             const active=sekme===n.id;
@@ -6279,7 +6279,7 @@ export default function TradeFlow(){
         {fatJob&&<FaturaModal job={fatJob} isletme={isletme} kdv={kdv} T={T} onKapat={()=>setFatJob(null)} onKesildi={faturaKesildi} gibAyar={gibAyar} onGibAc={(sekme)=>{setFatJob(null);setSekme("profil");setTimeout(()=>setGibAcSekme(sekme),100);}}/>}
         {yeniAc&&<YeniIsModal onKapat={()=>{setYeniAc(false);setYeniIsMusteri(null);}} onEkle={jobEkle} T={T} isKolu={isKolu} onIsKolu={isKoluSecS} jobs={jobs} varsayilanMusteri={yeniIsMusteri} ekip={ekip} sesliMetin={yeniAc&&yeniAc.sesli}/>}
         {duzenlenecekJob&&<YeniIsModal onKapat={()=>setDuzenlenecekJob(null)} onEkle={jobGuncelle} T={T} duzenlenecek={duzenlenecekJob} isKolu={isKolu} jobs={jobs} ekip={ekip}/>}
-        {sonSilinen&&<div style={{position:"fixed",bottom:160,left:"50%",transform:"translateX(-50%)",background:"#1F2937",color:"#fff",padding:"12px 18px",borderRadius:14,fontSize:13,fontWeight:600,zIndex:3000,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",display:"flex",alignItems:"center",gap:12,whiteSpace:"nowrap"}}>
+        {sonSilinen&&<div style={{position:"fixed",bottom:160,left:0,right:0,margin:"0 auto",width:"fit-content",maxWidth:"calc(100% - 32px)",background:"#1F2937",color:"#fff",padding:"12px 18px",borderRadius:14,fontSize:13,fontWeight:600,zIndex:3000,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",display:"flex",alignItems:"center",gap:12,whiteSpace:"nowrap"}}>
           🗑️ İş silindi
           <button onClick={geriAl} style={{background:P,border:"none",borderRadius:8,padding:"6px 14px",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>↩️ Geri Al</button>
         </div>}
@@ -6311,7 +6311,7 @@ export default function TradeFlow(){
         {ekran==="degerlendir"&&<DegerlendirModal onKapat={()=>setEkran(null)} onGonder={(y,o)=>{goster("⭐".repeat(y)+" "+T.tesekkurler);bildirimEkle("⭐ Değerlendirme gönderildi",y+" yıldız"+(o?" + öneri":""),"is");}} T={T}/>}
         {ozellestirAc&&<OzellestirModal moduller={moduller} setModuller={setModuller} onKapat={()=>setOzellestirAc(false)} T={T}/>}
 
-        {toast&&<div style={{position:"fixed",bottom:MASAUSTU?40:110,left:"50%",transform:"translateX(-50%)",background:"#1F2937",color:"#fff",padding:"12px 24px",borderRadius:14,fontSize:13,fontWeight:600,zIndex:3000,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",whiteSpace:"nowrap"}}>{toast}</div>}
+        {toast&&<div style={{position:"fixed",bottom:MASAUSTU?40:110,left:0,right:0,margin:"0 auto",width:"fit-content",maxWidth:"calc(100% - 32px)",background:"#1F2937",color:"#fff",padding:"12px 24px",borderRadius:14,fontSize:13,fontWeight:600,zIndex:3000,boxShadow:"0 8px 24px rgba(0,0,0,0.3)",whiteSpace:"nowrap"}}>{toast}</div>}
       </div>
     </div>
   );
