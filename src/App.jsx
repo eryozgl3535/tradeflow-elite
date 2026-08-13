@@ -193,6 +193,8 @@ const MANZARALAR=[
   {w:"Mount Ararat",y:"Ağrı Dağı",k:"Türkiye"},
   {w:"Lake Salda",y:"Salda Gölü",k:"Türkiye"},
   {w:"Bosphorus",y:"İstanbul Boğazı",k:"Türkiye"},
+  {w:"Palandöken",y:"Erzurum · Palandöken",k:"Türkiye"},
+  {w:"Çifte Minareli Medrese",y:"Erzurum",k:"Türkiye"},
   {w:"Bagan",y:"Bagan",k:"Myanmar"},
   {w:"Angkor Wat",y:"Angkor Wat",k:"Kamboçya"},
   {w:"Borobudur",y:"Borobudur",k:"Endonezya"},
@@ -243,7 +245,7 @@ const HERO_YEDEK={
   gece:"https://images.unsplash.com/photo-1756151224665-eba765e8c3b5?fm=jpg&q=70&w=1400&auto=format&fit=crop",
 };
 const MANZARA_SURE=12000;
-const MANZARA_ANAHTAR="tf_manzara_v1";
+const MANZARA_ANAHTAR="tf_manzara_v3";
 let MANZARA_BELLEK=null;
 function manzaraBellek(){
   if(MANZARA_BELLEK)return MANZARA_BELLEK;
@@ -256,17 +258,50 @@ function manzaraBellek(){
 function manzaraBellekYaz(){
   try{localStorage.setItem(MANZARA_ANAHTAR,JSON.stringify({t:Date.now(),d:MANZARA_BELLEK}));}catch(e){}
 }
+// Bayrak, harita, arma, logo, afiş, çizim, kolaj → ele. Sadece gerçek fotoğraf geçsin.
+const MANZARA_ELE=/(flag|bandera|drapeau|bayrak|banner|ensign|map|karte|mapa|carte|harita|topograph|orthographic|locator|location|situation|coat[_-]?of|arms|crest|seal|emblem|logo|icon|symbol|poster|affiche|plakat|cover|stamp|coin|banknote|plan|blueprint|diagram|chart|graph|drawing|sketch|painting|portrait|lithograph|engraving|woodcut|montage|collage|panorama[_-]?diagram|svg)/i;
+function manzaraUygun(url,en,boy){
+  const ad=decodeURIComponent(String(url||"").split("?")[0].split("/").pop()||"").replace(/^(lang[a-z-]*-)?\d+px-/i,"");
+  if(!/\.(jpe?g)$/i.test(ad))return false;          // .svg.png ve .png → grafik demektir
+  if(MANZARA_ELE.test(ad))return false;             // dosya adında yasaklı kelime
+  if(en&&boy){
+    if(en<boy)return false;                         // dikey görsel banner'a uymaz
+    if(en<700)return false;                         // küçük görsel = büyük ihtimalle simge
+    if(en/boy>3.2)return false;                     // aşırı uzun şerit
+  }
+  return true;
+}
+function manzaraBuyut(u){ return u.replace(/\/(lang[a-z-]*-)?\d+px-/i,"/1280px-"); }
 async function manzaraGetir(baslik){
   const b=manzaraBellek();
   if(b[baslik])return b[baslik];
-  const r=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(baslik.replace(/ /g,"_")));
+  const yol=encodeURIComponent(baslik.replace(/ /g,"_"));
+  // 1) makalenin kapak görseli — gerçek fotoğrafsa doğrudan kullan
+  const r=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+yol);
   if(!r.ok)throw new Error("wiki "+r.status);
   const d=await r.json();
-  const t=d&&d.thumbnail&&d.thumbnail.source;
-  if(!t)throw new Error("gorsel yok");
-  const u=t.replace(/\/\d+px-/,"/1280px-");
-  b[baslik]=u; manzaraBellekYaz();
-  return u;
+  const t=d&&d.thumbnail;
+  if(t&&t.source&&manzaraUygun(t.source,t.width,t.height)){
+    const u=manzaraBuyut(t.source);
+    b[baslik]=u; manzaraBellekYaz();
+    return u;
+  }
+  // 2) kapak bayrak/harita/afiş çıktıysa → makaledeki ilk gerçek fotoğrafı bul
+  const r2=await fetch("https://en.wikipedia.org/api/rest_v1/page/media-list/"+yol);
+  if(!r2.ok)throw new Error("media "+r2.status);
+  const d2=await r2.json();
+  for(const it of (d2&&d2.items)||[]){
+    if(it.type!=="image")continue;
+    if(it.title&&MANZARA_ELE.test(it.title))continue;      // dosya başlığında da ara
+    const s0=it.srcset&&it.srcset[0]&&it.srcset[0].src;
+    if(!s0)continue;
+    const tam=s0.indexOf("//")===0?("https:"+s0):s0;
+    if(!manzaraUygun(tam,it.width,it.height))continue;
+    const u=manzaraBuyut(tam);
+    b[baslik]=u; manzaraBellekYaz();
+    return u;
+  }
+  throw new Error("foto bulunamadi");
 }
 const HERO_OVERLAY={
   sabah:"linear-gradient(180deg,rgba(30,35,45,0.10) 0%,rgba(20,28,40,0.05) 38%,rgba(15,20,30,0.62) 100%)",
