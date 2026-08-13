@@ -4921,18 +4921,6 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
       <Row icon="world" label={T.dil} sub={dilAd?.bolge||""} value={dilAd?dilAd.bayrak+" "+dilAd.ad:dil} onClick={()=>setModal("dil")}/>
     </Sh>
 
-    {/* Pro */}
-    <Sh s={{padding:"16px 18px",marginBottom:14,background:"linear-gradient(135deg,#F59E0B,#D97706)"}}>
-      <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <div style={{fontSize:30}}>⚡</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:800,color:"#fff"}}>{T.proYukselt}</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.85)",marginTop:2}}>{T.proSub}</div>
-        </div>
-        <button onClick={()=>goster(T.yakinda+" ⚡")} style={{background:"#fff",border:"none",borderRadius:10,padding:"8px 14px",color:"#D97706",fontSize:12,fontWeight:800,cursor:"pointer",flexShrink:0}}>₺199/ay</button>
-      </div>
-    </Sh>
-
     {/* Destek */}
     <div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.1em",margin:"0 4px 8px"}}>{T.destek}</div>
     <Sh s={{marginBottom:14,overflow:"hidden"}}>
