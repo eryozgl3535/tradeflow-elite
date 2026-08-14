@@ -470,6 +470,8 @@ function UstaPanel({kullanici,T={}}){
   const bitenler=tum.filter(j=>j.durum==="tamamlandi");
   const bugun=new Date().toISOString().slice(0,10);
   const bugunku=acikIsler.filter(j=>(j.tarih||"")===bugun||(j.hatirlatma||"").startsWith(bugun)).length;
+  // sıradaki iş: önce bugünküler, sonra en yakın tarihli
+  const siradaki=[...acikIsler].sort((x,y)=>String(x.tarih||"9999").localeCompare(String(y.tarih||"9999")))[0]||null;
   const bh=((veri&&veri.ad)||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 
   // ── İstatistikler: bu hafta / bu ay / toplam tamamlanan (sadece kendi işleri, finansal veri yok) ──
@@ -481,19 +483,26 @@ function UstaPanel({kullanici,T={}}){
   const buAyBiten=bitenler.filter(j=>bitenTarihli(j)&&new Date(j.tarih)>=ayBasi).length;
   const toplamBiten=bitenler.length;
 
-  // ── Rozet sistemi: toplam tamamlanan işe göre kademeli ──
-  const ROZETLER=[
-    {esik:0,ad:T.rozetCirak||"Çırak",ikon:"🔰",renk:"#94A3B8"},
-    {esik:5,ad:T.rozetBronz||"Bronz Usta",ikon:"🥉",renk:"#B45309"},
-    {esik:15,ad:T.rozetGumus||"Gümüş Usta",ikon:"🥈",renk:"#64748B"},
-    {esik:30,ad:T.rozetAltin||"Altın Usta",ikon:"🥇",renk:"#D97706"},
-    {esik:50,ad:T.rozetElmas||"Elmas Usta",ikon:"💎",renk:"#0EA5E9"},
+  // ── Seviye sistemi: tamamlanan iş sayısı arttıkça seviye yükselir ──
+  // Eşikler artan adımlarla: 3, 7, 12, 19, 28, 40, 57, 79, 109, 150 ...
+  const seviyeHesap=(adet)=>{
+    let sv=1, taban=0, adim=3;
+    while(adet>=taban+adim){ taban+=adim; sv++; adim=Math.round(adim*1.35); }
+    return {seviye:sv,taban,tavan:taban+adim};
+  };
+  const SV=seviyeHesap(toplamBiten);
+  // Her 5 seviyede bir kuşak değişir — renk ve ad
+  const KUSAKLAR=[
+    {ad:T.kusakBaslangic||"Başlangıç",renk:"#64748B"},
+    {ad:T.kusakDeneyimli||"Deneyimli",renk:"#B45309"},
+    {ad:T.kusakUzman||"Uzman",renk:"#0E9F6E"},
+    {ad:T.kusakKidemli||"Kıdemli",renk:"#2563EB"},
+    {ad:T.kusakUsta||"Usta",renk:"#7C3AED"},
+    {ad:T.kusakEfsane||"Efsane",renk:"#D97706"},
   ];
-  let rozetIdx=0;
-  for(let i=0;i<ROZETLER.length;i++){if(toplamBiten>=ROZETLER[i].esik)rozetIdx=i;}
-  const aktifRozet=ROZETLER[rozetIdx];
-  const sonrakiRozet=ROZETLER[rozetIdx+1]||null;
-  const rozetIlerleme=sonrakiRozet?Math.min(100,Math.round(((toplamBiten-aktifRozet.esik)/(sonrakiRozet.esik-aktifRozet.esik))*100)):100;
+  const kusak=KUSAKLAR[Math.min(KUSAKLAR.length-1,Math.floor((SV.seviye-1)/5))];
+  const svIlerleme=Math.min(100,Math.round(((toplamBiten-SV.taban)/(SV.tavan-SV.taban))*100));
+  const svKalan=Math.max(0,SV.tavan-toplamBiten);
 
   // ── Günün sözü: tarihe göre deterministik, her gün aynı söz ──
   const SOZLER=[T.soz1,T.soz2,T.soz3,T.soz4,T.soz5,T.soz6,T.soz7,T.soz8,T.soz9,T.soz10].filter(Boolean);
@@ -509,31 +518,31 @@ function UstaPanel({kullanici,T={}}){
 
   const IsKart=(j)=><Sh key={j.id} s={{padding:"14px 15px",marginBottom:10}}>
     <div onClick={()=>setSecili(secili===j.id?null:j.id)} style={{display:"flex",alignItems:"center",gap:11,cursor:"pointer"}}>
-      <div style={{width:44,height:44,borderRadius:12,background:j.iconBg||C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{j.icon||"🔧"}</div>
+      <div style={{width:44,height:44,borderRadius:12,background:j.iconBg||C.purpleBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{j.icon||""}</div>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:14,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{j.baslik}</div>
         <div style={{fontSize:11.5,color:C.t3}}>{j.musteri} · {j.tarih}</div>
       </div>
-      <span style={{fontSize:10,fontWeight:800,color:j.durum==="tamamlandi"?C.green:P,background:j.durum==="tamamlandi"?C.greenBg:C.purpleBg,borderRadius:8,padding:"4px 9px",whiteSpace:"nowrap"}}>{j.durum==="tamamlandi"?"✅ Bitti":ASAMALAR[j.asama||0]}</span>
+      <span style={{fontSize:10,fontWeight:800,color:j.durum==="tamamlandi"?C.green:P,background:j.durum==="tamamlandi"?C.greenBg:C.purpleBg,borderRadius:8,padding:"4px 9px",whiteSpace:"nowrap"}}>{j.durum==="tamamlandi"?"Bitti":ASAMALAR[j.asama||0]}</span>
     </div>
     {secili===j.id&&<div style={{marginTop:12,borderTop:`1px solid ${C.border}`,paddingTop:12}}>
       {j.isAdresi&&<div style={{display:"flex",gap:8,marginBottom:10}}>
-        <div style={{flex:1,background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2}}>📍 {j.isAdresi}</div>
-        <button onClick={()=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.isAdresi),"_blank")} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}>🗺️</button>
-        {j.musteriTelefon&&<button onClick={()=>window.open("tel:"+j.musteriTelefon)} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}>📞</button>}
+        <div style={{flex:1,background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2}}>{j.isAdresi}</div>
+        <button onClick={()=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.isAdresi),"_blank")} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}></button>
+        {j.musteriTelefon&&<button onClick={()=>window.open("tel:"+j.musteriTelefon)} style={{background:C.bg,border:"none",borderRadius:11,padding:"0 13px",fontSize:15,cursor:"pointer"}}></button>}
       </div>}
-      {j.malzemeler&&<div style={{background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2,whiteSpace:"pre-wrap",marginBottom:10}}>🧰 {j.malzemeler}</div>}
+      {j.malzemeler&&<div style={{background:C.bg,borderRadius:11,padding:"9px 11px",fontSize:11.5,color:C.t2,whiteSpace:"pre-wrap",marginBottom:10}}><i className="ti ti-tools" style={{fontSize:12,marginRight:5,opacity:.7}} aria-hidden="true"/>{j.malzemeler}</div>}
       {(j.fotolar||[]).length>0&&<div style={{display:"flex",gap:8,overflowX:"auto",marginBottom:10,paddingBottom:2}}>
         {j.fotolar.map((f,i)=><img key={i} src={f} alt={"foto"+i} style={{width:64,height:64,borderRadius:10,objectFit:"cover",border:`1px solid ${C.border}`,flexShrink:0}}/>)}
       </div>}
-      {j.not&&<div style={{background:"#FBF6EA",borderRadius:11,padding:"9px 11px",fontSize:11.5,color:"#92600A",whiteSpace:"pre-wrap",marginBottom:10}}>📝 {j.not}</div>}
+      {j.not&&<div style={{background:"#FBF6EA",borderRadius:11,padding:"9px 11px",fontSize:11.5,color:"#92600A",whiteSpace:"pre-wrap",marginBottom:10}}>{j.not}</div>}
       {j.durum!=="tamamlandi"&&<>
         <div style={{display:"flex",alignItems:"center",gap:4,margin:"4px 0 10px"}}>
           {ASAMALAR.map((a,i)=><div key={a} style={{flex:1,height:6,borderRadius:4,background:i<=(j.asama||0)?P:C.border}}/>)}
         </div>
         <div style={{display:"flex",gap:8}}>
           <button onClick={()=>asamaIlerlet(j)} style={{flex:1.4,background:GRAD,border:"none",borderRadius:12,padding:"12px 0",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>Sonraki Aşama ›</button>
-          <button onClick={()=>setHarcamaAc(j.id)} style={{flex:1,background:C.amberBg,border:"none",borderRadius:12,padding:"12px 0",color:"#92600A",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>🧾 Harcama</button>
+          <button onClick={()=>setHarcamaAc(j.id)} style={{flex:1,background:C.amberBg,border:"none",borderRadius:12,padding:"12px 0",color:"#92600A",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>Harcama</button>
         </div>
       </>}
     </div>}
@@ -553,11 +562,14 @@ function UstaPanel({kullanici,T={}}){
       <Sh s={{padding:"16px",marginBottom:14,display:"flex",alignItems:"center",gap:13}}>
         <div style={{position:"relative",flexShrink:0}}>
           <div style={{width:52,height:52,borderRadius:"50%",background:GRAD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:"#fff"}}>{bh}</div>
-          <div style={{position:"absolute",bottom:-4,right:-4,width:22,height:22,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,boxShadow:"0 1px 4px rgba(0,0,0,0.15)"}}>{aktifRozet.ikon}</div>
+          <div style={{position:"absolute",bottom:-4,right:-4,minWidth:22,height:22,padding:"0 5px",borderRadius:11,background:kusak.renk,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>{SV.seviye}</div>
         </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{(veri&&veri.ad)||"Usta"}</div>
-          <div style={{fontSize:11,color:C.t3}}>👷 {(veri&&veri.rol)||"Usta"} · {aktifRozet.ad}</div>
+          <div style={{fontSize:11,color:C.t3,display:"flex",alignItems:"center",gap:5}}>
+              <i className="ti ti-tool" style={{fontSize:12}} aria-hidden="true"/>
+              {(veri&&veri.rol)||"Usta"} · <b style={{color:kusak.renk}}>Seviye {SV.seviye}</b> · {kusak.ad}
+            </div>
         </div>
         <div style={{textAlign:"right"}}><span style={{fontSize:10,fontWeight:700,letterSpacing:"0.3em",color:"#1B2A4A"}}>ERA</span><span style={{fontSize:10,fontWeight:700,color:"#E4335A"}}>İ</span></div>
       </Sh>
@@ -568,41 +580,72 @@ function UstaPanel({kullanici,T={}}){
           <div style={{fontSize:10,color:C.t3,marginTop:2}}>{l}</div>
         </Sh>)}
       </div>
-      {hata&&<div style={{background:C.amberBg,borderRadius:14,padding:"13px 15px",fontSize:12.5,color:"#92600A",marginBottom:12}}>⚠️ {hata}</div>}
+      {hata&&<div style={{background:C.amberBg,borderRadius:14,padding:"13px 15px",fontSize:12.5,color:"#92600A",marginBottom:12}}><i className="ti ti-alert-triangle" style={{fontSize:14,marginRight:6}} aria-hidden="true"/>{hata}</div>}
       {!veri&&!hata&&<div style={{textAlign:"center",color:C.t3,padding:"40px 0"}}>Yükleniyor...</div>}
 
       {sekme==="isler"&&<>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>📋 {T.ustaIslerim||"İşlerim"}</div>
-        {veri&&acikIsler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>{T.ustaBosIs||"Şu an atanmış açık işin yok. Patronun iş atadığında burada görünecek. 💪"}</div></Sh>}
+        {siradaki&&<Sh s={{padding:0,marginBottom:14,overflow:"hidden",border:`1px solid ${P}33`}}>
+          <div style={{background:`linear-gradient(135deg,${P},${P}CC)`,padding:"11px 15px",display:"flex",alignItems:"center",gap:7}}>
+            <i className="ti ti-player-play" style={{fontSize:14,color:"#fff"}} aria-hidden="true"/>
+            <span style={{fontSize:11.5,fontWeight:800,color:"#fff",letterSpacing:.3}}>{T.ustaSiradaki||"SIRADAKİ İŞ"}</span>
+            {siradaki.tarih===bugun&&<span style={{marginLeft:"auto",fontSize:10,fontWeight:800,color:"#fff",background:"rgba(255,255,255,.22)",padding:"3px 8px",borderRadius:99}}>{T.bugun||"BUGÜN"}</span>}
+          </div>
+          <div style={{padding:"14px 15px"}}>
+            <div style={{fontSize:15.5,fontWeight:800,color:C.t1,marginBottom:3}}>{siradaki.baslik||"—"}</div>
+            {siradaki.musteri&&<div style={{fontSize:12.5,color:C.t2,display:"flex",alignItems:"center",gap:5,marginBottom:3}}>
+              <i className="ti ti-user" style={{fontSize:13,opacity:.7}} aria-hidden="true"/>{siradaki.musteri}</div>}
+            {siradaki.adres&&<div style={{fontSize:12,color:C.t3,display:"flex",alignItems:"flex-start",gap:5}}>
+              <i className="ti ti-map-pin" style={{fontSize:13,opacity:.7,marginTop:1}} aria-hidden="true"/>
+              <span style={{flex:1}}>{siradaki.adres}</span></div>}
+            <div style={{display:"flex",gap:8,marginTop:12}}>
+              {siradaki.adres&&<a href={"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(siradaki.adres)} target="_blank" rel="noreferrer"
+                style={{flex:1,textDecoration:"none",background:P,color:"#fff",borderRadius:11,padding:"10px 0",textAlign:"center",fontSize:12.5,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                <i className="ti ti-navigation" style={{fontSize:14}} aria-hidden="true"/>{T.yolTarifi||"Yol tarifi"}</a>}
+              {siradaki.telefon&&<a href={"tel:"+String(siradaki.telefon).replace(/\s/g,"")}
+                style={{flex:1,textDecoration:"none",background:C.purpleBg,color:P,borderRadius:11,padding:"10px 0",textAlign:"center",fontSize:12.5,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                <i className="ti ti-phone" style={{fontSize:14}} aria-hidden="true"/>{T.ara||"Ara"}</a>}
+              <div onClick={()=>setSecili(siradaki)}
+                style={{flex:1,background:C.bg,color:C.t1,borderRadius:11,padding:"10px 0",textAlign:"center",fontSize:12.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5,border:`1px solid ${C.border}`}}>
+                <i className="ti ti-arrow-right" style={{fontSize:14}} aria-hidden="true"/>{T.ac||"Aç"}</div>
+            </div>
+          </div>
+        </Sh>}
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px",display:"flex",alignItems:"center",gap:7}}>
+          <i className="ti ti-clipboard-list" style={{fontSize:16,color:P}} aria-hidden="true"/>{T.ustaIslerim||"İşlerim"}
+        </div>
+        {veri&&acikIsler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>{T.ustaBosIs||"Şu an atanmış açık işin yok. Patronun iş atadığında burada görünecek."}</div></Sh>}
         {acikIsler.map(IsKart)}
         <div style={{marginTop:16}}><PiyasaSeridi C={C} P={P} T={T}/></div>
       </>}
       {sekme==="biten"&&<>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>✅ Bitirdiklerim</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}><i className="ti ti-circle-check" style={{fontSize:16,color:C.green,marginRight:7}} aria-hidden="true"/>Bitirdiklerim</div>
         {veri&&bitenler.length===0&&<Sh s={{padding:"18px",textAlign:"center"}}><div style={{fontSize:13,color:C.t3}}>{T.ustaBosBiten||"Henüz tamamlanan işin yok — ilk işini bitirince burada listelenecek."}</div></Sh>}
         {bitenler.map(IsKart)}
       </>}
       {sekme==="profil"&&<>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}>👤 {T.ustaHesabim||"Hesabım"}</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,margin:"0 2px 11px"}}><i className="ti ti-user" style={{fontSize:16,color:P,marginRight:7}} aria-hidden="true"/>{T.ustaHesabim||"Hesabım"}</div>
 
-        {/* Rozet Kartı */}
-        <Sh s={{padding:"18px 16px",marginBottom:12,background:`linear-gradient(135deg,${aktifRozet.renk}22,${aktifRozet.renk}08)`,border:`1px solid ${aktifRozet.renk}33`}}>
+        {/* Seviye Kartı */}
+        <Sh s={{padding:"18px 16px",marginBottom:12,background:`linear-gradient(135deg,${kusak.renk}22,${kusak.renk}08)`,border:`1px solid ${kusak.renk}33`}}>
           <div style={{display:"flex",alignItems:"center",gap:14}}>
-            <div style={{width:56,height:56,borderRadius:16,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>{aktifRozet.ikon}</div>
+            <div style={{width:58,height:58,borderRadius:17,background:"#fff",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.08)"}}>
+              <div style={{fontSize:9,fontWeight:800,color:C.t3,letterSpacing:.5,lineHeight:1}}>SEVİYE</div>
+              <div style={{fontSize:23,fontWeight:900,color:kusak.renk,lineHeight:1.15}}>{SV.seviye}</div>
+            </div>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{aktifRozet.ad}</div>
-              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{(T.rozetTamamladin||"{n} iş tamamladın").replace("{n}",toplamBiten)}</div>
+              <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{kusak.ad}</div>
+              <div style={{fontSize:11.5,color:C.t3,marginTop:2}}>{toplamBiten} {T.ustaIsTamamlandi||"iş tamamlandı"}</div>
             </div>
           </div>
-          {sonrakiRozet&&<div style={{marginTop:14}}>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,color:C.t3,marginBottom:5}}>
-              <span>{T.rozetSonraki||"Sonraki"}: {sonrakiRozet.ikon} {sonrakiRozet.ad}</span>
-              <span>{toplamBiten}/{sonrakiRozet.esik}</span>
+          <div style={{marginTop:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.t3,marginBottom:5}}>
+              <span>{svKalan>0?(svKalan+" "+(T.ustaIsSonra||"iş sonra")+" Seviye "+(SV.seviye+1)):(T.ustaEnUst||"En üst seviyedesin")}</span>
+              <span>{toplamBiten}/{SV.tavan}</span>
             </div>
-            <div style={{height:7,background:"#fff",borderRadius:6,overflow:"hidden"}}>
-              <div style={{height:"100%",width:rozetIlerleme+"%",background:aktifRozet.renk,borderRadius:6,transition:"width 0.4s"}}/>
+            <div style={{height:7,background:"rgba(0,0,0,0.07)",borderRadius:99,overflow:"hidden"}}>
+              <div style={{height:"100%",width:svIlerleme+"%",background:kusak.renk,borderRadius:99,transition:"width .5s ease"}}/>
             </div>
-          </div>}
+          </div>
         </Sh>
 
         {/* İstatistikler */}
@@ -615,13 +658,13 @@ function UstaPanel({kullanici,T={}}){
 
         {/* Günün Sözü */}
         <Sh s={{padding:"14px 16px",marginBottom:12,background:"#F5F3FF"}}>
-          <div style={{fontSize:10,fontWeight:700,color:"#7C3AED",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>💬 {T.gununSozuBaslik||"Günün Sözü"}</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#7C3AED",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}><i className="ti ti-quote" style={{fontSize:11,marginRight:5}} aria-hidden="true"/>{T.gununSozuBaslik||"Günün Sözü"}</div>
           <div style={{fontSize:12.5,color:"#4C1D95",lineHeight:1.5,fontStyle:"italic"}}>"{gununSozu}"</div>
         </Sh>
 
         {/* İş Raporum PDF */}
         <button onClick={()=>ustaIsRaporuPdf(tum,(veri&&veri.ad)||"Usta")} style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 15px",marginBottom:12,display:"flex",alignItems:"center",gap:11,cursor:"pointer",boxShadow:C.sh}}>
-          <div style={{width:36,height:36,borderRadius:11,background:"#FEE2E2",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:17}}>📄</div>
+          <div style={{width:36,height:36,borderRadius:11,background:"#FEE2E2",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-file-text" style={{fontSize:17,color:"#DC2626"}} aria-hidden="true"/></div>
           <div style={{flex:1,textAlign:"left"}}>
             <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{T.pdfRaporBaslik||"İş Raporumu İndir"}</div>
             <div style={{fontSize:10.5,color:C.t3,marginTop:1}}>{T.pdfRaporAlt||"Tüm işlerin PDF özeti (tutar içermez)"}</div>
@@ -632,16 +675,16 @@ function UstaPanel({kullanici,T={}}){
         <Sh s={{padding:"6px 0",marginBottom:12}}>
           <SifreDegistir onBitti={()=>{}} gomulu/>
         </Sh>
-        <button onClick={()=>supabase.auth.signOut()} style={{width:"100%",background:C.redBg,border:"none",borderRadius:14,padding:"14px 0",color:C.red,fontSize:14,fontWeight:700,cursor:"pointer"}}>🚪 {T.cikisYap||"Çıkış Yap"}</button>
+        <button onClick={()=>supabase.auth.signOut()} style={{width:"100%",background:C.redBg,border:"none",borderRadius:14,padding:"14px 0",color:C.red,fontSize:14,fontWeight:700,cursor:"pointer"}}>{T.cikisYap||"Çıkış Yap"}</button>
         <div style={{textAlign:"center",marginTop:16,fontSize:11,color:C.t3}}>TradeFlow Elite · Usta Sürümü</div>
       </>}
 
       {/* Alt menü */}
       <div style={{position:"fixed",bottom:"calc(10px + env(safe-area-inset-bottom, 0px))",left:0,right:0,margin:"0 auto",width:"calc(100% - 24px)",maxWidth:496,background:C.card,display:"flex",alignItems:"center",padding:"9px 8px",borderRadius:24,boxShadow:"0 10px 30px rgba(80,60,140,0.16)",border:`1px solid ${C.border}`,zIndex:100}}>
-        {[["isler","📋",T.ustaIslerim||"İşlerim"],["harcama","🧾",T.ustaHarcama||"Harcama"],["biten","✅",T.ustaBitenler||"Bitenler"],["profil","👤",T.ustaHesabim||"Hesabım"]].map(([id,ik,l])=>{
+        {[["isler","clipboard-list",T.ustaIslerim||"İşlerim"],["harcama","receipt",T.ustaHarcama||"Harcama"],["biten","circle-check",T.ustaBitenler||"Bitenler"],["profil","user",T.ustaHesabim||"Hesabım"]].map(([id,ik,l])=>{
           const aktif=sekme===id&&id!=="harcama";
           return <div key={id} onClick={()=>id==="harcama"?setHarcamaAc(true):setSekme(id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"7px 0 5px",background:aktif?"#DCE7F8":"transparent",borderRadius:15,margin:"0 3px"}}>
-            <span style={{fontSize:19}}>{ik}</span>
+            <i className={"ti ti-"+ik} style={{fontSize:19,color:aktif?P:C.t3}} aria-hidden="true"/>
             <span style={{fontSize:10.5,fontWeight:700,color:aktif?"#2563EB":C.t3}}>{l}</span>
           </div>;
         })}
@@ -671,6 +714,8 @@ function SifreDegistir({onBitti,gomulu}){
 function UstaHarcama({isId,onBitti}){
   const [f,setF]=useState({ad:"",tutar:"",fisFoto:null});
   const [msg,setMsg]=useState("");
+  const [okuyor,setOkuyor]=useState(false);
+  const [okundu,setOkundu]=useState(null);   // null | "ok" | "zayif" | "yok"
   const fotoSec=(e)=>{
     const dosya=e.target.files&&e.target.files[0];if(!dosya)return;
     const fr=new FileReader();
@@ -680,26 +725,45 @@ function UstaHarcama({isId,onBitti}){
         const c=document.createElement("canvas");const oran=Math.min(1,900/img.width);
         c.width=img.width*oran;c.height=img.height*oran;
         c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-        setF(p=>({...p,fisFoto:c.toDataURL("image/jpeg",0.6)}));
+        const kucuk=c.toDataURL("image/jpeg",0.6);
+        setF(p=>({...p,fisFoto:kucuk}));
+        // fişi okut — tutar ve açıklama kendiliğinden dolsun
+        setOkuyor(true); setOkundu(null); setMsg("");
+        fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({gorsel:kucuk.split(",")[1],tur:"image/jpeg"})})
+          .then(r=>r.ok?r.json():Promise.reject(new Error("kod "+r.status)))
+          .then(d=>{
+            if(!d.tutar&&!d.tarih){ setOkundu("yok"); return; }
+            setF(p=>({...p,
+              ad:p.ad||(d.satici?(d.satici+(d.kalemler&&d.kalemler.length?" — "+d.kalemler[0]:"")):p.ad),
+              tutar:d.tutar!=null?String(d.tutar):p.tutar}));
+            setOkundu(d.guven==="dusuk"?"zayif":"ok");
+          })
+          .catch(()=>setOkundu("yok"))
+          .finally(()=>setOkuyor(false));
       };
       img.src=fr.result;
     };
     fr.readAsDataURL(dosya);
   };
   return <div>
-    <div style={{fontSize:16,fontWeight:800,color:C.t1,marginBottom:4}}>🧾 Harcama Bildir</div>
+    <div style={{fontSize:16,fontWeight:800,color:C.t1,marginBottom:4}}><i className="ti ti-receipt" style={{fontSize:16,marginRight:7,color:P}} aria-hidden="true"/>Harcama Bildir</div>
     <div style={{fontSize:11,color:C.t3,marginBottom:12}}>Malzeme, yakıt, yemek... Fiş fotoğrafıyla patronunun onayına gider.</div>
     <input value={f.ad} onChange={e=>setF(p=>({...p,ad:e.target.value}))} placeholder="Ne aldın? (örn: 2 torba çimento)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
     <input type="number" value={f.tutar} onChange={e=>setF(p=>({...p,tutar:e.target.value}))} placeholder="Tutar (TL)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
     <label style={{display:"block",background:f.fisFoto?C.greenBg:C.bg,border:`1.5px dashed ${f.fisFoto?C.green:C.border}`,borderRadius:12,padding:"13px 0",textAlign:"center",fontSize:13,fontWeight:700,color:f.fisFoto?C.green:C.t2,cursor:"pointer",marginBottom:12}}>
-      {f.fisFoto?"✅ Fiş fotoğrafı eklendi":"📷 Fiş fotoğrafı çek / seç"}
+      <i className={okuyor?"ti ti-loader-2":(f.fisFoto?"ti ti-circle-check":"ti ti-camera")} style={{fontSize:15,marginRight:7,verticalAlign:"-2px",animation:okuyor?"tfDon 1s linear infinite":"none"}} aria-hidden="true"/>
+      {okuyor?"Fiş okunuyor…":(f.fisFoto?"Fiş fotoğrafı eklendi":"Fişi çek — tutarı kendisi doldursun")}
       <input type="file" accept="image/*" capture="environment" onChange={fotoSec} style={{display:"none"}}/>
     </label>
-    {msg&&<div style={{fontSize:12,color:msg.startsWith("✅")?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
+    {okundu==="ok"&&<div style={{fontSize:11.5,color:C.green,fontWeight:700,marginBottom:10,marginTop:-4}}>Fişten okundu — rakamı bir teyit et</div>}
+    {okundu==="zayif"&&<div style={{fontSize:11.5,color:C.amber,fontWeight:700,marginBottom:10,marginTop:-4}}>Fotoğraf net değil — tutarı kontrol et</div>}
+    {okundu==="yok"&&<div style={{fontSize:11.5,color:C.t3,marginBottom:10,marginTop:-4}}>Fiş okunamadı, elle yazabilirsin</div>}
+    {msg&&<div style={{fontSize:12,color:msg.indexOf("onay")>-1?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
     <button onClick={async()=>{
       if(!f.ad||!f.tutar){setMsg("Açıklama ve tutar gerekli");return;}
       const {data,error}=await supabase.rpc("usta_harcama_ekle",{h:{ad:f.ad,tutar:parseFloat(f.tutar)||0,isId:isId===true?null:isId,fisFoto:f.fisFoto,tarih:new Date().toISOString().slice(0,10)}});
-      if(error||(data&&data.hata)){setMsg("Gönderilemedi — internet kontrolü yap");}else{setMsg("✅ Patronunun onayına gönderildi!");setTimeout(onBitti,1200);}
+      if(error||(data&&data.hata)){setMsg("Gönderilemedi — internet kontrolü yap");}else{setMsg("Patronunun onayına gönderildi!");setTimeout(onBitti,1200);}
     }} style={{width:"100%",background:P,border:"none",borderRadius:12,padding:13,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Gönder</button>
   </div>;
 }
