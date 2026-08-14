@@ -9,7 +9,8 @@
 // Anahtar yoksa 501 döner, uygulama sessizce elle girişe düşer.
 // ─────────────────────────────────────────────────────────────
 
-const MODEL = "claude-sonnet-4-6";
+// Model adları zamanla değişir — sırayla denenir, ilk çalışan kullanılır
+const MODELLER = ["claude-sonnet-4-6", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
 const MAX_BAYT = 5 * 1024 * 1024; // 5 MB'lık fotoğraf sınırı
 
 // Görsel okuma metinden yavaştır — varsayılan süre sınırı yetmeyebilir
@@ -52,33 +53,43 @@ export default async function handler(req, res) {
     if (!/^image\/(jpeg|png|webp)$/.test(tur))
       return res.status(415).json({ hata: "tur-desteklenmiyor" });
 
-    const y = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 400,
-        system: SISTEM,
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: tur, data: gorsel } },
-              { type: "text", text: "Bu fişi oku ve sadece JSON döndür." },
-            ],
-          },
-        ],
-      }),
+    const govde = (model) => JSON.stringify({
+      model,
+      max_tokens: 400,
+      system: SISTEM,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: tur, data: gorsel } },
+            { type: "text", text: "Bu fişi oku ve sadece JSON döndür." },
+          ],
+        },
+      ],
     });
 
-    if (!y.ok) {
+    let y = null, sonHata = "";
+    for (const model of MODELLER) {
+      y = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: govde(model),
+      });
+      if (y.ok) break;
       const metin = await y.text().catch(() => "");
-      console.error("Anthropic hata:", y.status, metin.slice(0, 300));
-      return res.status(200).json({ hata: "servis-" + y.status, detay: metin.slice(0, 160), tutar: null, tarih: null });
+      sonHata = y.status + " " + metin.slice(0, 120);
+      console.error("fis.js model denendi:", model, sonHata);
+      // Model adı sorunu değilse (kota, yetki, sunucu) tekrar denemenin anlamı yok
+      if (y.status !== 404 && !/model/i.test(metin)) break;
+      y = null;
+    }
+
+    if (!y || !y.ok) {
+      return res.status(200).json({ hata: "servis", detay: sonHata.slice(0, 160), tutar: null, tarih: null });
     }
 
     const d = await y.json();
