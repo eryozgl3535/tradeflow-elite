@@ -4749,7 +4749,6 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
 // ─── PROFİL ─────────────────────────────────────────────────────
 function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,denemeKalan,onPlanAc,sesEfekt,setSesEfekt,raporDonemAd,onRaporDonem,ozetSaat,setOzetSaat,para,setPara,kdv,setKdv,vadeGun,setVadeGun,isletme,setIsletme,T,goster,onAc,gibAyar,setGibAyar,gibAcSekme,onGibActemizle,onCikis,kullaniciEmail,onKarne,kilitSure,onKilitAyarla,onYedekAl,onYedekYukle}){
   const [bildirimIzin,setBildirimIzin]=useState(false);
-  const [kompaktMod,setKompaktMod]=useState(false);
   const logo=isletme?.logo||null;
   const [modal,setModal]=useState(null); // isletme|kdv|dil|para|gib
 
@@ -4917,7 +4916,6 @@ function ProfilSekmesi({jobs,dil,setDil,karanlik,setKaranlik,tema,setTema,plan,d
         </div>
       </div>}
       <Row icon="volume" iconRenk="#B45309" label={T.sesEfektleri} sub={T.sesEfektSub} toggle tState={sesEfekt} tSet={setSesEfekt}/>
-      <Row icon="layout-list" label={T.kompaktGorunum} sub={T.kompaktSub} toggle tState={kompaktMod} tSet={setKompaktMod}/>
       <Row icon="world" label={T.dil} sub={dilAd?.bolge||""} value={dilAd?dilAd.bayrak+" "+dilAd.ad:dil} onClick={()=>setModal("dil")}/>
     </Sh>
 
