@@ -550,12 +550,28 @@ function UstaPanel({kullanici,T={}}){
 
   return <div style={{minHeight:"100vh",background:C.bg,fontFamily:"-apple-system,sans-serif",display:"flex",justifyContent:"center"}}>
     <div style={{width:"100%",maxWidth:520,padding:"48px 14px 96px"}}>
-      {/* Karşılama — gökyüzü sahnesi */}
-      <div style={{padding:"2px 2px 4px",marginBottom:16,display:"flex",alignItems:"center",gap:14}}>
-        <GokyuzuSahne saat={saatSimdi} dk={simdi.getMinutes()} g={56}/>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:20,fontWeight:800,color:C.t1,letterSpacing:"-0.02em",lineHeight:1.2}}>{selam}{ustaAd?", "+ustaAd:""}</div>
-          <div style={{fontSize:12,color:C.t3,marginTop:3}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
+      {/* Marka başlığı — LED imzalı */}
+      <div style={{display:"flex",alignItems:"center",gap:9,padding:"0 2px",marginBottom:12}}>
+        <TFLogo boyut={40} sade={true} led={false} ortala={false}/>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:C.t1,letterSpacing:"0.08em",lineHeight:1.1}}>TRADEFLOW</div>
+          <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.3em",display:"flex",alignItems:"center"}}>
+            <LedImza boyut={10} metin="ERAİ" inline={true}/>
+          </div>
+        </div>
+      </div>
+      {/* Karşılama — dünyadan manzaralar, işveren ana sayfasıyla aynı */}
+      <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:16,minHeight:210,boxShadow:"0 10px 28px rgba(16,24,40,0.16)"}}>
+        <ManzaraKare dilim={dilim} mobil={true}/>
+        <div style={{position:"relative",padding:"18px 20px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end",minHeight:210}}>
+          <div style={{fontSize:21,fontWeight:800,color:"#fff",letterSpacing:"-0.015em",lineHeight:1.2,textShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>{selam}{ustaAd?", "+ustaAd:""}</div>
+          <div style={{fontSize:13.5,color:"rgba(255,255,255,0.92)",marginTop:5,fontWeight:500,textShadow:"0 1px 8px rgba(0,0,0,0.4)"}}>{T[DILIM_KEY[1]]||DILIM_METIN[dilim].alt}</div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:14,background:"rgba(255,255,255,0.94)",borderRadius:100,padding:"7px 14px",alignSelf:"flex-start",boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}>
+            <i className="ti ti-clock" style={{fontSize:14,color:"#1C4E60"}} aria-hidden="true"/>
+            <span style={{fontSize:12.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</span>
+            <span style={{width:3,height:3,borderRadius:"50%",background:"#9CA3AF"}}/>
+            <span style={{fontSize:12.5,fontWeight:700,color:"#1F2937"}}>{new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span>
+          </div>
         </div>
       </div>
       {/* Üst kimlik kartı */}
