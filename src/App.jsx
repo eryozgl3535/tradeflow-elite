@@ -731,7 +731,8 @@ function UstaHarcama({isId,onBitti}){
   const [f,setF]=useState({ad:"",tutar:"",fisFoto:null});
   const [msg,setMsg]=useState("");
   const [okuyor,setOkuyor]=useState(false);
-  const [okundu,setOkundu]=useState(null);   // null | "ok" | "zayif" | "yok"
+  const [okundu,setOkundu]=useState(null);
+  const [sebep,setSebep]=useState("");   // null | "ok" | "zayif" | "yok"
   const fotoSec=(e)=>{
     const dosya=e.target.files&&e.target.files[0];if(!dosya)return;
     const fr=new FileReader();
@@ -749,13 +750,13 @@ function UstaHarcama({isId,onBitti}){
           body:JSON.stringify({gorsel:kucuk.split(",")[1],tur:"image/jpeg"})})
           .then(r=>r.ok?r.json():Promise.reject(new Error("kod "+r.status)))
           .then(d=>{
-            if(!d.tutar&&!d.tarih){ setOkundu("yok"); return; }
+            if(!d.tutar&&!d.tarih){ setOkundu("yok"); setSebep((d&&d.hata)||"boş yanıt"); return; }
             setF(p=>({...p,
               ad:p.ad||(d.satici?(d.satici+(d.kalemler&&d.kalemler.length?" — "+d.kalemler[0]:"")):p.ad),
               tutar:d.tutar!=null?String(d.tutar):p.tutar}));
             setOkundu(d.guven==="dusuk"?"zayif":"ok");
           })
-          .catch(()=>setOkundu("yok"))
+          .catch(e2=>{ setOkundu("yok"); setSebep((e2&&e2.message)||"bağlantı"); })
           .finally(()=>setOkuyor(false));
       };
       img.src=fr.result;
@@ -774,7 +775,7 @@ function UstaHarcama({isId,onBitti}){
     </label>
     {okundu==="ok"&&<div style={{fontSize:11.5,color:C.green,fontWeight:700,marginBottom:10,marginTop:-4}}>Fişten okundu — rakamı bir teyit et</div>}
     {okundu==="zayif"&&<div style={{fontSize:11.5,color:C.amber,fontWeight:700,marginBottom:10,marginTop:-4}}>Fotoğraf net değil — tutarı kontrol et</div>}
-    {okundu==="yok"&&<div style={{fontSize:11.5,color:C.t3,marginBottom:10,marginTop:-4}}>Fiş okunamadı, elle yazabilirsin</div>}
+    {okundu==="yok"&&<div style={{fontSize:11.5,color:C.t3,marginBottom:10,marginTop:-4}}>Fiş okunamadı, elle yazabilirsin{sebep?" ("+sebep+")":""}</div>}
     {msg&&<div style={{fontSize:12,color:msg.indexOf("onay")>-1?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
     <button onClick={async()=>{
       if(!f.ad||!f.tutar){setMsg("Açıklama ve tutar gerekli");return;}
@@ -2929,16 +2930,16 @@ function FisOku({onSonuc,katlar}){
       const b64=await kucult(dosya);
       const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({gorsel:b64,tur:"image/jpeg"})});
-      if(r.status===501){ setDurum("kapali"); return; }
+
       if(!r.ok) throw new Error("kod "+r.status);
       const d=await r.json();
-      if(!d.tutar&&!d.tarih){ setDurum("hata"); setMesaj("Fiş okunamadı, elle girebilirsin"); return; }
+      if(!d.tutar&&!d.tarih){ setDurum("hata"); setMesaj("Fiş okunamadı"+(d&&d.hata?" ("+d.hata+")":"")+" — elle girebilirsin"); return; }
       onSonuc(d);
       setDurum("bos");
       setMesaj(d.guven==="dusuk"?"Fotoğraf net değil — rakamları bir kontrol et":"");
     }catch(e){
       console.warn("[TradeFlow] fiş:",e&&e.message);
-      setDurum("hata"); setMesaj("Bağlantı kurulamadı, elle girebilirsin");
+      setDurum("hata"); setMesaj("Bağlantı kurulamadı"+(e&&e.message?" ("+e.message+")":"")+" — elle girebilirsin");
     }
   };
 
