@@ -12,7 +12,8 @@
 const MODEL = "claude-sonnet-4-6";
 const MAX_BAYT = 5 * 1024 * 1024; // 5 MB'lık fotoğraf sınırı
 
-export const config = { api: { bodyParser: { sizeLimit: "8mb" } } };
+// Görsel okuma metinden yavaştır — varsayılan süre sınırı yetmeyebilir
+export const config = { maxDuration: 60 };
 
 const SISTEM = `Sen bir fiş/fatura okuyucusun. Sana Türkiye'den bir market, hırdavatçı,
 akaryakıt veya yapı marketi fişinin fotoğrafı verilecek.
@@ -40,7 +41,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ hata: "yontem" });
 
   const KEY = process.env.ANTHROPIC_API_KEY;
-  if (!KEY) return res.status(501).json({ hata: "anahtar-yok" });
+  if (!KEY) return res.status(200).json({ hata: "anahtar-yok", tutar: null, tarih: null });
 
   try {
     const { gorsel = "", tur = "image/jpeg" } = req.body || {};
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
     if (!y.ok) {
       const metin = await y.text().catch(() => "");
       console.error("Anthropic hata:", y.status, metin.slice(0, 300));
-      return res.status(502).json({ hata: "servis", kod: y.status });
+      return res.status(200).json({ hata: "servis-" + y.status, detay: metin.slice(0, 160), tutar: null, tarih: null });
     }
 
     const d = await y.json();
@@ -93,7 +94,7 @@ export default async function handler(req, res) {
       veri = JSON.parse(ham);
     } catch {
       const m = ham.match(/\{[\s\S]*\}/);
-      if (!m) return res.status(422).json({ hata: "okunamadi" });
+      if (!m) return res.status(200).json({ hata: "cozumlenemedi", detay: ham.slice(0, 160), tutar: null, tarih: null });
       veri = JSON.parse(m[0]);
     }
 
@@ -121,6 +122,6 @@ export default async function handler(req, res) {
     });
   } catch (e) {
     console.error("fis.js:", e);
-    return res.status(500).json({ hata: "sunucu" });
+    return res.status(200).json({ hata: "sunucu", detay: String((e && e.message) || e).slice(0, 160), tutar: null, tarih: null });
   }
 }
