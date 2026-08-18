@@ -732,7 +732,8 @@ function UstaHarcama({isId,onBitti}){
   const [msg,setMsg]=useState("");
   const [okuyor,setOkuyor]=useState(false);
   const [okundu,setOkundu]=useState(null);
-  const [sebep,setSebep]=useState("");   // null | "ok" | "zayif" | "yok"
+  const [sebep,setSebep]=useState("");
+  const [yuzde,setYuzde]=useState(0);   // null | "ok" | "zayif" | "yok"
   const fotoSec=(e)=>{
     const dosya=e.target.files&&e.target.files[0];if(!dosya)return;
     const fr=new FileReader();
@@ -744,20 +745,32 @@ function UstaHarcama({isId,onBitti}){
         c.getContext("2d").drawImage(img,0,0,c.width,c.height);
         const kucuk=c.toDataURL("image/jpeg",0.6);
         setF(p=>({...p,fisFoto:kucuk}));
-        // fişi okut — tutar ve açıklama kendiliğinden dolsun
-        setOkuyor(true); setOkundu(null); setMsg("");
-        fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({gorsel:kucuk.split(",")[1],tur:"image/jpeg"})})
-          .then(r=>r.ok?r.json():Promise.reject(new Error("kod "+r.status)))
-          .then(d=>{
-            if(!d.tutar&&!d.tarih){ setOkundu("yok"); setSebep((d&&d.hata)||"boş yanıt"); return; }
+        setOkuyor(true); setOkundu(null); setSebep(""); setMsg("");
+        (async()=>{
+          let d=null;
+          // 1) cihazda oku — ücretsiz, fotoğraf telefondan çıkmaz
+          try{
+            const mod=await import("./fisoku.js");
+            d=await mod.fisOkuYerel(kucuk,(y)=>setYuzde(y));
+            if(d&&d.tutar==null) d=null;
+          }catch(e1){ console.warn("[TradeFlow] yerel fiş:",e1&&e1.message); }
+          // 2) olmazsa sunucudaki okuyucu (anahtar tanımlıysa)
+          if(!d){
+            try{
+              const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({gorsel:kucuk.split(",")[1],tur:"image/jpeg"})});
+              if(r.ok){ const g=await r.json(); if(g&&(g.tutar||g.tarih)) d=g; }
+            }catch(e2){ console.warn("[TradeFlow] sunucu fiş:",e2&&e2.message); }
+          }
+          if(!d) setOkundu("yok");
+          else{
             setF(p=>({...p,
               ad:p.ad||(d.satici?(d.satici+(d.kalemler&&d.kalemler.length?" — "+d.kalemler[0]:"")):p.ad),
               tutar:d.tutar!=null?String(d.tutar):p.tutar}));
-            setOkundu(d.guven==="dusuk"?"zayif":"ok");
-          })
-          .catch(e2=>{ setOkundu("yok"); setSebep((e2&&e2.message)||"bağlantı"); })
-          .finally(()=>setOkuyor(false));
+            setOkundu(d.guven==="yuksek"?"ok":"zayif");
+          }
+          setOkuyor(false);
+        })();
       };
       img.src=fr.result;
     };
@@ -770,12 +783,12 @@ function UstaHarcama({isId,onBitti}){
     <input type="number" value={f.tutar} onChange={e=>setF(p=>({...p,tutar:e.target.value}))} placeholder="Tutar (TL)" style={{width:"100%",boxSizing:"border-box",background:C.bg,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",fontSize:14,outline:"none",marginBottom:10,color:C.t1}}/>
     <label style={{display:"block",background:f.fisFoto?C.greenBg:C.bg,border:`1.5px dashed ${f.fisFoto?C.green:C.border}`,borderRadius:12,padding:"13px 0",textAlign:"center",fontSize:13,fontWeight:700,color:f.fisFoto?C.green:C.t2,cursor:"pointer",marginBottom:12}}>
       <i className={okuyor?"ti ti-loader-2":(f.fisFoto?"ti ti-circle-check":"ti ti-camera")} style={{fontSize:15,marginRight:7,verticalAlign:"-2px",animation:okuyor?"tfDon 1s linear infinite":"none"}} aria-hidden="true"/>
-      {okuyor?"Fiş okunuyor…":(f.fisFoto?"Fiş fotoğrafı eklendi":"Fişi çek — tutarı kendisi doldursun")}
+      {okuyor?("Fiş okunuyor… "+(yuzde?yuzde+"%":"")):(f.fisFoto?"Fiş fotoğrafı eklendi":"Fişi çek — tutarı kendisi doldursun")}
       <input type="file" accept="image/*" capture="environment" onChange={fotoSec} style={{display:"none"}}/>
     </label>
     {okundu==="ok"&&<div style={{fontSize:11.5,color:C.green,fontWeight:700,marginBottom:10,marginTop:-4}}>Fişten okundu — rakamı bir teyit et</div>}
     {okundu==="zayif"&&<div style={{fontSize:11.5,color:C.amber,fontWeight:700,marginBottom:10,marginTop:-4}}>Fotoğraf net değil — tutarı kontrol et</div>}
-    {okundu==="yok"&&<div style={{fontSize:11.5,color:C.t3,marginBottom:10,marginTop:-4}}>Fiş okunamadı, elle yazabilirsin{sebep?" ("+sebep+")":""}</div>}
+    {okundu==="yok"&&<div style={{fontSize:11.5,color:C.t3,marginBottom:10,marginTop:-4}}>Fiş okunamadı, elle yazabilirsin</div>}
     {msg&&<div style={{fontSize:12,color:msg.indexOf("onay")>-1?C.green:C.red,fontWeight:700,marginBottom:10}}>{msg}</div>}
     <button onClick={async()=>{
       if(!f.ad||!f.tutar){setMsg("Açıklama ve tutar gerekli");return;}
@@ -2901,6 +2914,7 @@ function FisOku({onSonuc,katlar}){
   const dosyaRef=useRef(null);
   const [durum,setDurum]=useState("bos");      // bos | okunuyor | hata | kapali
   const [mesaj,setMesaj]=useState("");
+  const [yuzde,setYuzde]=useState(0);
 
   const kucult=(dosya)=>new Promise((coz,red)=>{
     const fr=new FileReader();
@@ -2925,21 +2939,33 @@ function FisOku({onSonuc,katlar}){
     const dosya=ev.target.files&&ev.target.files[0];
     ev.target.value="";
     if(!dosya)return;
-    setDurum("okunuyor"); setMesaj("");
+    setDurum("okunuyor"); setMesaj(""); setYuzde(0);
     try{
       const b64=await kucult(dosya);
-      const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({gorsel:b64,tur:"image/jpeg"})});
+      const dataUrl="data:image/jpeg;base64,"+b64;
 
-      if(!r.ok) throw new Error("kod "+r.status);
-      const d=await r.json();
-      if(!d.tutar&&!d.tarih){ setDurum("hata"); setMesaj("Fiş okunamadı"+(d&&d.hata?" ("+d.hata+")":"")+" — elle girebilirsin"); return; }
+      // 1) Cihazda oku — ücretsiz, fotoğraf telefondan çıkmaz
+      let d=null;
+      try{
+        const mod=await import("./fisoku.js");
+        d=await mod.fisOkuYerel(dataUrl,(y)=>setYuzde(y));
+        if(d&&d.tutar==null) d=null;              // tutar çıkmadıysa yedeğe geç
+      }catch(e1){ console.warn("[TradeFlow] yerel fiş okuma:",e1&&e1.message); }
+
+      // 2) Olmazsa sunucudaki okuyucuyu dene (anahtar tanımlıysa)
+      if(!d){
+        const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({gorsel:b64,tur:"image/jpeg"})});
+        if(r.ok){ const g=await r.json(); if(g&&(g.tutar||g.tarih)) d=g; }
+      }
+
+      if(!d){ setDurum("hata"); setMesaj("Fiş okunamadı — elle girebilirsin"); return; }
       onSonuc(d);
       setDurum("bos");
-      setMesaj(d.guven==="dusuk"?"Fotoğraf net değil — rakamları bir kontrol et":"");
+      setMesaj(d.guven==="yuksek"?"Fişten okundu ✓":"Okundu ama net değil — rakamları kontrol et");
     }catch(e){
       console.warn("[TradeFlow] fiş:",e&&e.message);
-      setDurum("hata"); setMesaj("Bağlantı kurulamadı"+(e&&e.message?" ("+e.message+")":"")+" — elle girebilirsin");
+      setDurum("hata"); setMesaj("Fiş okunamadı — elle girebilirsin");
     }
   };
 
@@ -2952,7 +2978,7 @@ function FisOku({onSonuc,katlar}){
         borderRadius:12,padding:"13px 14px",color:okunuyor?C.t3:P,fontSize:13,fontWeight:700,
         cursor:okunuyor?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
       <i className={okunuyor?"ti ti-loader-2":"ti ti-camera"} style={{fontSize:16,animation:okunuyor?"tfDon 1s linear infinite":"none"}} aria-hidden="true"/>
-      {okunuyor?"Fiş okunuyor…":"Fişi çek, kendisi doldursun"}
+      {okunuyor?("Fiş okunuyor… "+(yuzde?yuzde+"%":"")):"Fişi çek, kendisi doldursun"}
     </button>
     {mesaj&&<div style={{fontSize:11,color:durum==="hata"?C.t3:C.amber,marginTop:6,textAlign:"center"}}>{mesaj}</div>}
     <style>{"@keyframes tfDon{to{transform:rotate(360deg)}}"}</style>
