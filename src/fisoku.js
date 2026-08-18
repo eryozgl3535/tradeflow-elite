@@ -28,7 +28,7 @@ function tesseractYukle() {
 
 // ── Görüntü hazırlama: gri tona çevir, kontrastı aç, eşikle ──
 // Termal fiş kağıdı soluk basar; ham fotoğrafta OCR çok yanılır.
-function fisHazirla(dataUrl, hedefEn = 1500) {
+function fisHazirla(dataUrl, hedefEn = 1500, sadeceGri = false) {
   return new Promise((coz, red) => {
     const im = new Image();
     im.onerror = () => red(new Error("görsel açılamadı"));
@@ -67,6 +67,17 @@ function fisHazirla(dataUrl, hedefEn = 1500) {
         const ortF = (toplam - toplamB) / agirlikF;
         const fark = agirlikB * agirlikF * (ortB - ortF) * (ortB - ortF);
         if (fark > enIyi) { enIyi = fark; esik = i; }
+      }
+
+      // 3) sadeceGri modunda eşikleme yapma — bazı fişlerde eşik metni siliyor
+      if (sadeceGri) {
+        for (let i = 0, k = 0; i < p.length; i += 4, k++) {
+          const g = gri[k];
+          const v = Math.max(0, Math.min(255, (g - 110) * 1.9 + 110));   // kontrastı aç
+          p[i] = p[i + 1] = p[i + 2] = v;
+        }
+        x.putImageData(d, 0, 0);
+        return coz(c);
       }
 
       // 3) eşiğe yakın bölgeyi yumuşat — sert siyah/beyaz OCR'ı bozabiliyor
@@ -188,6 +199,65 @@ function kalemBul(satirlar) {
   return c;
 }
 
+// ── Fiş türü: ne alındığını anahtar kelimelerden anla ──
+// Firma adı termal fişte en zor okunan yerdir; tür bilgisi çok daha güvenilir.
+const YAKIT_TUR = [
+  [/OTOGAZ|LPG/, "Otogaz"],
+  [/MOTOR[İI]N|D[İI]ZEL|EUROD|V\/?MAX D/, "Motorin"],
+  [/KUR[ŞS]UNSUZ|BENZ[İI]N|95|97/, "Benzin"],
+];
+const FIS_TUR = [
+  { kat:"Yakıt", ad:"Yakıt",
+    re:/AKARYAKIT|OTOGAZ|LPG|MOTOR[İI]N|D[İI]ZEL|BENZ[İI]N|KUR[ŞS]UNSUZ|PETROL|[İI]STASYON|OPET|SHELL|BP\b|TOTAL|PO\b|LUKOIL|AYTEM[İI]Z|ALPET/ },
+  { kat:"Yedek Parça", ad:"Yedek parça",
+    re:/YEDEK\s*PAR[ÇC]A|OTO\s*YEDEK|F[İI]LTRE|BALATA|AK[ÜU]\b|TR[İI]GER|DEBR[İI]YAJ/ },
+  { kat:"Malzeme", ad:"Hırdavat / yapı malzemesi",
+    re:/HIRDAVAT|YAPI\s*MARKET|BAUHAUS|KO[ÇC]TA[ŞS]|TEKZEN|[İI]N[ŞS]AAT|[ÇC][İI]MENTO|BOYA|V[İI]DA|S[İI]L[İI]KON|KABLO|BORU|TES[İI]SAT/ },
+  { kat:"Malzeme", ad:"Market alışverişi",
+    re:/M[İI]GROS|B[İI]M\b|A101|[ŞS]OK\b|CARREFOUR|MARKET|BAKKAL|GROSS/ },
+  { kat:"Diğer", ad:"Yemek",
+    re:/RESTORAN|LOKANTA|KEBAP|P[İI]DE|KAFE|CAFE|B[ÜU]FE|YEMEK|D[ÖO]NER/ },
+];
+
+function fisTuru(metin) {
+  const M = trBuyuk(metin);
+  for (const t of FIS_TUR) {
+    if (!t.re.test(M)) continue;
+    let ad = t.ad;
+    if (t.kat === "Yakıt") {
+      for (const [re, isim] of YAKIT_TUR) if (re.test(M)) { ad = "Yakıt — " + isim; break; }
+    }
+    return { kategori: t.kat, ad };
+  }
+  return { kategori: null, ad: null };
+}
+
+// ── Firma adı okunabilir mi? Bozuksa hiç kullanma ──
+// OCR bozulunca sesli harfsiz ya da tek harflik parçalar üretir.
+function saticiSaglam(ad) {
+  if (!ad) return false;
+  const t = ad.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü0-9\s.]/g, " ").trim();
+  if (t.length < 6) return false;
+  const p = t.split(/\s+/).filter((x) => x.replace(/\./g, "").length > 1);
+  if (p.length < 2) return false;
+
+  const harf = (x) => x.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]/g, "");
+  let buyuk = 0, kucuk = 0, bozuk = 0, kisa = 0;
+  for (const k of p) {
+    const h = harf(k);
+    if (!h) continue;
+    if (h === h.toLocaleUpperCase("tr")) buyuk++; else kucuk++;
+    if (!/[AEIİOÖUÜaeıioöuü]/.test(h)) bozuk++;       // sesli harfi yok
+    if (/[A-Za-zÇĞİÖŞÜçğıöşü]\d|\d[A-Za-zÇĞİÖŞÜçğıöşü]/.test(k)) bozuk++;  // harf–rakam karışık
+    if (h.length <= 3) kisa++;
+  }
+  // Gerçek fiş başlığı tek biçimdedir. Büyük ve küçük harfli kelimeler
+  // bir arada çıkıyorsa OCR bozulmuş demektir.
+  if (buyuk >= 2 && kucuk >= 2) return false;
+  if (kisa / p.length > 0.45) return false;           // "Bit tot rion" gibi kırıntılar
+  return bozuk / p.length < 0.35;
+}
+
 // ── Ana giriş noktası ──
 export async function fisOkuYerel(dataUrl, ilerleme) {
   const Tess = await tesseractYukle();
@@ -204,23 +274,55 @@ export async function fisOkuYerel(dataUrl, ilerleme) {
   });
   if (ilerleme) ilerleme(100);
 
-  const metin = (sonuc && sonuc.data && sonuc.data.text) || "";
-  const satirlar = metin.split("\n").map((s) => s.trim()).filter(Boolean);
-  const { tutar, puan } = tutarBul(satirlar);
+  let metin = (sonuc && sonuc.data && sonuc.data.text) || "";
+  let satirlar = metin.split("\n").map((s) => s.trim()).filter(Boolean);
+  let { tutar, puan } = tutarBul(satirlar);
+  let ocrGuvenSayi = (sonuc && sonuc.data && sonuc.data.confidence) || 0;
+
+  // İlk denemede tutar çıkmadıysa: eşikleme bazı fişlerde ters teper.
+  // Ham görüntüyle bir kez daha dene.
+  if (tutar == null) {
+    try {
+      if (ilerleme) ilerleme(20);
+      const ham2 = await fisHazirla(dataUrl, 1800, true);
+      const s2 = await Tess.recognize(ham2, "tur+eng", {
+        logger: (m) => {
+          if (ilerleme && m.status === "recognizing text") ilerleme(20 + Math.round((m.progress || 0) * 75));
+        },
+      });
+      const m2 = (s2 && s2.data && s2.data.text) || "";
+      const l2 = m2.split("\n").map((x) => x.trim()).filter(Boolean);
+      const t2 = tutarBul(l2);
+      if (t2.tutar != null) {
+        metin = m2; satirlar = l2; tutar = t2.tutar; puan = t2.puan;
+        ocrGuvenSayi = (s2 && s2.data && s2.data.confidence) || ocrGuvenSayi;
+      }
+    } catch (e) { /* ikinci deneme başarısızsa sessiz geç */ }
+  }
   const tarih = tarihBul(metin);
   const satici = saticiBul(satirlar);
 
   // Güven: tutarın hangi anahtar kelimeden geldiğine ve OCR skoruna bakar
-  const ocrGuven = (sonuc && sonuc.data && sonuc.data.confidence) || 0;
   let guven = "dusuk";
-  if (tutar != null && puan >= 85 && ocrGuven >= 60) guven = "yuksek";
-  else if (tutar != null && (puan >= 70 || ocrGuven >= 55)) guven = "orta";
+  if (tutar != null && puan >= 85 && ocrGuvenSayi >= 60) guven = "yuksek";
+  else if (tutar != null && (puan >= 70 || ocrGuvenSayi >= 55)) guven = "orta";
+
+  const tur = fisTuru(metin);
+  const kalemler = kalemBul(satirlar);
+  const saticiTemiz = saticiSaglam(satici) ? satici : null;
+
+  // Açıklama: önce fişin türü, sonra okunabiliyorsa firma adı.
+  // Firma adı bozuksa hiç yazma — "OBJERT Bit tot rion" kimseye bir şey anlatmaz.
+  let etiket = tur.ad || (kalemler[0] || null) || "Fiş";
+  if (saticiTemiz) etiket += " — " + saticiTemiz;
 
   return {
     tutar,
     tarih,
-    satici,
-    kalemler: kalemBul(satirlar),
+    satici: saticiTemiz,
+    etiket,
+    kategori: tur.kategori,
+    kalemler,
     guven,
     kaynak: "cihaz",
     ham: metin.slice(0, 1200),
