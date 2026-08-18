@@ -765,7 +765,7 @@ function UstaHarcama({isId,onBitti}){
           if(!d) setOkundu("yok");
           else{
             setF(p=>({...p,
-              ad:p.ad||(d.satici?(d.satici+(d.kalemler&&d.kalemler.length?" — "+d.kalemler[0]:"")):p.ad),
+              ad:p.ad||d.etiket||d.satici||p.ad,
               tutar:d.tutar!=null?String(d.tutar):p.tutar}));
             setOkundu(d.guven==="yuksek"?"ok":"zayif");
           }
@@ -2995,7 +2995,7 @@ function GiderModal({onKapat,onEkle,T,isKolu,jobs,musteriFiltre}){
   return <BottomSheet onKapat={onKapat}>
     <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:16}}>{T.yeniGider}</div>
     <FisOku katlar={katlar} onSonuc={(d)=>setF(x=>({...x,
-      ad:d.satici?(d.satici+(d.kalemler&&d.kalemler.length?" — "+d.kalemler[0]:"")):x.ad,
+      ad:d.etiket||(d.satici?d.satici:x.ad),
       tutar:d.tutar!=null?String(d.tutar):x.tutar,
       tarih:d.tarih||x.tarih,
       kategori:(d.kategori&&katlar.includes(d.kategori))?d.kategori:x.kategori}))}/>
