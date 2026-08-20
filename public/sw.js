@@ -1,9 +1,9 @@
-// TradeFlow Elite — Service Worker v6
+// TradeFlow Elite — Service Worker v7
 // Strateji:
 //  • index.html / sw.js / manifest → HİÇ önbelleğe alınmaz (hep ağdan)
 //  • /assets/* (hash'li js-css) → kalıcı önbellek (dosya adı değişince zaten yenilenir)
 //  • diğerleri → önbellek + arka planda tazeleme
-const CACHE = "tradeflow-v6";
+const CACHE = "tradeflow-v7";
 const CEVRIMDISI = "/index.html";
 
 // Asla önbelleğe alınmayacak yollar
