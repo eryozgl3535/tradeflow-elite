@@ -53,5 +53,58 @@
         });
       }
     </script>
+    <script>
+      // ── Sürüm kontrolü ───────────────────────────────────────────
+      // iOS'ta ana ekrandan açılan uygulama çoğu zaman sayfayı yeniden
+      // yüklemez, arka planda tuttuğu kopyayı geri getirir. Bu yüzden
+      // yeni derleme kullanıcıya günlerce ulaşmayabiliyor.
+      // Çözüm: index.html'i taze çekip içindeki derleme dosyasının adını
+      // şu an yüklü olanla karşılaştır. Farklıysa bir kez tazele.
+      (function () {
+        function suankiDosya() {
+          var s = document.querySelector('script[type="module"][src*="/assets/"]');
+          if (s) return s.src.split("/").pop();
+          var t = document.querySelector('script[type="module"]');
+          return t ? t.src.split("/").pop() : null;
+        }
+        var suanki = suankiDosya();
+        if (!suanki) return;
+
+        function kontrol() {
+          fetch("/index.html", { cache: "no-store" })
+            .then(function (r) { return r.ok ? r.text() : null; })
+            .then(function (metin) {
+              if (!metin) return;
+              var m = metin.match(/\/assets\/[A-Za-z0-9_.-]+\.js/g);
+              if (!m || !m.length) return;
+              var yeni = null;
+              for (var i = 0; i < m.length; i++) {
+                var ad = m[i].split("/").pop();
+                if (ad.indexOf("index-") === 0) { yeni = ad; break; }
+              }
+              if (!yeni || yeni === suanki) return;
+              // Aynı sürüm için ikinci kez tazeleme yapma — döngüye girmesin
+              if (sessionStorage.getItem("tf_tazelendi") === yeni) return;
+              sessionStorage.setItem("tf_tazelendi", yeni);
+              if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function (kayitlar) {
+                  var isler = kayitlar.map(function (k) { return k.update(); });
+                  Promise.all(isler).catch(function () {}).then(function () { location.reload(); });
+                });
+              } else {
+                location.reload();
+              }
+            })
+            .catch(function () {});
+        }
+
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") kontrol();
+        });
+        window.addEventListener("pageshow", function (e) { if (e.persisted) kontrol(); });
+        window.addEventListener("focus", kontrol);
+        setTimeout(kontrol, 2500);
+      })();
+    </script>
   </body>
 </html>
