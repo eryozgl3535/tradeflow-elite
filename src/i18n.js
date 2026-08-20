@@ -1,6 +1,10 @@
 // ═══ ÇEVİRİ KATMANI — 8 tam dil (TR·EN·DE·FR·ES·IT·PT·NL) ═══
 
 const TR = {
+  bugunTeslim:"bugün teslim",
+  vadesiGecmis:"vadesi geçmiş",
+  kalanEk:"kalan",
+  tamamEk:"tamamı alındı",
   iskontoL:"İskonto",
   cevrimdisiB:"📡 Çevrimdışı — değişiklikler cihaza kaydediliyor",senkronB:"🔄 İnternet geldi — buluta senkronize ediliyor...",senkronOk:"✅ Buluta senkronize edildi",
   malzemeKalemleri:"Malzeme / Hizmet Kalemleri",kalemAdPh:"Malzeme veya hizmet adı",adetL:"Adet",birimFiyatL:"Birim Fiyat",kalemEkle:"+ Kalem Ekle",araToplamL:"Ara Toplam",kdvL:"KDV",genelToplamL:"Genel Toplam",teklifBelgesi:"FİYAT TEKLİFİ",gecerlilikNot:"Bu teklif belirtilen tarihe kadar geçerlidir.",kaseImza:"Kaşe / İmza",teklifPdfBtn:"PDF",
@@ -92,6 +96,10 @@ const TR = {
 
 };
 const EN = {
+  bugunTeslim:"due today",
+  vadesiGecmis:"overdue",
+  kalanEk:"remaining",
+  tamamEk:"fully collected",
   iskontoL:"Discount",
   cevrimdisiB:"📡 Offline — changes saved on this device",senkronB:"🔄 Back online — syncing to cloud...",senkronOk:"✅ Synced to cloud",
   malzemeKalemleri:"Material / Service Items",kalemAdPh:"Material or service name",adetL:"Qty",birimFiyatL:"Unit Price",kalemEkle:"+ Add Item",araToplamL:"Subtotal",kdvL:"VAT",genelToplamL:"Grand Total",teklifBelgesi:"PRICE QUOTE",gecerlilikNot:"This quote is valid until the stated date.",kaseImza:"Stamp / Signature",teklifPdfBtn:"PDF",
@@ -185,6 +193,10 @@ const EN = {
 
 // ─── TAM ÇEVİRİ SÖZLÜKLERİ (6 dil) ───────────────────────────
 const DE = {
+  bugunTeslim:"heute fällig",
+  vadesiGecmis:"überfällig",
+  kalanEk:"offen",
+  tamamEk:"vollständig erhalten",
   iskontoL:"Rabatt",
   cevrimdisiB:"📡 Offline — Änderungen werden auf dem Gerät gespeichert",senkronB:"🔄 Wieder online — Synchronisierung...",senkronOk:"✅ Mit Cloud synchronisiert",
   malzemeKalemleri:"Material- / Leistungsposten",kalemAdPh:"Material oder Leistung",adetL:"Menge",birimFiyatL:"Einzelpreis",kalemEkle:"+ Posten hinzufügen",araToplamL:"Zwischensumme",kdvL:"MwSt.",genelToplamL:"Gesamtsumme",teklifBelgesi:"ANGEBOT",gecerlilikNot:"Dieses Angebot ist bis zum angegebenen Datum gültig.",kaseImza:"Stempel / Unterschrift",teklifPdfBtn:"PDF",
@@ -276,6 +288,10 @@ const DE = {
 
 };
 const FR = {
+  bugunTeslim:"pour aujourd'hui",
+  vadesiGecmis:"en retard",
+  kalanEk:"restant",
+  tamamEk:"tout encaissé",
   iskontoL:"Remise",
   cevrimdisiB:"📡 Hors ligne — modifications enregistrées sur l'appareil",senkronB:"🔄 De retour en ligne — synchronisation...",senkronOk:"✅ Synchronisé avec le cloud",
   malzemeKalemleri:"Postes matériel / service",kalemAdPh:"Matériel ou service",adetL:"Qté",birimFiyatL:"Prix unitaire",kalemEkle:"+ Ajouter un poste",araToplamL:"Sous-total",kdvL:"TVA",genelToplamL:"Total général",teklifBelgesi:"DEVIS",gecerlilikNot:"Ce devis est valable jusqu'à la date indiquée.",kaseImza:"Cachet / Signature",teklifPdfBtn:"PDF",
@@ -367,6 +383,10 @@ const FR = {
 
 };
 const ES = {
+  bugunTeslim:"para hoy",
+  vadesiGecmis:"vencido",
+  kalanEk:"restante",
+  tamamEk:"todo cobrado",
   iskontoL:"Descuento",
   cevrimdisiB:"📡 Sin conexión — cambios guardados en el dispositivo",senkronB:"🔄 Conexión recuperada — sincronizando...",senkronOk:"✅ Sincronizado con la nube",
   malzemeKalemleri:"Partidas de material / servicio",kalemAdPh:"Material o servicio",adetL:"Cant.",birimFiyatL:"Precio unit.",kalemEkle:"+ Añadir partida",araToplamL:"Subtotal",kdvL:"IVA",genelToplamL:"Total general",teklifBelgesi:"PRESUPUESTO",gecerlilikNot:"Este presupuesto es válido hasta la fecha indicada.",kaseImza:"Sello / Firma",teklifPdfBtn:"PDF",
@@ -458,6 +478,10 @@ const ES = {
 
 };
 const IT = {
+  bugunTeslim:"in consegna oggi",
+  vadesiGecmis:"scaduto",
+  kalanEk:"residuo",
+  tamamEk:"tutto incassato",
   iskontoL:"Sconto",
   cevrimdisiB:"📡 Offline — modifiche salvate sul dispositivo",senkronB:"🔄 Di nuovo online — sincronizzazione...",senkronOk:"✅ Sincronizzato con il cloud",
   malzemeKalemleri:"Voci materiale / servizio",kalemAdPh:"Materiale o servizio",adetL:"Qtà",birimFiyatL:"Prezzo unit.",kalemEkle:"+ Aggiungi voce",araToplamL:"Subtotale",kdvL:"IVA",genelToplamL:"Totale generale",teklifBelgesi:"PREVENTIVO",gecerlilikNot:"Questo preventivo è valido fino alla data indicata.",kaseImza:"Timbro / Firma",teklifPdfBtn:"PDF",
@@ -549,6 +573,10 @@ const IT = {
 
 };
 const PT = {
+  bugunTeslim:"entrega hoje",
+  vadesiGecmis:"vencido",
+  kalanEk:"restante",
+  tamamEk:"tudo recebido",
   iskontoL:"Desconto",
   cevrimdisiB:"📡 Offline — alterações guardadas no dispositivo",senkronB:"🔄 Online novamente — a sincronizar...",senkronOk:"✅ Sincronizado com a nuvem",
   malzemeKalemleri:"Itens de material / serviço",kalemAdPh:"Material ou serviço",adetL:"Qtd.",birimFiyatL:"Preço unit.",kalemEkle:"+ Adicionar item",araToplamL:"Subtotal",kdvL:"IVA",genelToplamL:"Total geral",teklifBelgesi:"ORÇAMENTO",gecerlilikNot:"Este orçamento é válido até à data indicada.",kaseImza:"Carimbo / Assinatura",teklifPdfBtn:"PDF",
@@ -640,6 +668,10 @@ const PT = {
 
 };
 const NL = {
+  bugunTeslim:"vandaag klaar",
+  vadesiGecmis:"verlopen",
+  kalanEk:"resterend",
+  tamamEk:"volledig ontvangen",
   iskontoL:"Korting",
   cevrimdisiB:"📡 Offline — wijzigingen opgeslagen op dit apparaat",senkronB:"🔄 Weer online — synchroniseren...",senkronOk:"✅ Gesynchroniseerd met de cloud",
   malzemeKalemleri:"Materiaal- / dienstposten",kalemAdPh:"Materiaal of dienst",adetL:"Aant.",birimFiyatL:"Stukprijs",kalemEkle:"+ Post toevoegen",araToplamL:"Subtotaal",kdvL:"Btw",genelToplamL:"Totaal",teklifBelgesi:"OFFERTE",gecerlilikNot:"Deze offerte is geldig tot de vermelde datum.",kaseImza:"Stempel / Handtekening",teklifPdfBtn:"PDF",
