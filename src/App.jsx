@@ -1595,24 +1595,25 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
        ═══════════════════════════════════════════════════════════ */}
 
     {/* 1 — Tek büyük özet kartı: ayın rakamı + üç destekleyici sayı bir arada */}
-    <div style={{background:GRAD,borderRadius:22,padding:"18px 17px 15px",marginBottom:12,boxShadow:`0 12px 28px -14px ${P}80`}}>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:22,padding:"18px 17px 15px",marginBottom:12,boxShadow:C.sh}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-        <span style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.11em",textTransform:"uppercase",color:"rgba(255,255,255,0.62)"}}>{T.buAyNet||"Bu ay net"}</span>
+        <span style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.11em",textTransform:"uppercase",color:C.t3}}>{T.buAyNet||"Bu ay net"}</span>
         {gelirD!==null&&<span style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,borderRadius:20,padding:"4px 9px",
-          color:"#fff",background:gelirD>=0?"rgba(16,185,129,0.30)":"rgba(239,68,68,0.30)"}}>
+          color:gelirD>=0?YESIL:KOR,background:gelirD>=0?YESIL_BG:KOR_BG}}>
           <i className={`ti ti-arrow-${gelirD>=0?"up":"down"}-right`} style={{fontSize:12}} aria-hidden="true"/>%{Math.abs(gelirD)}
         </span>}
       </div>
-      <div style={{fontSize:35,fontWeight:800,letterSpacing:"-0.035em",lineHeight:1.05,color:"#fff",fontVariantNumeric:"tabular-nums"}}>
+      <div style={{fontSize:35,fontWeight:800,letterSpacing:"-0.035em",lineHeight:1.05,color:C.t1,fontVariantNumeric:"tabular-nums"}}>
         {fmt(tahsil-gider)}
       </div>
       {(tahsil+beklT)>0&&<>
-        <div style={{height:6,borderRadius:20,background:"rgba(255,255,255,0.16)",overflow:"hidden",display:"flex",margin:"13px 0 7px"}}>
-          <i style={{display:"block",height:"100%",width:(tahsil/(tahsil+beklT)*100).toFixed(1)+"%",background:"#fff"}}/>
+        <div style={{height:6,borderRadius:20,background:C.bg,overflow:"hidden",display:"flex",margin:"13px 0 7px"}}>
+          <i style={{display:"block",height:"100%",width:(tahsil/(tahsil+beklT)*100).toFixed(1)+"%",background:P}}/>
+          <i style={{display:"block",height:"100%",width:(beklT/(tahsil+beklT)*100).toFixed(1)+"%",background:KOR}}/>
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:600,color:"rgba(255,255,255,0.78)"}}>
-          <span>{T.tahsilEdildi} {fmt(tahsil)}</span>
-          <span>{T.bekleyen||"Bekleyen"} {fmt(beklT)}</span>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:600}}>
+          <span style={{color:TEAL}}>{T.tahsilEdildi} {fmt(tahsil)}</span>
+          <span style={{color:KOR}}>{T.bekleyen||"Bekleyen"} {fmt(beklT)}</span>
         </div>
       </>}
 
@@ -1629,13 +1630,13 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
            n:beklT>0?(T.kalanEk||"kalan")+" "+fmt(beklT):(T.tamamEk||"tamamı alındı"),
            uyari:false,act:"stat-tahsilat"},
         ].map((k,ix)=><div key={ix} onClick={()=>onStatClick(k.act)}
-          style={{background:"rgba(255,255,255,0.11)",borderRadius:13,padding:"11px 10px",cursor:"pointer",
-            border:k.uyari?"1px solid rgba(248,113,113,0.55)":"1px solid rgba(255,255,255,0.09)"}}>
-          <i className={`ti ${k.ic}`} style={{fontSize:13,color:"rgba(255,255,255,0.62)"}} aria-hidden="true"/>
+          style={{background:C.bg,borderRadius:13,padding:"11px 10px",cursor:"pointer",
+            border:`1px solid ${k.uyari?KOR+"66":C.border}`}}>
+          <i className={`ti ${k.ic}`} style={{fontSize:13,color:k.uyari?KOR:C.t3}} aria-hidden="true"/>
           <div style={{fontSize:19,fontWeight:800,letterSpacing:"-0.025em",lineHeight:1.15,marginTop:4,
-            fontVariantNumeric:"tabular-nums",color:k.uyari?"#FCA5A5":"#fff"}}>{k.v}</div>
-          <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,0.72)",marginTop:2}}>{k.l}</div>
-          <div style={{fontSize:9,color:k.uyari?"#FCA5A5":"rgba(255,255,255,0.52)",marginTop:2,lineHeight:1.25}}>{k.n}</div>
+            fontVariantNumeric:"tabular-nums",color:k.uyari?KOR:C.t1}}>{k.v}</div>
+          <div style={{fontSize:9.5,fontWeight:700,color:C.t2,marginTop:2}}>{k.l}</div>
+          <div style={{fontSize:9,color:k.uyari?KOR:C.t3,marginTop:2,lineHeight:1.25}}>{k.n}</div>
         </div>)}
       </div>
     </div>
