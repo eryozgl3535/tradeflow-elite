@@ -1539,7 +1539,6 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const aktifBugun=jobs.filter(j=>j.durum==="aktif"&&(j.tarih||"")===bugun).length;
   const gecikmisFat=(faturalar||[]).filter(f=>!f.odendi&&f.vade&&f.vade<bugun).length;
   const tahsilOran=(tahsil+beklT)>0?Math.round(tahsil/(tahsil+beklT)*100):0;
-  const buAyMusteri=(musteriKayitlari||[]).filter(m=>(m.tarih||"").startsWith(buAy)).length;
   const gider=(giderler||[]).filter(g=>(g.tarih||"").startsWith(buAy)).reduce((s,g)=>s+g.tutar,0);
   const giderOnceki=(giderler||[]).filter(g=>(g.tarih||"").startsWith(gecenAy)).reduce((s,g)=>s+g.tutar,0);
   const karOran=tahsil>0?Math.round((tahsil-gider)/tahsil*100):0;
