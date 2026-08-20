@@ -1539,6 +1539,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
   const aktifBugun=jobs.filter(j=>j.durum==="aktif"&&(j.tarih||"")===bugun).length;
   const gecikmisFat=(faturalar||[]).filter(f=>!f.odendi&&f.vade&&f.vade<bugun).length;
   const tahsilOran=(tahsil+beklT)>0?Math.round(tahsil/(tahsil+beklT)*100):0;
+  const buAyMusteri=(musteriKayitlari||[]).filter(m=>(m.tarih||"").startsWith(buAy)).length;
   const gider=(giderler||[]).filter(g=>(g.tarih||"").startsWith(buAy)).reduce((s,g)=>s+g.tutar,0);
   const giderOnceki=(giderler||[]).filter(g=>(g.tarih||"").startsWith(gecenAy)).reduce((s,g)=>s+g.tutar,0);
   const karOran=tahsil>0?Math.round((tahsil-gider)/tahsil*100):0;
@@ -1595,7 +1596,7 @@ const MobilAnaSayfa=memo(function MobilAnaSayfa({jobs,faturalar,giderler,T,yetki
        ═══════════════════════════════════════════════════════════ */}
 
     {/* 1 — Tek büyük özet kartı: ayın rakamı + üç destekleyici sayı bir arada */}
-    <div style={{background:`linear-gradient(160deg, ${C.t1} 0%, ${C.t1}F2 100%)`,borderRadius:22,padding:"18px 17px 15px",marginBottom:12,boxShadow:"0 12px 28px -14px rgba(16,24,40,0.5)"}}>
+    <div style={{background:GRAD,borderRadius:22,padding:"18px 17px 15px",marginBottom:12,boxShadow:`0 12px 28px -14px ${P}80`}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
         <span style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.11em",textTransform:"uppercase",color:"rgba(255,255,255,0.62)"}}>{T.buAyNet||"Bu ay net"}</span>
         {gelirD!==null&&<span style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,borderRadius:20,padding:"4px 9px",
