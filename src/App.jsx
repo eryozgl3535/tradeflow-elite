@@ -5,6 +5,9 @@ import { supabase, supabaseYan, USTA_EK, yerelKaydet, yerelYukle } from "./veri.
 import { getT, DIL_GRUPLARI, DIL_LISTESI } from "./i18n.js";
 // 🎮 Eğlence köşesi ~60 KB — sadece açıldığında yüklenir
 const EglenceKosesi = lazy(()=>import("./eglence.jsx").then(m=>({default:m.EglenceKosesi})));
+// Eğlence köşesi ilk sürümde kapalı — iş yazılımı ciddiyeti için.
+// Geri açmak için tek yapılacak: bunu true yapmak.
+const EGLENCE_ACIK = false;
 import { Ik, MODUL_IKON, LedImza } from "./ikonlar.jsx";
 import { TFLogo, koyuMu } from "./logo.jsx";
 import { SelamSaat, DunyaSaatleriEkrani, GokyuzuSahne, gunDilimi, DILIM_METIN } from "./saat.jsx";
@@ -1513,7 +1516,7 @@ function tanitimIpuclari(bugunIslerVarsa,bugunIsMetni,onTakvim,onKasa,setSekme,o
     {ic:"ti-download",baslik:"Yedek Al",metin:"Tüm verini tek tuşla dosya olarak indir, istediğinde geri yükle.",act:()=>setSekme("profil"),renk:"#0E9F6E"},
     {ic:"ti-lock",baslik:"Otomatik Kilit",metin:"Telefonun başkasının eline geçerse oturum kendiliğinden kapansın.",act:()=>setSekme("profil"),renk:"#DC2626"},
     {ic:"ti-clock",baslik:"Dünya Saatleri",metin:"18 şehrin güncel saatini gör — yurt dışıyla iş yapanlar için.",act:git("dunya"),renk:"#7C3AED"},
-    {ic:"ti-device-gamepad-2",baslik:"Eğlence Köşesi",metin:"Mola ver — 2048, Yılan, Tetris, Adam Asmaca ve dahası. İnternetsiz oynanır.",act:git("eglence"),renk:"#EC4899"},
+    
     {ic:"ti-trash",baslik:"Çöp Kutusu",metin:"Yanlışlıkla sildiğin kayıtlar 30 gün geri alınabilir.",act:git("cop"),renk:"#94A3B8"},
   ];
 }
@@ -4821,7 +4824,7 @@ function DahaFazlaTab({onAc,onSifirla,onExport,onImport,T,onExcelIs,onExcelGider
     {icon:"🗑️",label:"Çöp Kutusu",alt:"Silinenler 30 gün geri alınabilir",act:()=>onAc("cop")},
     {icon:"🌍",label:"Dünya Saatleri",alt:"Şehirlerdeki güncel saatleri gör",act:()=>onAc("dunya")},
     {icon:"🚨",label:"Trafik Radar Kontrol",alt:"İçişleri Bakanlığı resmi radar/kontrol noktası sorgulama",act:()=>window.open("https://www.trafik.gov.tr/iller-arasi-radar-ve-kontrol-noktasi-uygulama-sayilari","_blank")},
-    {icon:"🎮",label:"Eğlence Köşesi",alt:"Oyunlarla mola ver — 2048, Yılan, Hafıza, Asmaca",act:()=>onAc("eglence")},
+    ...(EGLENCE_ACIK?[{icon:"device-gamepad-2",label:"Eğlence Köşesi",alt:"Oyunlarla mola ver",act:()=>onAc("eglence")}]:[]),
     {icon:"📈",label:"Muhasebe Raporu (PDF)",alt:T.muhasebeyeGonder,act:onExcelMuhasebe},
     {icon:"📊",label:(T.excelIslerL||"İşler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelIs},
     {icon:"💸",label:(T.excelGiderlerL||"Giderler").replace(/excel/i,"PDF"),alt:T.muhasebeyeGonder,act:onExcelGider},
@@ -5258,7 +5261,7 @@ function sesliKomutYorumla(metin,eylemler){
   if(iceren("cek senet","kasa","pin","cek","senet"))return eylemler.ekran("kasa");
   if(iceren("ekip","personel","calisan","usta"))return eylemler.ekran("ekip");
   if(iceren("asistan","yapay zeka","sor"))return eylemler.ekran("asistan");
-  if(iceren("eglence","oyun","mola"))return eylemler.ekran("eglence");
+  if(EGLENCE_ACIK&&iceren("eglence","oyun","mola"))return eylemler.ekran("eglence");
   if(iceren("yardim","destek","nasil"))return eylemler.ekran("yardim");
   if(iceren("ara ","arama","bul "))return eylemler.ekran("arama");
   if(iceren("piyasa","kur","dolar","euro","altin","borsa"))return eylemler.git("anasayfa");
@@ -6432,7 +6435,7 @@ export default function TradeFlow(){
           faturalar={faturalar} teklifler={teklifler} giderler={giderler} T={T}
           onIsSec={(j)=>setSecili(j)} onSekme={(sk)=>sekmeGecS(sk)}/>}
         {ekran==="dunya"&&<DunyaSaatleriEkrani C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
-        {ekran==="eglence"&&<Suspense fallback={<YukleniyorPerde metin="🎮 Oyunlar yükleniyor…"/>}><EglenceKosesi onKapat={()=>setEkran(null)} C={C} P={P} GRAD={GRAD} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/></Suspense>}
+        {EGLENCE_ACIK&&ekran==="eglence"&&<Suspense fallback={<YukleniyorPerde metin="🎮 Oyunlar yükleniyor…"/>}><EglenceKosesi onKapat={()=>setEkran(null)} C={C} P={P} GRAD={GRAD} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh}/></Suspense>}
         {ekran==="nakit"&&<NakitDetayEkrani jobs={jobs} cekSenetler={cekSenetler} giderler={giderler} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>setEkran(null)}/>}
         {sahitliJob&&sahitliMod==="duzenle"&&<SahitliIsEkrani job={sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} goster={goster} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onKaydet={(kayit)=>{jobPatch(sahitliJob.id,{sahitli:kayit});}}/>}
         {sahitliJob&&sahitliMod==="goruntule"&&<SahitliIsGoruntule job={jobs.find(j=>j.id===sahitliJob.id)||sahitliJob} C={C} P={P} APP_W={APP_W} GeriBaslik={GeriBaslik} Sh={Sh} onKapat={()=>{setSahitliJob(null);setSahitliMod(null);}} onDuzenle={()=>setSahitliMod("duzenle")}/>}
