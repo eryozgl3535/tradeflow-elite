@@ -110,9 +110,16 @@ function paraCoz(m) {
 }
 const PARA_KALIP = /(?:\*|₺|TL)?\s*(\d{1,3}(?:[.\s]\d{3})*,\d{2}|\d+,\d{2}|\d{1,3}(?:[.\s]\d{3})+\.\d{2}|\d+\.\d{2})/g;
 
+// Tarih / saat / uzun belge numarası içeren satırlar para barındırmaz.
+// "22.08.2026" veya "15006591" gibi diziler para kalıbına takılıp
+// 142,08 gibi hayalet tutarlar üretiyordu.
+const TARIH_SAAT = /\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{1,2}:\d{2}/;
+
 function satirParalari(satir) {
   const bulunan = [];
   let m;
+  // Tarih/saat parçalarını maskele — kalan gerçek para olsun
+  satir = String(satir).replace(TARIH_SAAT, " ").replace(/\d{9,}/g, " ");
   PARA_KALIP.lastIndex = 0;
   while ((m = PARA_KALIP.exec(satir))) {
     const v = paraCoz(m[1]);
@@ -242,7 +249,7 @@ function tarihBul(metin) {
 
 // ── Satıcı: üst bloktaki ilk anlamlı satır ──
 function saticiBul(satirlar) {
-  const ELE = /(FİŞ|FIS|TARİH|TARIH|SAAT|VN|VD|V\.D|MERSİS|MERSIS|TEL|NO\s*:|SAYIN|ADA\s*NO|BAY\/)/;
+  const ELE = /(FİŞ|FIS|TARİH|TARIH|SAAT|VN|VD|V\.D|MERSİS|MERSIS|TEL|NO\s*:|SAYIN|ADA\s*NO|BAY\/|BELGE|EKÜ|EKU|KASİYER|KASIYER)/;
   for (const ham of satirlar.slice(0, 6)) {
     const t = ham.trim();
     if (t.length < 4) continue;
@@ -250,6 +257,7 @@ function saticiBul(satirlar) {
     if (ELE.test(S)) continue;
     if (!/[A-ZÇĞİÖŞÜ]{3}/.test(S)) continue;
     if (satirParalari(t).length) continue;
+    if (TARIH_SAAT.test(t) || /(19|20)\d{2}/.test(t)) continue;   // tarih parçası satıcı adı olamaz
     return t.replace(/\s{2,}/g, " ").slice(0, 60);
   }
   return null;
@@ -264,6 +272,7 @@ function kalemBul(satirlar) {
     if (ELE.test(S)) continue;
     if (!satirParalari(ham).length) continue;
     const ad = ham.replace(PARA_KALIP, "").replace(/[*%₺]|\d+,\d+|\s{2,}/g, " ").trim();
+    if (TARIH_SAAT.test(ad) || /(19|20)\d{2}/.test(ad)) continue;
     if (ad.length >= 3 && /[A-ZÇĞİÖŞÜa-zçğıöşü]{3}/.test(ad)) c.push(ad.slice(0, 40));
     if (c.length >= 5) break;
   }
@@ -381,9 +390,12 @@ export async function fisOkuYerel(dataUrl, ilerleme) {
   // Aritmetik kanıt olmadan artık "yuksek" verilmiyor; kanıtsız bir tutar
   // App.jsx tarafından sunucudaki okuyucuya devredilir.
   const toplamPuan = (puan || 0) + dog.ekPuan;
+  const kanitVar = dog.ekPuan > 0;          // aritmetik olarak doğrulanabildi mi?
   let guven = "dusuk";
   if (tutar != null && dog.ekPuan >= 15 && toplamPuan >= 100 && ocrGuvenSayi >= 50) guven = "yuksek";
-  else if (tutar != null && dog.ekPuan >= 0 && (toplamPuan >= 85 || ocrGuvenSayi >= 55)) guven = "orta";
+  else if (tutar != null && kanitVar && toplamPuan >= 85) guven = "orta";
+  // Kanıtsız tutar artık "orta" bile sayılmıyor: OCR aynı fişte iki farklı
+  // sayı üretebiliyor. Doğrulanamayan sonuç sunucudaki okuyucuya devredilir.
 
   const tur = fisTuru(metin);
   const kalemler = kalemBul(satirlar);

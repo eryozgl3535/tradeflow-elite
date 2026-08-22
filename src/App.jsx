@@ -2932,6 +2932,22 @@ function FisOku({onSonuc,katlar}){
   const [durum,setDurum]=useState("bos");      // bos | okunuyor | hata | kapali
   const [mesaj,setMesaj]=useState("");
   const [yuzde,setYuzde]=useState(0);
+  const [tani,setTani]=useState("");           // teşhis — fiş okuma sorunlarını görmek için
+  const [taniAcik,setTaniAcik]=useState(false);
+  const taniYaz=(d,hata)=>{
+    const L=[];
+    L.push("kaynak : "+((d&&d.kaynak)||"sunucu/yok"));
+    L.push("tutar  : "+(d&&d.tutar!=null?d.tutar:"—")+"    guven: "+((d&&d.guven)||"—"));
+    if(d&&d.dogrulama){
+      const g=d.dogrulama;
+      L.push("nakit-farki : "+(g.nakitFark==null?"—":g.nakitFark));
+      L.push("kalem-toplam: "+(g.kalemTop==null?"—":g.kalemTop));
+      L.push("puan: "+g.puan+"   not: "+((g.notlar&&g.notlar.length&&g.notlar.join(", "))||"—"));
+    }
+    if(hata) L.push("HATA: "+hata);
+    if(d&&d.ham){ L.push(""); L.push("--- OCR ham metin ---"); L.push(d.ham); }
+    return L.join("\n");
+  };
 
   const kucult=(dosya)=>new Promise((coz,red)=>{
     const fr=new FileReader();
@@ -2962,24 +2978,32 @@ function FisOku({onSonuc,katlar}){
       const dataUrl="data:image/jpeg;base64,"+b64;
 
       // 1) Cihazda oku — ücretsiz, fotoğraf telefondan çıkmaz
-      let d=null;
+      let d=null, yerel=null, sonHata="";
       try{
         const mod=await import("./fisoku.js");
-        d=await mod.fisOkuYerel(dataUrl,(y)=>setYuzde(y));
-        if(d&&(d.tutar==null||d.guven==="dusuk")) d=null;   // kanıtsız tutarı kabul etme              // tutar çıkmadıysa yedeğe geç
-      }catch(e1){ console.warn("[TradeFlow] yerel fiş okuma:",e1&&e1.message); }
+        yerel=await mod.fisOkuYerel(dataUrl,(y)=>setYuzde(y));
+        d=yerel;
+        if(d&&(d.tutar==null||d.guven==="dusuk")) d=null;   // kanıtsız tutarı kabul etme
+      }catch(e1){ sonHata="yerel: "+(e1&&e1.message); console.warn("[TradeFlow] yerel fiş okuma:",e1&&e1.message); }
 
       // 2) Olmazsa sunucudaki okuyucuyu dene (anahtar tanımlıysa)
       if(!d){
-        const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({gorsel:b64,tur:"image/jpeg"})});
-        if(r.ok){ const g=await r.json(); if(g&&(g.tutar||g.tarih)) d=g; }
+        try{
+          const r=await fetch("/api/fis",{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({gorsel:b64,tur:"image/jpeg"})});
+          const g=r.ok?await r.json():null;
+          if(g&&g.hata) sonHata="sunucu: "+g.hata+(g.detay?" — "+g.detay:"");
+          if(g&&(g.tutar||g.tarih)) d=g;
+        }catch(e2){ sonHata="sunucu: "+(e2&&e2.message); }
       }
+      // 3) Sunucu da veremediyse doğrulanamamış yerel sonucu son çare göster
+      if(!d&&yerel&&yerel.tutar!=null) d=yerel;
 
-      if(!d){ setDurum("hata"); setMesaj("Fiş okunamadı — elle girebilirsin"); return; }
+      if(!d){ setDurum("hata"); setMesaj("Fiş okunamadı — elle girebilirsin"); setTani(taniYaz(yerel,sonHata)); return; }
       onSonuc(d);
       setDurum("bos");
       setMesaj(d.guven==="yuksek"?"Fişten okundu ✓":"Okundu ama net değil — rakamları kontrol et");
+      setTani(taniYaz(d,sonHata));
     }catch(e){
       console.warn("[TradeFlow] fiş:",e&&e.message);
       setDurum("hata"); setMesaj("Fiş okunamadı — elle girebilirsin");
@@ -2998,6 +3022,15 @@ function FisOku({onSonuc,katlar}){
       {okunuyor?("Fiş okunuyor… "+(yuzde?yuzde+"%":"")):"Fişi çek, kendisi doldursun"}
     </button>
     {mesaj&&<div style={{fontSize:11,color:durum==="hata"?C.t3:C.amber,marginTop:6,textAlign:"center"}}>{mesaj}</div>}
+    {tani&&<div style={{marginTop:6,textAlign:"center"}}>
+      <button onClick={()=>setTaniAcik(v=>!v)} style={{background:"none",border:"none",color:C.t3,fontSize:10.5,textDecoration:"underline",cursor:"pointer",padding:2}}>
+        {taniAcik?"teşhisi gizle":"ne okundu?"}
+      </button>
+      {taniAcik&&<div>
+        <pre style={{textAlign:"left",fontSize:9.5,lineHeight:1.45,background:C.bg,border:"1px solid "+C.border,borderRadius:8,padding:8,marginTop:5,maxHeight:220,overflow:"auto",whiteSpace:"pre-wrap",wordBreak:"break-word",color:C.t2}}>{tani}</pre>
+        <button onClick={()=>{try{navigator.clipboard.writeText(tani);}catch(e){}}} style={{background:"none",border:"1px solid "+C.border,borderRadius:7,color:C.t3,fontSize:10,padding:"4px 10px",marginTop:5,cursor:"pointer"}}>kopyala</button>
+      </div>}
+    </div>}
     <style>{"@keyframes tfDon{to{transform:rotate(360deg)}}"}</style>
   </div>;
 }
