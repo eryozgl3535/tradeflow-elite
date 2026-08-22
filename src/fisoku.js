@@ -151,6 +151,77 @@ function tutarBul(satirlar) {
   return { tutar: enIyi, puan: enIyiPuan };
 }
 
+// ── ÇAPRAZ DOĞRULAMA ──────────────────────────────────────────
+// OCR tek bir rakamı yanlış okuyabilir (120,00 → 60,00). Fişin kendi
+// aritmetiği bunu yakalar:
+//     NAKİT − PARA ÜSTÜ = TOPLAM     (her zaman doğrudur)
+//     kalemlerin toplamı  = TOPLAM   (indirim yoksa doğrudur)
+// İki bağımsız kanıt aynı sayıda buluşuyorsa, o sayı doğrudur.
+const yakin = (a, b, tol = 0.02) => a != null && b != null && Math.abs(a - b) <= tol;
+
+function nakitCapraz(satirlar) {
+  let nakit = null, ustu = null;
+  for (const ham of satirlar) {
+    const S = trBuyuk(ham);
+    const p = satirParalari(ham);
+    if (!p.length) continue;
+    if (/PARA\s*[ÜU]ST[ÜU]/.test(S)) {
+      if (ustu == null) ustu = Math.max(...p);
+    } else if (/(NAK[İI]T|KRED[İI]|KART|BANKA)/.test(S)) {
+      if (nakit == null) nakit = Math.max(...p);
+    }
+  }
+  if (nakit == null || ustu == null) return null;
+  const fark = +(nakit - ustu).toFixed(2);
+  return fark > 0 ? fark : null;
+}
+
+function kalemToplami(satirlar) {
+  const ELE = /(TOPLAM|TOP\b|KDV|NAK[İI]T|KRED[İI]|KART|BANKA|PARA\s*[ÜU]ST[ÜU]|ARA\s*TOP|MATRAH|[İI]SKONTO|[İI]ND[İI]R[İI]M|F[İI][ŞS]|TAR[İI]H|SAAT|\bVN\b|\bVD\b|MERS[İI]S|TEL|EK[ÜU]|BELGE|KAS[İI]YER)/;
+  let toplam = 0, adet = 0;
+  for (const ham of satirlar) {
+    const S = trBuyuk(ham);
+    if (ELE.test(S)) continue;
+    const p = satirParalari(ham);
+    if (!p.length) continue;
+    if (!/[A-ZÇĞİÖŞÜ]{3}/.test(S)) continue;   // ürün adı yoksa kalem satırı değildir
+    toplam += Math.max(...p);
+    adet++;
+  }
+  return adet ? { toplam: +toplam.toFixed(2), adet } : null;
+}
+
+// Okunan tutarı kanıtlarla oylat. Gerekirse düzelt.
+function tutarDogrula(satirlar, tutar) {
+  const nakitFark = nakitCapraz(satirlar);
+  const kalem = kalemToplami(satirlar);
+  const kalemTop = kalem ? kalem.toplam : null;
+  const notlar = [];
+  let sonuc = tutar, ekPuan = 0;
+
+  if (tutar != null && yakin(tutar, nakitFark)) { ekPuan += 25; notlar.push("nakit-uyustu"); }
+  if (tutar != null && yakin(tutar, kalemTop))  { ekPuan += 15; notlar.push("kalem-uyustu"); }
+
+  if (nakitFark != null && kalemTop != null && yakin(nakitFark, kalemTop) && !yakin(tutar, nakitFark)) {
+    // İki bağımsız kanıt birbirini doğruluyor ve okunan tutardan farklı:
+    // TOPLAM satırı yanlış okunmuş demektir.
+    sonuc = nakitFark; ekPuan = 30;
+    notlar.push("duzeltildi " + tutar + " -> " + nakitFark);
+  } else if (tutar == null && nakitFark != null) {
+    sonuc = nakitFark; ekPuan = 20; notlar.push("nakit-farkindan-alindi");
+  } else if (tutar == null && kalemTop != null) {
+    sonuc = kalemTop; ekPuan = 5; notlar.push("kalem-toplamindan-alindi");
+  } else if (tutar != null && nakitFark != null && !yakin(tutar, nakitFark)) {
+    // Çelişki var ama hangisinin doğru olduğu belli değil — güveni düşür,
+    // App.jsx sunucudaki okuyucuya devretsin.
+    ekPuan -= 40;
+    notlar.push("celiski toplam=" + tutar + " nakit-farki=" + nakitFark);
+  }
+
+  if (sonuc != null && (sonuc <= 0 || sonuc > 10000000)) { sonuc = null; ekPuan = -100; }
+  return { tutar: sonuc, ekPuan, notlar, nakitFark, kalemTop };
+}
+
 // ── Tarih: gg-aa-yyyy, gg.aa.yyyy, gg/aa/yy ──
 function tarihBul(metin) {
   const bugun = new Date();
@@ -277,11 +348,13 @@ export async function fisOkuYerel(dataUrl, ilerleme) {
   let metin = (sonuc && sonuc.data && sonuc.data.text) || "";
   let satirlar = metin.split("\n").map((s) => s.trim()).filter(Boolean);
   let { tutar, puan } = tutarBul(satirlar);
+  let dog = tutarDogrula(satirlar, tutar);
+  tutar = dog.tutar;
   let ocrGuvenSayi = (sonuc && sonuc.data && sonuc.data.confidence) || 0;
 
-  // İlk denemede tutar çıkmadıysa: eşikleme bazı fişlerde ters teper.
-  // Ham görüntüyle bir kez daha dene.
-  if (tutar == null) {
+  // Tutar çıkmadıysa VEYA kanıtlar çelişiyorsa: eşikleme bazı fişlerde
+  // ters teper. Ham görüntüyle bir kez daha dene.
+  if (tutar == null || dog.ekPuan < 0) {
     try {
       if (ilerleme) ilerleme(20);
       const ham2 = await fisHazirla(dataUrl, 1800, true);
@@ -293,8 +366,10 @@ export async function fisOkuYerel(dataUrl, ilerleme) {
       const m2 = (s2 && s2.data && s2.data.text) || "";
       const l2 = m2.split("\n").map((x) => x.trim()).filter(Boolean);
       const t2 = tutarBul(l2);
-      if (t2.tutar != null) {
-        metin = m2; satirlar = l2; tutar = t2.tutar; puan = t2.puan;
+      const d2 = tutarDogrula(l2, t2.tutar);
+      // İkinci geçişi ancak daha iyi doğrulanıyorsa kabul et
+      if (d2.tutar != null && (tutar == null || d2.ekPuan > dog.ekPuan)) {
+        metin = m2; satirlar = l2; tutar = d2.tutar; puan = t2.puan; dog = d2;
         ocrGuvenSayi = (s2 && s2.data && s2.data.confidence) || ocrGuvenSayi;
       }
     } catch (e) { /* ikinci deneme başarısızsa sessiz geç */ }
@@ -302,10 +377,13 @@ export async function fisOkuYerel(dataUrl, ilerleme) {
   const tarih = tarihBul(metin);
   const satici = saticiBul(satirlar);
 
-  // Güven: tutarın hangi anahtar kelimeden geldiğine ve OCR skoruna bakar
+  // Güven: anahtar kelime + OCR skoru + ÇAPRAZ DOĞRULAMA.
+  // Aritmetik kanıt olmadan artık "yuksek" verilmiyor; kanıtsız bir tutar
+  // App.jsx tarafından sunucudaki okuyucuya devredilir.
+  const toplamPuan = (puan || 0) + dog.ekPuan;
   let guven = "dusuk";
-  if (tutar != null && puan >= 85 && ocrGuvenSayi >= 60) guven = "yuksek";
-  else if (tutar != null && (puan >= 70 || ocrGuvenSayi >= 55)) guven = "orta";
+  if (tutar != null && dog.ekPuan >= 15 && toplamPuan >= 100 && ocrGuvenSayi >= 50) guven = "yuksek";
+  else if (tutar != null && dog.ekPuan >= 0 && (toplamPuan >= 85 || ocrGuvenSayi >= 55)) guven = "orta";
 
   const tur = fisTuru(metin);
   const kalemler = kalemBul(satirlar);
@@ -325,6 +403,7 @@ export async function fisOkuYerel(dataUrl, ilerleme) {
     kalemler,
     guven,
     kaynak: "cihaz",
+    dogrulama: { notlar: dog.notlar, nakitFark: dog.nakitFark, kalemTop: dog.kalemTop, puan: toplamPuan },
     ham: metin.slice(0, 1200),
   };
 }

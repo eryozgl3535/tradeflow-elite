@@ -20,19 +20,33 @@ const SISTEM = `Sen bir fiş/fatura okuyucusun. Sana Türkiye'den bir market, h�
 akaryakıt veya yapı marketi fişinin fotoğrafı verilecek.
 
 SADECE şu JSON'u döndür, başka hiçbir şey yazma, markdown kod bloğu da kullanma:
-{"tutar":sayı,"tarih":"YYYY-AA-GG","satici":"metin","kategori":"metin","kalemler":["metin"],"guven":"yuksek|orta|dusuk"}
+{"tutar":sayı,"nakit":sayı,"para_ustu":sayı,"kdv":sayı,"tarih":"YYYY-AA-GG","satici":"metin","kategori":"metin","kalemler":[{"ad":"metin","tutar":sayı}],"guven":"yuksek|orta|dusuk"}
 
-KURALLAR:
-- tutar: fişin GENEL TOPLAM / TOPLAM tutarı, sadece sayı (ondalık nokta ile, örn 1450.75).
-  KDV satırını değil, ödenen son tutarı al. Okuyamazsan null.
-- tarih: fişin üzerindeki düzenlenme tarihi. Okuyamazsan null. Gelecekteki bir tarih asla verme.
-- satici: mağaza/firma adı, kısa. Okuyamazsan null.
-- kategori: şu listeden en uygunu — Malzeme, Yakıt, Yedek Parça, Kira, Personel, Diğer
-- kalemler: fişteki en fazla 5 ana ürün adı. Okuyamazsan boş dizi.
+TUTAR KURALLARI — EN ÖNEMLİ KISIM:
+- tutar: SADECE "TOPLAM" / "GENEL TOPLAM" yazan satırdaki değer.
+- "NAKİT" = müşterinin uzattığı para. TUTAR DEĞİLDİR → "nakit" alanına yaz.
+- "PARA ÜSTÜ" = geri verilen para. TUTAR DEĞİLDİR → "para_ustu" alanına yaz.
+- "TOPKDV" / "KDV" = vergi. TUTAR DEĞİLDİR → "kdv" alanına yaz.
+- Bu üç alanı GÖRÜYORSAN MUTLAKA doldur; sunucu bunlarla tutarı çapraz doğruluyor.
+- Kart ödemesinde "KREDİ KARTI" satırı genelde TOPLAM'a eşittir, "nakit" alanına yaz.
+
+SAYI OKUMA:
+- Türkiye'de virgül ondalıktır: "*120,00" → 120.00 ; "1.234,56" → 1234.56
+- Baştaki "*" para işaretidir, yok say. JSON'a nokta ondalıklı yaz.
+- Rakamları BASAMAK BASAMAK oku. 120 ile 60, 8 ile 6, 0 ile 8 karışır.
+- Emin değilsen null bırak. ASLA tahmin etme, ASLA hesap yapma — sadece GÖRDÜĞÜNÜ yaz.
+
+DİĞER ALANLAR:
+- tarih: fişin düzenlenme tarihi. Gelecek tarih asla verme. Okuyamazsan null.
+- satici: mağaza adı, kısa. Ünvan/adres/vergi no ekleme. Okuyamazsan null.
+  Yazarkasalar İ Ş Ç Ğ Ü Ö harflerini basamaz, yerine boşluk bırakır.
+  Doğru Türkçesiyle kur: "zmir"→"İzmir", "e me"→"Çeşme", "Atat rk"→"Atatürk".
+  İyi: "CarrefourSA Çeşme"   Kötü: "CARREFOURSA zmir e me Super ; CARREFOUR SABANCI"
+- kategori: Malzeme, Yakıt, Yedek Parça, Kira, Personel, Diğer
+- kalemler: en fazla 5 ürün, her biri {"ad","tutar"}. Okuyamazsan boş dizi.
 - guven: görüntü net ve tutar kesinse "yuksek", kısmen okunuyorsa "orta",
   bulanık/eksik/fiş değilse "dusuk".
-- Fotoğrafta fiş yoksa: tüm alanlar null, guven "dusuk".
-- Emin olmadığın bir sayıyı ASLA uydurma, null bırak.`;
+- Fotoğrafta fiş yoksa: tüm alanlar null, guven "dusuk".`;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -55,7 +69,8 @@ export default async function handler(req, res) {
 
     const govde = (model) => JSON.stringify({
       model,
-      max_tokens: 400,
+      max_tokens: 900,
+      temperature: 0,          // rakam okumada rastgelelik olmamalı
       system: SISTEM,
       messages: [
         {
@@ -111,8 +126,47 @@ export default async function handler(req, res) {
 
     // ── Sunucu tarafı doğrulama: modelin dediğine körü körüne güvenme
     const bugun = new Date().toISOString().slice(0, 10);
-    let tutar = Number(veri.tutar);
-    if (!isFinite(tutar) || tutar <= 0 || tutar > 10000000) tutar = null;
+    const sayi = (v) => { const n = Number(v); return isFinite(n) && n > 0 ? +n.toFixed(2) : null; };
+    const yakin = (a, b) => a != null && b != null && Math.abs(a - b) <= 0.02;
+
+    let tutar = sayi(veri.tutar);
+    if (tutar != null && tutar > 10000000) tutar = null;
+
+    // ÇAPRAZ DOĞRULAMA — fişin kendi aritmetiği modelin okumasından güvenilirdir.
+    //   NAKİT − PARA ÜSTÜ = TOPLAM   ve   kalemler toplamı = TOPLAM
+    // İki bağımsız kanıt buluşuyorsa ve okunan tutar farklıysa, kanıtı seç.
+    const nakit = sayi(veri.nakit);
+    const paraUstu = sayi(veri.para_ustu);
+    const nakitFark = nakit != null && paraUstu != null && nakit > paraUstu
+      ? +(nakit - paraUstu).toFixed(2) : null;
+
+    const kalemDizi = Array.isArray(veri.kalemler) ? veri.kalemler : [];
+    let kalemTop = null;
+    const kalemTutarlar = kalemDizi.map((k) => sayi(k && k.tutar)).filter((v) => v != null);
+    if (kalemTutarlar.length) kalemTop = +kalemTutarlar.reduce((a, b) => a + b, 0).toFixed(2);
+
+    const notlar = [];
+    let guvenDuzelt = 0;
+
+    if (yakin(tutar, nakitFark)) { guvenDuzelt += 2; notlar.push("nakit-uyustu"); }
+    if (yakin(tutar, kalemTop))  { guvenDuzelt += 1; notlar.push("kalem-uyustu"); }
+
+    if (nakitFark != null && kalemTop != null && yakin(nakitFark, kalemTop) && !yakin(tutar, nakitFark)) {
+      notlar.push("duzeltildi " + tutar + " -> " + nakitFark);
+      tutar = nakitFark; guvenDuzelt = 2;
+    } else if (tutar == null && nakitFark != null) {
+      tutar = nakitFark; guvenDuzelt = 1; notlar.push("nakit-farkindan-alindi");
+    } else if (tutar != null && nakitFark != null && !yakin(tutar, nakitFark)) {
+      guvenDuzelt -= 3; notlar.push("celiski toplam=" + tutar + " nakit-farki=" + nakitFark);
+    }
+
+    // Model NAKİT veya PARA ÜSTÜ'nü toplam sanmışsa düzelt
+    if (nakitFark != null && (yakin(tutar, nakit) || yakin(tutar, paraUstu))) {
+      notlar.push("odeme-satiri-toplam-sanilmis -> " + nakitFark);
+      tutar = nakitFark; guvenDuzelt = 2;
+    }
+
+    if (tutar != null && (tutar <= 0 || tutar > 10000000)) tutar = null;
 
     let tarih = typeof veri.tarih === "string" ? veri.tarih.slice(0, 10) : null;
     if (tarih && !/^\d{4}-\d{2}-\d{2}$/.test(tarih)) tarih = null;
@@ -121,15 +175,24 @@ export default async function handler(req, res) {
     const KATEGORILER = ["Malzeme", "Yakıt", "Yedek Parça", "Kira", "Personel", "Diğer"];
     const kategori = KATEGORILER.includes(veri.kategori) ? veri.kategori : null;
 
+    // Nihai güven: modelin beyanı + aritmetik kanıt.
+    // Kanıtsız bir tutar asla "yuksek" olamaz — istemci elle kontrol ister.
+    let guvenSon = ["yuksek", "orta", "dusuk"].includes(veri.guven) ? veri.guven : "dusuk";
+    if (tutar == null) guvenSon = "dusuk";
+    else if (guvenDuzelt >= 2) guvenSon = "yuksek";
+    else if (guvenDuzelt <= -1) guvenSon = "dusuk";
+    else if (guvenSon === "yuksek" && guvenDuzelt === 0) guvenSon = "orta";
+
     return res.status(200).json({
       tutar,
       tarih,
       satici: typeof veri.satici === "string" ? veri.satici.slice(0, 60) : null,
       kategori,
-      kalemler: Array.isArray(veri.kalemler)
-        ? veri.kalemler.filter((k) => typeof k === "string").slice(0, 5).map((k) => k.slice(0, 50))
-        : [],
-      guven: ["yuksek", "orta", "dusuk"].includes(veri.guven) ? veri.guven : "dusuk",
+      kalemler: kalemDizi
+        .map((k) => (typeof k === "string" ? k : (k && typeof k.ad === "string" ? k.ad : null)))
+        .filter(Boolean).slice(0, 5).map((k) => k.slice(0, 50)),
+      guven: guvenSon,
+      dogrulama: notlar,
     });
   } catch (e) {
     console.error("fis.js:", e);

@@ -743,10 +743,10 @@ function UstaHarcama({isId,onBitti}){
     fr.onload=()=>{
       const img=new Image();
       img.onload=()=>{
-        const c=document.createElement("canvas");const oran=Math.min(1,900/img.width);
-        c.width=img.width*oran;c.height=img.height*oran;
-        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-        const kucuk=c.toDataURL("image/jpeg",0.6);
+        const c=document.createElement("canvas");const oran=Math.min(1,1600/Math.max(img.width,img.height));
+        c.width=Math.round(img.width*oran);c.height=Math.round(img.height*oran);
+        const cx=c.getContext("2d");cx.imageSmoothingQuality="high";cx.drawImage(img,0,0,c.width,c.height);
+        const kucuk=c.toDataURL("image/jpeg",0.92);
         setF(p=>({...p,fisFoto:kucuk}));
         setOkuyor(true); setOkundu(null); setSebep(""); setMsg("");
         (async()=>{
@@ -755,7 +755,7 @@ function UstaHarcama({isId,onBitti}){
           try{
             const mod=await import("./fisoku.js");
             d=await mod.fisOkuYerel(kucuk,(y)=>setYuzde(y));
-            if(d&&d.tutar==null) d=null;
+            if(d&&(d.tutar==null||d.guven==="dusuk")) d=null;   // kanıtsız tutarı kabul etme
           }catch(e1){ console.warn("[TradeFlow] yerel fiş:",e1&&e1.message); }
           // 2) olmazsa sunucudaki okuyucu (anahtar tanımlıysa)
           if(!d){
@@ -2945,7 +2945,7 @@ function FisOku({onSonuc,katlar}){
         const c=document.createElement("canvas");
         c.width=Math.round(im.width*o); c.height=Math.round(im.height*o);
         c.getContext("2d").drawImage(im,0,0,c.width,c.height);
-        coz(c.toDataURL("image/jpeg",0.82).split(",")[1]);
+        coz(c.toDataURL("image/jpeg",0.92).split(",")[1]);
       };
       im.src=fr.result;
     };
@@ -2966,7 +2966,7 @@ function FisOku({onSonuc,katlar}){
       try{
         const mod=await import("./fisoku.js");
         d=await mod.fisOkuYerel(dataUrl,(y)=>setYuzde(y));
-        if(d&&d.tutar==null) d=null;              // tutar çıkmadıysa yedeğe geç
+        if(d&&(d.tutar==null||d.guven==="dusuk")) d=null;   // kanıtsız tutarı kabul etme              // tutar çıkmadıysa yedeğe geç
       }catch(e1){ console.warn("[TradeFlow] yerel fiş okuma:",e1&&e1.message); }
 
       // 2) Olmazsa sunucudaki okuyucuyu dene (anahtar tanımlıysa)
